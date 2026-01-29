@@ -1185,6 +1185,8 @@
                         defR.forEach(n => { if (!this.d.roster.includes(n)) this.d.roster.push(n); });
                     }
                     if (!this.d.s) this.d.s = {};
+                    if (!this.d.ps) this.d.ps = ['', '', '', ''];
+                    if (!this.d.chosen) this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
                     this.save();
                     if (!this.d.history) this.d.history = [];
                     if (!this.d.start) this.d.start = 1;
