@@ -1430,6 +1430,14 @@
                             // Variance: -1 (Birdie/Par save) to +1 (Bogey/Double)
                             const v = Math.floor(Math.random() * 3) - 1;
                             this.d.s[this.d.h][pid] = Math.max(1, exp + v);
+                            // Random Junk for Testing
+                            ['G', 'S', 'P'].forEach(t => {
+                                if (Math.random() < 0.15) {
+                                    if (!this.d.junk) this.d.junk = {};
+                                    if (!this.d.junk[this.d.h]) this.d.junk[this.d.h] = {};
+                                    this.d.junk[this.d.h][pid + '_' + t] = true;
+                                }
+                            });
                         });
 
                         let nextH;
