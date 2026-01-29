@@ -2051,6 +2051,32 @@
                         }
                     });
 
+                    // 2. Calculate Recap (Injected)
+                    const pRecap = [0, 1, 2, 3].map(i => ({
+                        id: i, name: ps[i],
+                        dist: { bird: 0, par: 0, bog: 0, dbl: 0 },
+                        totalStrokes: 0, netToPar: 0, birds: 0, dbls: 0
+                    }));
+                    for (let x = 1; x <= 18; x++) {
+                        const par = c.p[x - 1];
+                        let any = false;
+                        [0, 1, 2, 3].forEach(i => {
+                            const s = (this.d.s[x] && this.d.s[x][i]);
+                            if (typeof s === 'number') { any = true; pRecap[i].totalStrokes += s; const d = s - par; if (d <= -1) { pRecap[i].dist.bird++; pRecap[i].birds++; } else if (d === 0) pRecap[i].dist.par++; else if (d === 1) pRecap[i].dist.bog++; else { pRecap[i].dist.dbl++; pRecap[i].dbls++; } const pops = this.getPops(i, x - 1); pRecap[i].netToPar += (s - pops) - par; }
+                        });
+                    }
+                    let recapHTML = '';
+                    let bestNet = 999;
+                    pRecap.forEach(p => { if (p.totalStrokes > 0 && p.netToPar < bestNet) bestNet = p.netToPar; });
+                    const mvps = pRecap.filter(p => p.totalStrokes > 0 && p.netToPar === bestNet);
+                    if (mvps.length > 0) { const names = mvps.map(p => p.name).join(', '); const val = (bestNet > 0 ? '+' : '') + bestNet; recapHTML += `<div class="badge-box" style="border-color:#10B981; background:rgba(16, 185, 129, 0.1);"><div class="badge-icon">🏆</div><div><div class="badge-tl">MVP (Low Net)</div><div class="badge-nm">${names}</div><div class="badge-sub">${val} to Par</div></div></div>`; }
+                    let maxBirds = -1; pRecap.forEach(p => { if (p.birds > maxBirds) maxBirds = p.birds; }); const bMachs = (maxBirds > 0) ? pRecap.filter(p => p.birds === maxBirds) : []; if (bMachs.length > 0) { const names = bMachs.map(p => p.name).join(', '); recapHTML += `<div class="badge-box"><div class="badge-icon">🦅</div><div><div class="badge-tl">Birdie Machine</div><div class="badge-nm">${names}</div><div class="badge-sub">${maxBirds} Birdies</div></div></div>`; }
+                    let maxDbl = -1; pRecap.forEach(p => { if (p.dbls > maxDbl) maxDbl = p.dbls; }); const wrecks = (maxDbl > 0) ? pRecap.filter(p => p.dbls === maxDbl) : []; if (wrecks.length > 0) { const names = wrecks.map(p => p.name).join(', '); recapHTML += `<div class="badge-box"><div class="badge-icon">🚂</div><div><div class="badge-tl" style="color:#F87171">Train Wreck</div><div class="badge-nm">${names}</div><div class="badge-sub">${maxDbl} Doubles or Worse</div></div></div>`; }
+
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING BREAKDOWN</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div><div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div><div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div></div>`;
+                    pRecap.forEach(p => { if (p.totalStrokes === 0) return; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div><div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div><div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div><div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div></div>`; });
+                    recapHTML += `</div>`;
+
                     // 2. Build Capture HTML
                     const sn = document.getElementById('share-node');
                     let finHTML = '';
@@ -2158,6 +2184,10 @@
                         <div class="sn-sect">
                             <div class="sn-sect-tl">MATCH RESULTS</div>
                             ${segHTML}
+                        </div>
+                        <div class="sn-sect">
+                             <div class="sn-sect-tl">ROUND RECAP</div>
+                             ${recapHTML}
                         </div>
                         <div class="sn-sect">
                              <div class="sn-sect-tl">GROSS SCORECARD</div>
