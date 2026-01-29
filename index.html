@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v243</title>
+    <title>COD Golf v244</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -809,7 +809,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v243</div>
+            <div class="tx-xl">COD GOLF v244</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1695,17 +1695,26 @@
                 }
 
                 // CHARTS
-                html += `<div class="box" style="margin-top:20px;"><div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (GROSS)</div>`;
+                html += `<div class="box" style="margin-top:20px;">
+                    <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (GROSS)</div>
+                    <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
+                        <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div>
+                        <div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div>
+                    </div>`;
                 pStats.forEach(p => {
                     if (p.totalStrokes === 0) return;
-                    const tot = p.totalStrokes;
-                    const bPct = (p.dist.bird / tot) * 100;
-                    const dPct = (p.dist.dbl / tot) * 100;
-                    const parPct = (p.dist.par / tot) * 100;
-                    const bogPct = (p.dist.bog / tot) * 100;
-                    html += `<div class="rec-row"><div class="rec-p-lbl">${p.name.substring(0, 3)}</div><div class="rec-bars"><div style="width:${bPct}%; background:#10B981;"></div><div style="width:${parPct}%; background:#cbd5e1;"></div><div style="width:${bogPct}%; background:#F59E0B;"></div><div style="width:${dPct}%; background:#EF4444;"></div></div></div>`;
+                    html += `<div style="display:flex; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+                        <div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name}</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div>
+                        <div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div>
+                    </div>`;
                 });
-                html += `<div class="flex-r" style="justify-content:center; gap:12px; margin-top:8px;"><div style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; border-radius:50%; background:#10B981;"></div><span class="tx-sm" style="margin:0;">Bird</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; border-radius:50%; background:#cbd5e1;"></div><span class="tx-sm" style="margin:0;">Par</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; border-radius:50%; background:#F59E0B;"></div><span class="tx-sm" style="margin:0;">Bog</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; border-radius:50%; background:#EF4444;"></div><span class="tx-sm" style="margin:0;">Dbl+</span></div></div></div>`;
+                html += `</div>`;
 
                 // AVERAGES
                 html += `<div class="box" style="margin-top:12px;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING AVERAGES</div><div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px;"><div class="tx-sm" style="text-align:left;">PLAYER</div><div class="tx-sm" style="text-align:center;">PAR 3</div><div class="tx-sm" style="text-align:center;">PAR 4</div><div class="tx-sm" style="text-align:center;">PAR 5</div></div>`;
