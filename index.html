@@ -476,6 +476,86 @@
             display: block;
         }
 
+        /* RECAP CSS */
+        .rec-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .rec-p-lbl {
+            width: 40px;
+            font-size: 11px;
+            font-weight: 900;
+            color: #94A3B8;
+        }
+
+        .rec-bars {
+            flex: 1;
+            margin-left: 8px;
+            display: flex;
+            gap: 2px;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #334155;
+        }
+
+        .avg-card {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .avg-lbl {
+            font-size: 10px;
+            color: #94A3B8;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .avg-val {
+            font-size: 16px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .badge-box {
+            background: #1E293B;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .badge-icon {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+
+        .badge-tl {
+            font-size: 10px;
+            color: #10B981;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .badge-nm {
+            font-size: 14px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .badge-sub {
+            font-size: 10px;
+            color: #94A3B8;
+        }
+
         /* CAPTURE NODE (FLEXBOX V2) */
         #share-node {
             position: fixed;
@@ -956,11 +1036,24 @@
                 scorecard is already copied. Just open Messages and Paste.</div>
         </div>
 
+        <button class="g-btn" style="background:#334155; border:1px solid #F59E0B; color:#F59E0B; margin-bottom:12px;"
+            onclick="App.nav('v-recap')">📊 ROUND RECAP</button>
+
         <button id="sms-btn" class="g-btn" style="margin-bottom:20px;" onclick="App.share()">SHARE IMAGE
             SUMMARY</button>
         <button id="hist-btn" class="g-btn g-btn-sec" style="margin-bottom:12px;" onclick="App.saveToHistory()">SAVE TO
             HISTORY</button>
         <button class="g-btn" style="background:#EF4444;" onclick="App.tryNewGame(this)">START NEW ROUND</button>
+    </div>
+
+    <!-- === ROUND RECAP === -->
+    <div id="v-recap" class="g-view">
+        <div class="flex-r" style="margin-bottom:16px;">
+            <div class="tx-xl">ROUND RECAP</div>
+            <button class="g-btn g-btn-sm" style="width:auto; background:#334155;"
+                onclick="App.nav('v-card')">CLOSE</button>
+        </div>
+        <div id="recap-body"></div>
     </div>
 
     <script>
@@ -1139,6 +1232,7 @@
                 document.getElementById(id).classList.add('active');
                 if (id === 'v-dash') this.uDash();
                 if (id === 'v-card') this.uCard();
+                if (id === 'v-recap') this.uRecap();
             },
 
             navH: function (d) {
@@ -1493,6 +1587,95 @@
                 }
             },
             closePress: function () { document.getElementById('press-modal').classList.remove('active'); },
+
+            uRecap: function () {
+                const c = CS[this.d.crs] || CS['cc'];
+                const pStats = [0, 1, 2, 3].map(i => ({
+                    id: i, name: this.d.ps[i],
+                    dist: { bird: 0, par: 0, bog: 0, dbl: 0 },
+                    p3: { tot: 0, cnt: 0 }, p4: { tot: 0, cnt: 0 }, p5: { tot: 0, cnt: 0 },
+                    netToPar: 0, birds: 0, pars: 0, dbls: 0, totalStrokes: 0
+                }));
+
+                let completedHoles = 0;
+                for (let h = 1; h <= 18; h++) {
+                    if (!this.d.s[h]) continue;
+                    const par = c.p[h - 1];
+                    let any = false;
+                    [0, 1, 2, 3].forEach(i => {
+                        if (typeof this.d.s[h][i] === 'number') {
+                            any = true;
+                            const g = this.d.s[h][i];
+                            const pops = this.getPops(i, h - 1);
+                            const n = g - pops;
+                            const d = n - par;
+                            const grel = g - par;
+                            pStats[i].totalStrokes++;
+                            if (grel <= -1) { pStats[i].dist.bird++; pStats[i].birds++; }
+                            else if (grel === 0) { pStats[i].dist.par++; pStats[i].pars++; }
+                            else if (grel === 1) pStats[i].dist.bog++;
+                            else { pStats[i].dist.dbl++; pStats[i].dbls++; }
+                            pStats[i].netToPar += d;
+                            if (par === 3) { pStats[i].p3.tot += g; pStats[i].p3.cnt++; }
+                            if (par === 4) { pStats[i].p4.tot += g; pStats[i].p4.cnt++; }
+                            if (par === 5) { pStats[i].p5.tot += g; pStats[i].p5.cnt++; }
+                        }
+                    });
+                    if (any) completedHoles++;
+                }
+
+                const con = document.getElementById('recap-body');
+                if (completedHoles === 0) { con.innerHTML = '<div style="padding:20px; text-align:center; color:#94A3B8;">No scores yet.</div>'; return; }
+
+                let html = '';
+                // BADGES
+                let bestNet = 999;
+                pStats.forEach(p => { if (p.totalStrokes > 0 && p.netToPar < bestNet) bestNet = p.netToPar; });
+                const mvps = pStats.filter(p => p.totalStrokes > 0 && p.netToPar === bestNet);
+                if (mvps.length > 0) {
+                    const names = mvps.map(p => p.name).join(', ');
+                    const val = (bestNet > 0 ? '+' : '') + bestNet;
+                    html += `<div class="badge-box" style="border-color:#10B981; background:rgba(16, 185, 129, 0.1);"><div class="badge-icon">🏆</div><div><div class="badge-tl">MVP (Low Net)</div><div class="badge-nm">${names}</div><div class="badge-sub">${val} to Par</div></div></div>`;
+                }
+                let maxBirds = -1;
+                pStats.forEach(p => { if (p.birds > maxBirds) maxBirds = p.birds; });
+                const bMachs = (maxBirds > 0) ? pStats.filter(p => p.birds === maxBirds) : [];
+                if (bMachs.length > 0) {
+                    const names = bMachs.map(p => p.name).join(', ');
+                    html += `<div class="badge-box"><div class="badge-icon">🦅</div><div><div class="badge-tl">Birdie Machine</div><div class="badge-nm">${names}</div><div class="badge-sub">${maxBirds} Birdies</div></div></div>`;
+                }
+                let maxDbl = -1;
+                pStats.forEach(p => { if (p.dbls > maxDbl) maxDbl = p.dbls; });
+                const wrecks = (maxDbl > 0) ? pStats.filter(p => p.dbls === maxDbl) : [];
+                if (wrecks.length > 0) {
+                    const names = wrecks.map(p => p.name).join(', ');
+                    html += `<div class="badge-box"><div class="badge-icon">🚂</div><div><div class="badge-tl" style="color:#F87171">Train Wreck</div><div class="badge-nm">${names}</div><div class="badge-sub">${maxDbl} Doubles or Worse</div></div></div>`;
+                }
+
+                // CHARTS
+                html += `<div class="box" style="margin-top:20px;"><div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (GROSS)</div>`;
+                pStats.forEach(p => {
+                    if (p.totalStrokes === 0) return;
+                    const tot = p.totalStrokes;
+                    const bPct = (p.dist.bird / tot) * 100;
+                    const dPct = (p.dist.dbl / tot) * 100;
+                    const parPct = (p.dist.par / tot) * 100;
+                    const bogPct = (p.dist.bog / tot) * 100;
+                    html += `<div class="rec-row"><div class="rec-p-lbl">${p.name.substring(0, 3)}</div><div class="rec-bars"><div style="width:${bPct}%; background:#10B981;"></div><div style="width:${parPct}%; background:#cbd5e1;"></div><div style="width:${bogPct}%; background:#F59E0B;"></div><div style="width:${dPct}%; background:#EF4444;"></div></div></div>`;
+                });
+                html += `<div class="flex-r" style="justify-content:center; gap:12px; margin-top:8px;"><div style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; border-radius:50%; background:#10B981;"></div><span class="tx-sm" style="margin:0;">Bird</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; border-radius:50%; background:#cbd5e1;"></div><span class="tx-sm" style="margin:0;">Par</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; border-radius:50%; background:#F59E0B;"></div><span class="tx-sm" style="margin:0;">Bog</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; border-radius:50%; background:#EF4444;"></div><span class="tx-sm" style="margin:0;">Dbl+</span></div></div></div>`;
+
+                // AVERAGES
+                html += `<div class="box" style="margin-top:12px;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING AVERAGES</div><div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px;"><div class="tx-sm" style="text-align:left;">PLAYER</div><div class="tx-sm" style="text-align:center;">PAR 3</div><div class="tx-sm" style="text-align:center;">PAR 4</div><div class="tx-sm" style="text-align:center;">PAR 5</div></div>`;
+                pStats.forEach(p => {
+                    const a3 = p.p3.cnt ? (p.p3.tot / p.p3.cnt).toFixed(1) : '-';
+                    const a4 = p.p4.cnt ? (p.p4.tot / p.p4.cnt).toFixed(1) : '-';
+                    const a5 = p.p5.cnt ? (p.p5.tot / p.p5.cnt).toFixed(1) : '-';
+                    html += `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px; padding:6px 0; border-top:1px solid #334155;"><div style="font-size:12px; font-weight:700; color:#cbd5e1;">${p.name.substring(0, 8)}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a3}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a4}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a5}</div></div>`;
+                });
+                html += `</div>`;
+                con.innerHTML = html;
+            },
 
             uDash: function () {
                 const c = CS[this.d.crs], par = c.p[this.d.h - 1];
