@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v245</title>
+    <title>COD Golf v246</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -809,7 +809,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v245</div>
+            <div class="tx-xl">COD GOLF v246</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -994,6 +994,12 @@
             </div>
             <div class="btn-act btn-plus" onclick="App.mod(0,1)">+</div>
         </div>
+        <div class="junk-row">
+            <button id="j0-g" class="junk-btn" onclick="App.tJ(0, 'G')">G</button>
+            <button id="j0-s" class="junk-btn" onclick="App.tJ(0, 'S')">S</button>
+            <button id="j0-p" class="junk-btn" onclick="App.tJ(0, 'P')">P</button>
+        </div>
+
         <div id="slot-1" class="p-card">
             <div class="btn-act btn-minus" onclick="App.mod(1,-1)">-</div>
             <div class="ctr-area" onclick="App.setPar(1)">
@@ -1003,6 +1009,12 @@
             </div>
             <div class="btn-act btn-plus" onclick="App.mod(1,1)">+</div>
         </div>
+        <div class="junk-row">
+            <button id="j1-g" class="junk-btn" onclick="App.tJ(1, 'G')">G</button>
+            <button id="j1-s" class="junk-btn" onclick="App.tJ(1, 'S')">S</button>
+            <button id="j1-p" class="junk-btn" onclick="App.tJ(1, 'P')">P</button>
+        </div>
+
         <div id="lbl-t2"
             style="font-size:13px; font-weight:800; color:#F59E0B; margin:16px 0 8px 4px; text-transform:uppercase;">
             TEAM B</div>
@@ -1015,6 +1027,12 @@
             </div>
             <div class="btn-act btn-plus" onclick="App.mod(2,1)">+</div>
         </div>
+        <div class="junk-row">
+            <button id="j2-g" class="junk-btn" onclick="App.tJ(2, 'G')">G</button>
+            <button id="j2-s" class="junk-btn" onclick="App.tJ(2, 'S')">S</button>
+            <button id="j2-p" class="junk-btn" onclick="App.tJ(2, 'P')">P</button>
+        </div>
+
         <div id="slot-3" class="p-card">
             <div class="btn-act btn-minus" onclick="App.mod(3,-1)">-</div>
             <div class="ctr-area" onclick="App.setPar(3)">
@@ -1023,6 +1041,11 @@
                 <div id="sc-3" class="p-score">4</div>
             </div>
             <div class="btn-act btn-plus" onclick="App.mod(3,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j3-g" class="junk-btn" onclick="App.tJ(3, 'G')">G</button>
+            <button id="j3-s" class="junk-btn" onclick="App.tJ(3, 'S')">S</button>
+            <button id="j3-p" class="junk-btn" onclick="App.tJ(3, 'P')">P</button>
         </div>
         <div style="height:30px;"></div>
         <div class="flex-r" style="gap:10px;"><button class="g-btn" style="background:#334155;"
@@ -1272,7 +1295,7 @@
             nav: function (id) {
                 document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
-                if (id === 'v-dash') this.uDash();
+                if (id === 'v-dash') { this.uDash(); this.updateJunkUI(); }
                 if (id === 'v-card') this.uCard();
                 if (id === 'v-recap') this.uRecap();
             },
@@ -1812,6 +1835,32 @@
                 document.getElementById('lbl-t1').innerText = `TEAM A (${this.d.ps[t1[0]].substring(0, 3)} & ${this.d.ps[t1[1]].substring(0, 3)})`;
                 map(2, t2[0]); map(3, t2[1]);
                 document.getElementById('lbl-t2').innerText = `TEAM B (${this.d.ps[t2[0]].substring(0, 3)} & ${this.d.ps[t2[1]].substring(0, 3)})`;
+            },
+
+            tJ: function (idx, type) {
+                if (!this.d.junk) this.d.junk = {};
+                if (!this.d.junk[this.d.h]) this.d.junk[this.d.h] = {};
+                const pid = this.slotMap[idx];
+                const k = pid + '_' + type;
+                if (this.d.junk[this.d.h][k]) delete this.d.junk[this.d.h][k];
+                else this.d.junk[this.d.h][k] = true;
+                this.save();
+                this.updateJunkUI();
+            },
+            updateJunkUI: function () {
+                document.querySelectorAll('.junk-btn').forEach(b => b.className = 'junk-btn');
+                if (!this.d.junk || !this.d.junk[this.d.h]) return;
+
+                [0, 1, 2, 3].forEach(i => {
+                    const pid = this.slotMap[i];
+                    ['G', 'S', 'P'].forEach(t => {
+                        const btn = document.getElementById(`j${i}-${t.toLowerCase()}`);
+                        if (btn) {
+                            const active = this.d.junk[this.d.h][pid + '_' + t];
+                            if (active) btn.classList.add('active-' + t.toLowerCase());
+                        }
+                    });
+                });
             },
 
             uCard: function () {
