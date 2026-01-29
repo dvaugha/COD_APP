@@ -1163,13 +1163,21 @@
             },
 
             init: function () {
+                const defR = (this.d.roster) ? [...this.d.roster] : [];
                 try {
                     let s = localStorage.getItem('GOLF_241');
                     if (!s) {
                         const old = localStorage.getItem('GOLF_240');
                         if (old) { this.d = JSON.parse(old); this.save(); }
                     }
-                    if (s) this.d = JSON.parse(s);
+                    if (s) {
+                        const sv = JSON.parse(s);
+                        if (!sv.roster) sv.roster = defR;
+                        else {
+                            defR.forEach(n => { if (!sv.roster.includes(n)) sv.roster.push(n); });
+                        }
+                        this.d = sv;
+                    }
                     if (!this.d.history) this.d.history = [];
                     if (!this.d.start) this.d.start = 1;
                     if (!this.d.press) this.d.press = [null, null, null];
