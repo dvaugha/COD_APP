@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v241.5</title>
+    <title>COD Golf v241.6</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -796,7 +796,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v241.5</div>
+            <div class="tx-xl">COD GOLF v241.6</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1198,7 +1198,10 @@
                     if (!this.d.permHcps) this.d.permHcps = {};
                 } catch (e) { }
                 this.renderRoster(); this.renderHistory(); this.refreshDrop(); this.restoreSet();
-                try { document.querySelector('.tx-xl').innerText += " [" + this.d.roster.length + ": " + this.d.roster[0] + "]"; } catch (e) { }
+                try {
+                    const vEl = Array.from(document.querySelectorAll('.tx-xl')).find(e => e.innerText.includes('v241'));
+                    if (vEl) vEl.innerText += " [R:" + this.d.roster.length + " " + this.d.roster[0] + "]";
+                } catch (e) { }
                 if (Object.keys(this.d.s).length > 0 && this.d.ps[0]) this.nav('v-dash'); else this.nav('v-setup');
                 if ('wakeLock' in navigator) {
                     document.addEventListener('visibilitychange', () => {
