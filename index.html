@@ -928,6 +928,13 @@
             </div>
             <div id="hist-list" style="max-height:200px; overflow-y:auto; font-size:12px;"></div>
         </div>
+        <div style="margin-top:24px; text-align:center;">
+            <button class="g-btn g-btn-sm"
+                style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
+                onclick="App.hardReset()">⚠️ Reset App Data</button>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v241 (Patch 2)</div>
+        </div>
+        <div style="height:50px;"></div>
     </div>
 
     <!-- === DASHBOARD === -->
@@ -1205,6 +1212,13 @@
                     }, 500);
                 };
             })(),
+
+            hardReset: function () {
+                if (confirm("This will Delete History and Reset Roster. Continue?")) {
+                    localStorage.removeItem('GOLF_241');
+                    location.reload();
+                }
+            },
 
             tryNewGame: function (btn) {
                 if (btn.innerText.includes("CONFIRM")) {
