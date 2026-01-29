@@ -850,7 +850,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v247.9</div>
+            <div class="tx-xl">COD GOLF v248 (Fix 2)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1320,6 +1320,7 @@
 
             resetScores: function () {
                 this.d.s = {};
+                this.d.junk = {};
                 this.d.hcps = {};
                 this.d.start = parseInt(document.getElementById('s-start').value);
                 this.d.h = this.d.start;
@@ -1525,6 +1526,7 @@
                 this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
                 this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
                 this.d.s = {};
+                this.d.junk = {};
                 this.d.press = {};
                 this.d.h = this.d.start;
                 this.save();
