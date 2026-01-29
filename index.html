@@ -1198,6 +1198,7 @@
                     if (!this.d.permHcps) this.d.permHcps = {};
                 } catch (e) { }
                 this.renderRoster(); this.renderHistory(); this.refreshDrop(); this.restoreSet();
+                try { document.querySelector('.tx-xl').innerText += " [" + this.d.roster.length + ": " + this.d.roster[0] + "]"; } catch (e) { }
                 if (Object.keys(this.d.s).length > 0 && this.d.ps[0]) this.nav('v-dash'); else this.nav('v-setup');
                 if ('wakeLock' in navigator) {
                     document.addEventListener('visibilitychange', () => {
