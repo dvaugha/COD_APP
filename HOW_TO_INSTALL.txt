@@ -1,0 +1,18 @@
+HOW TO SAVE THE GOLF APP TO YOUR PHONE
+
+This app works best when saved to your home screen! It will look and feel like a native app.
+
+=== FOR IPHONE (iOS) ===
+1. Open the link in the **Safari** browser. (Crucial: Chrome/Firefox on iOS won't work for this).
+2. Tap the **Share Icon** at the bottom of the screen (it looks like a square with an arrow pointing up).
+3. Scroll down the menu and tap **"Add to Home Screen"**.
+4. You can name it "COD Golf" or keep the default.
+5. Tap **"Add"** in the top right corner.
+6. The app icon will appear on your home screen!
+
+=== FOR ANDROID ===
+1. Open the link in the **Chrome** browser.
+2. Tap the **Menu Icon** (three dots) in the top right corner.
+3. Select **"Add to Home screen"** or **"Install App"** from the list.
+4. Follow the prompt and tap **"Add"** or **"Install"**.
+5. The app icon will appear on your home screen!
