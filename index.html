@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v249.2</title>
+    <title>COD Golf v250.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v249.2</div>
+            <div class="tx-xl">COD GOLF v250.1</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1054,7 +1054,7 @@
                 </div>
                 <div style="flex:1;">
                     <div class="tx-sm" style="text-align:left;">BET / PLAYER / SEG</div>
-                    <input type="number" id="j-bet" class="g-input" value="5"
+                    <input type="number" id="j-bet" class="g-input" value="1"
                         style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
                 </div>
             </div>
@@ -2066,6 +2066,53 @@
                 this.save();
                 document.getElementById('junk-modal').classList.remove('active');
             },
+            calcJunkRes: function () {
+                const freq = parseInt(this.d.junkFreq || 6);
+                const bet = (this.d.junkBet !== undefined) ? this.d.junkBet : 1;
+                const players = (!this.d.junkPlayers || this.d.junkPlayers.length == 0) ? [0, 1, 2, 3] : this.d.junkPlayers;
+                const pot = bet * players.length;
+                if (pot === 0) return null;
+
+                const segs = [];
+                if (freq === 6) {
+                    segs.push({ name: "HOLES 1-6", h: [1, 6] });
+                    segs.push({ name: "HOLES 7-12", h: [7, 12] });
+                    segs.push({ name: "HOLES 13-18", h: [13, 18] });
+                } else {
+                    segs.push({ name: "FRONT 9", h: [1, 9] });
+                    segs.push({ name: "BACK 9", h: [10, 18] });
+                }
+                const results = [];
+                const net = { 0: 0, 1: 0, 2: 0, 3: 0 };
+
+                segs.forEach(sig => {
+                    const pts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                    for (let h = sig.h[0]; h <= sig.h[1]; h++) {
+                        if (this.d.junk && this.d.junk[h]) {
+                            Object.keys(this.d.junk[h]).forEach(k => {
+                                if (this.d.junk[h][k]) {
+                                    const pIdx = parseInt(k.split('_')[0]);
+                                    if (players.includes(pIdx)) pts[pIdx]++;
+                                }
+                            });
+                        }
+                    }
+                    let maxP = -1;
+                    players.forEach(i => { if (pts[i] > maxP) maxP = pts[i]; });
+                    const winners = [];
+                    if (maxP > 0) {
+                        players.forEach(i => { if (pts[i] === maxP) winners.push(i); });
+                    }
+                    const res = { name: sig.name, winners: [], pot: pot, push: false };
+                    if (winners.length > 0) {
+                        const winShare = pot / winners.length;
+                        players.forEach(i => { if (winners.includes(i)) net[i] += (winShare - bet); else net[i] -= bet; });
+                        res.winners = winners;
+                    } else { res.push = true; }
+                    results.push(res);
+                });
+                return { results, net, players };
+            },
 
             uCard: function () {
                 const c = CS[this.d.crs] || CS['cc'];
@@ -2243,6 +2290,25 @@
                     resHTML += `</div>`;
                 }
 
+                const jRes = this.calcJunkRes();
+                if (jRes) {
+                    resHTML += `<div style="margin-top:20px; border-top:1px dashed #475569; padding-top:12px;"><div style="font-size:11px; font-weight:900; color:#F59E0B; margin-bottom:4px;">JUNK PAYOUTS</div>`;
+                    jRes.results.forEach(r => {
+                        let msg = "PUSH (No Winners)"; let col = "#94A3B8";
+                        if (r.winners.length > 0) {
+                            const n = r.winners.map(i => this.d.ps[i]).join(', ');
+                            msg = `WIN: ${n}`; col = "#10B981";
+                        }
+                        resHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; color:#cbd5e1; margin-bottom:2px;"><span>${r.name} ($${r.pot})</span><span style="color:${col}; font-weight:700;">${msg}</span></div>`;
+                    });
+                    resHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px;"><div style="font-size:10px; font-weight:900; color:#94A3B8;">JUNK NET</div>`;
+                    jRes.players.forEach(i => {
+                        const v = jRes.net[i];
+                        resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${v >= 0 ? '#10B981' : '#F87171'}">${v >= 0 ? '+' : ''}$${v.toFixed(2)}</span></div>`;
+                    });
+                    resHTML += `</div></div>`;
+                }
+
                 document.getElementById('res-txt').innerHTML = resHTML;
 
                 const btn = document.getElementById('hist-btn');
@@ -2356,6 +2422,15 @@
                     segRes.forEach(s => {
                         segHTML += `<div class="sn-row" style="font-size:14px;"><span style="color:#94A3B8">${s.name}</span><span>${s.val}</span></div>`;
                     });
+                    // Add Junk Financials to Share
+                    const jRes = this.calcJunkRes();
+                    if (jRes) {
+                        segHTML += `<div style="margin-top:12px; border-top:1px dashed #475569; padding-top:6px; font-size:12px; color:#F59E0B; font-weight:900;">JUNK PAYOUTS</div>`;
+                        jRes.players.forEach(i => {
+                            const v = jRes.net[i];
+                            segHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v.toFixed(2)}</span></div>`;
+                        });
+                    }
 
                     // 3. Scorecard Grid (GROSS & NET)
                     const buildCard_v2 = (start, lbl, isNet) => {
