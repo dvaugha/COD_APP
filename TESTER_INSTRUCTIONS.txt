@@ -1,0 +1,45 @@
+COD GOLF APP - TESTER INSTRUCTIONS
+==================================
+
+Here is how to set up and use the COD Golf App for our next round!
+
+1. INSTALLAPP (Add to Home Screen)
+----------------------------------
+This runs as a full-screen app on your phone.
+
+* iPhone (Safari):
+  1. Open the link in Safari.
+  2. Tap the "Share" icon (square with arrow up) at the bottom.
+  3. Scroll down and tap "Add to Home Screen".
+  4. Tap "Add". The icon will appear on your phone like a real app.
+
+* Android (Chrome):
+  1. Open the link in Chrome.
+  2. Tap the menu (three dots) in the top right.
+  3. Tap "Install App" or "Add to Home Screen".
+  4. Confirm to install.
+
+2. STARTING A ROUND
+-------------------
+1. Open the App.
+2. Tap "MANAGE" under history to add player names to the Roster if needed.
+3. Select 4 Players from the dropdowns.
+4. Choose "C.O.D. (6-6-6)" or "2-Man Scramble".
+5. Set the Pot Amount (usually $20).
+6. Click "START ROUND".
+
+3. SCORING (Important!)
+-----------------------
+* ENTERING PAR: Tap the BIG PAR NUMBER in the center of the score button to instantly set that player closer to Par.
+* ADJUSTING: Use the (+) and (-) buttons to adjust the score if needed.
+* JUNK BETS: If playing Junk (Greenies/Sandies), you can toggle the G/S/P buttons under each player's score.
+* NAVIGATION: The app auto-advances after everyone has a score. You can also swipe or use arrows at the top.
+
+4. END OF ROUND
+---------------
+1. After Hole 18, you will see the Round Summary card.
+2. Scroll down to see Match Results, Junk Payouts, and Net Scores.
+3. Tap "SHARE IMAGE SUMMARY" to generate a picture of the results and scorecard to text to the group!
+
+----------------------------------
+Have fun testing! Let me know if you find any bugs.
