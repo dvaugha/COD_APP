@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v252.6</title>
+    <title>COD Golf v253.0 (NEW MATH)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v252.6</div>
+            <div class="tx-xl">COD GOLF v253.0</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1554,8 +1554,11 @@
                         [0, 1, 2, 3].forEach(p => {
                             const pid = (this.slotMap[p] !== undefined) ? this.slotMap[p] : p;
                             // Realistic Score Gen
-                            // Variance: Tuned v252.6
-                            // 5% Birdie, 10% Bogey, 5% Double, 80% Par
+                            // Variance: Tuned v253.0 (Explicit)
+                            // 0-5%: Birdie (-1)
+                            // 5-15%: Bogey (+1)
+                            // 15-20%: Double (+2)
+                            // 20-100%: Par (0)
                             const rv = Math.random();
                             let s = par;
                             if (rv < 0.05) s = par - 1;
