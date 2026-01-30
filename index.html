@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v250.1</title>
+    <title>COD Golf v250.3</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v250.1</div>
+            <div class="tx-xl">COD GOLF v250.3</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -2303,8 +2303,8 @@
                     });
                     resHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px;"><div style="font-size:10px; font-weight:900; color:#94A3B8;">JUNK NET</div>`;
                     jRes.players.forEach(i => {
-                        const v = jRes.net[i];
-                        resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${v >= 0 ? '#10B981' : '#F87171'}">${v >= 0 ? '+' : ''}$${v.toFixed(2)}</span></div>`;
+                        const v = Math.round(jRes.net[i]);
+                        resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${v >= 0 ? '#10B981' : '#F87171'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
                     });
                     resHTML += `</div></div>`;
                 }
@@ -2427,8 +2427,8 @@
                     if (jRes) {
                         segHTML += `<div style="margin-top:12px; border-top:1px dashed #475569; padding-top:6px; font-size:12px; color:#F59E0B; font-weight:900;">JUNK PAYOUTS</div>`;
                         jRes.players.forEach(i => {
-                            const v = jRes.net[i];
-                            segHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v.toFixed(2)}</span></div>`;
+                            const v = Math.round(jRes.net[i]);
+                            segHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
                         });
                     }
 
