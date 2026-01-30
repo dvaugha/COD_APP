@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v247.9</title>
+    <title>COD Golf v249.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -801,6 +801,52 @@
             color: white;
             border-color: #8B5CF6;
         }
+
+        /* Switch CSS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #10B981;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+        }
     </style>
 </head>
 
@@ -850,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v248 (Fix 3)</div>
+            <div class="tx-xl">COD GOLF v249.2</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -968,6 +1014,8 @@
         </div>
 
         <button class="g-btn" style="margin-bottom:20px;" onclick="App.startRound()">CONTINUE ROUND</button>
+        <button class="g-btn g-btn-sec" style="margin-bottom:20px; border:1px solid #10B981; color:#10B981;"
+            onclick="App.openJunkModal()">JUNK BETTING ⚙️</button>
 
         <div class="box">
             <div class="tx-sm" style="color:#F59E0B">CAREER EARNINGS</div>
@@ -986,9 +1034,38 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v241 (Patch 2)</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v249</div>
         </div>
         <div style="height:50px;"></div>
+    </div>
+
+    <!-- JUNK CONFIG MODAL -->
+    <div id="junk-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">JUNK SETTINGS</div>
+            <div class="flex-r" style="margin-bottom:16px;">
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">FREQUENCY</div>
+                    <select id="j-freq" class="g-input"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                        <option value="6">Every 6 Holes (COD)</option>
+                        <option value="9">Every 9 Holes</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">BET / PLAYER / SEG</div>
+                    <input type="number" id="j-bet" class="g-input" value="5"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                </div>
+            </div>
+            <div class="tx-sm" style="text-align:left; margin-bottom:8px;">PLAYERS IN POT</div>
+            <div id="j-players-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec"
+                    onclick="document.getElementById('junk-modal').classList.remove('active')">CANCEL</button>
+                <button class="g-btn" onclick="App.saveJunkSettings()">SAVE SETTINGS</button>
+            </div>
+        </div>
     </div>
 
     <!-- === DASHBOARD === -->
@@ -1957,6 +2034,37 @@
                     });
                 }
                 return map;
+            },
+            openJunkModal: function () {
+                document.getElementById('junk-modal').classList.add('active');
+                const c = document.getElementById('j-players-list');
+                c.innerHTML = '';
+                [0, 1, 2, 3].forEach(i => {
+                    if (this.d.chosen[i]) {
+                        const name = this.d.chosen[i];
+                        const isIn = (!this.d.junkPlayers || this.d.junkPlayers.includes(i));
+                        c.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px; border-radius:8px; border:1px solid #334155;">
+                            <span style="color:white; font-weight:700;">${name}</span>
+                            <label class="switch">
+                                <input type="checkbox" id="jp-${i}" ${isIn ? 'checked' : ''}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>`;
+                    }
+                });
+                if (this.d.junkFreq) document.getElementById('j-freq').value = this.d.junkFreq;
+                if (this.d.junkBet !== undefined) document.getElementById('j-bet').value = this.d.junkBet;
+            },
+            saveJunkSettings: function () {
+                this.d.junkFreq = document.getElementById('j-freq').value;
+                this.d.junkBet = parseInt(document.getElementById('j-bet').value) || 0;
+                this.d.junkPlayers = [];
+                [0, 1, 2, 3].forEach(i => {
+                    const cb = document.getElementById('jp-' + i);
+                    if (cb && cb.checked) this.d.junkPlayers.push(i);
+                });
+                this.save();
+                document.getElementById('junk-modal').classList.remove('active');
             },
 
             uCard: function () {
