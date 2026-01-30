@@ -850,7 +850,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v248 (Fix 2)</div>
+            <div class="tx-xl">COD GOLF v248 (Fix 3)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1937,7 +1937,9 @@
             },
             getJunkStats: function () {
                 const map = {};
-                [0, 1, 2, 3].forEach(i => { if (this.d.chosen[i]) map[this.d.chosen[i]] = { G: 0, S: 0, P: 0 }; });
+                if (!this.d.ps) return map;
+                this.d.ps.forEach(name => { if (name) map[name] = { G: 0, S: 0, P: 0 }; });
+
                 if (this.d.junk) {
                     Object.keys(this.d.junk).forEach(h => {
                         const holeData = this.d.junk[h];
@@ -1945,8 +1947,11 @@
                             if (holeData[k]) {
                                 const parts = k.split('_');
                                 const type = parts.pop();
-                                const name = parts.join('_');
-                                if (map[name]) map[name][type]++;
+                                const pIdx = parseInt(parts[0]);
+                                if (!isNaN(pIdx) && this.d.ps[pIdx]) {
+                                    const name = this.d.ps[pIdx];
+                                    if (map[name]) map[name][type]++;
+                                }
                             }
                         });
                     });
