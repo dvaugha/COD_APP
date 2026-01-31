@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v254.1</title>
+    <title>COD Golf v255.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v254.1</div>
+            <div class="tx-xl">COD GOLF v255.1</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1957,21 +1957,36 @@
                 });
                 html += `</div>`;
 
-                // FIREBALL BIRDIES (Replacing Badges? No, just added)
+                // FIREBALL HOLES (Redefined v255.1)
+                const fbHoles = [];
+                for (let h = 1; h <= 18; h++) {
+                    if (!this.d.s[h]) continue;
+                    const par = c.p[h - 1];
+                    const bMakers = [];
+                    [0, 1, 2, 3].forEach(i => {
+                        const s = (this.d.s[h] && this.d.s[h][this.slotMap[i]]);
+                        if (typeof s === 'number' && s < par) bMakers.push(this.d.ps[i]);
+                    });
+                    if (bMakers.length > 0) fbHoles.push({ h: h, ps: bMakers });
+                }
+
                 html += `<div class="box" style="margin-top:12px; background:linear-gradient(135deg, #1E293B, #332d1e);">
-                    <div class="tx-sm" style="color:#F59E0B; margin-bottom:8px;">🔥 FIREBALL BIRDIES</div>
-                    <div style="display:flex; flex-wrap:wrap; gap:12px;">`;
-                pStats.forEach(p => {
-                    if (p.birds > 0) {
-                        html += `<div style="background:#0F172A; padding:8px 12px; border-radius:12px; border:1px solid #F59E0B; display:flex; align-items:center;">
-                            <span style="color:white; font-weight:700; margin-right:8px;">${p.name}</span>
-                            <span style="color:#10B981; font-weight:900; font-size:18px;">${p.birds}</span>
+                    <div class="flex-r" style="margin-bottom:8px;">
+                        <div class="tx-sm" style="color:#F59E0B;">🔥 FIREBALL HOLES</div>
+                        <div class="tx-sm" style="color:white;">Total: ${fbHoles.length}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">`;
+
+                if (fbHoles.length > 0) {
+                    fbHoles.forEach(item => {
+                        html += `<div style="background:#0F172A; padding:6px 12px; border-radius:8px; border:1px solid #F59E0B; display:flex; align-items:center; justify-content:space-between;">
+                            <span style="color:#F59E0B; font-weight:900; font-size:14px;">HOLE ${item.h}</span>
+                            <span style="color:white; font-weight:700; font-size:13px; text-align:right;">${item.ps.join(', ')}</span>
                         </div>`;
-                    }
-                });
-                // If no birdies
-                const anyBirds = pStats.some(p => p.birds > 0);
-                if (!anyBirds) html += `<div style="color:#94A3B8; font-size:12px;">No Fireballs Yet.</div>`;
+                    });
+                } else {
+                    html += `<div style="color:#94A3B8; font-size:12px; text-align:center; padding:8px;">No Fireballs Yet.</div>`;
+                }
                 html += `</div></div>`;
 
                 // AVERAGES
@@ -2470,22 +2485,46 @@
                             if (typeof s === 'number') { any = true; pRecap[i].totalStrokes += s; const d = s - par; if (d <= -1) { pRecap[i].dist.bird++; pRecap[i].birds++; } else if (d === 0) pRecap[i].dist.par++; else if (d === 1) pRecap[i].dist.bog++; else { pRecap[i].dist.dbl++; pRecap[i].dbls++; } const pops = this.getPops(i, x - 1); pRecap[i].netToPar += (s - pops) - par; }
                         });
                     }
-                    let recapHTML = '';
-                    // FIREBALL BIRDIES
+                    // FIREBALL HOLES (Share)
+                    // Recalculate using pRecap scope data? No, need Hole Data.
+                    // Loop holes again.
+                    const fbHoles = [];
+                    for (let h = 1; h <= 18; h++) {
+                        if (!this.d.s[h]) continue;
+                        const par = c.p[h - 1];
+                        const bMakers = [];
+                        [0, 1, 2, 3].forEach(i => {
+                            const s = (this.d.s[h] && this.d.s[h][i]); // Note: In Share, 'i' maps directly? 
+                            // Wait. In share(), pRecap used loop [0,1,2,3].
+                            // this.d.s[x][i] was accessed directly (line 2469).
+                            // Is d.s keyed by Seat Index (0-3) or Player ID?
+                            // Line 1517: this.d.s[this.d.h][pid] = s; (PID is from slotMap).
+                            // If SlotMap is 0->0, then PID is 0.
+                            // In old code, we verified pid is int.
+                            // Assuming share() logic at 2469 `this.d.s[x][i]` is correct (using 'i' as key), then we use 'i' here.
+
+                            if (typeof s === 'number' && s < par) bMakers.push(ps[i]);
+                        });
+                        if (bMakers.length > 0) fbHoles.push({ h: h, ps: bMakers });
+                    }
+
                     recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:linear-gradient(135deg, #1E293B, #332d1e);">
-                        <div class="tx-sm" style="color:#F59E0B; margin-bottom:8px;">🔥 FIREBALL BIRDIES</div>
-                        <div style="display:flex; flex-wrap:wrap; gap:8px;">`;
-                    let fireballs = false;
-                    pRecap.forEach(p => {
-                        if (p.birds > 0) {
-                            fireballs = true;
-                            recapHTML += `<div style="background:#0F172A; padding:6px 10px; border-radius:8px; border:1px solid #F59E0B; display:flex; align-items:center;">
-                                <span style="color:white; font-weight:700; margin-right:6px; font-size:12px;">${p.name.substring(0, 6)}</span>
-                                <span style="color:#10B981; font-weight:900; font-size:14px;">${p.birds}</span>
+                        <div class="flex-r" style="margin-bottom:8px;">
+                            <div class="tx-sm" style="color:#F59E0B;">🔥 FIREBALL HOLES</div>
+                            <div class="tx-sm" style="color:white; font-size:10px;">TOTAL: ${fbHoles.length}</div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px;">`;
+
+                    if (fbHoles.length > 0) {
+                        fbHoles.forEach(item => {
+                            recapHTML += `<div style="background:#0F172A; padding:4px 8px; border-radius:6px; border:1px solid #F59E0B; display:flex; align-items:center; justify-content:space-between;">
+                                <span style="color:#F59E0B; font-weight:900; font-size:11px;">HOLE ${item.h}</span>
+                                <span style="color:white; font-weight:700; font-size:11px; text-align:right;">${item.ps.join(', ')}</span>
                             </div>`;
-                        }
-                    });
-                    if (!fireballs) recapHTML += `<div style="color:#94A3B8; font-size:10px;">No Fireballs.</div>`;
+                        });
+                    } else {
+                        recapHTML += `<div style="color:#94A3B8; font-size:10px; text-align:center;">No Fireballs.</div>`;
+                    }
                     recapHTML += `</div></div>`;
 
                     recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING BREAKDOWN</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div><div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div><div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div></div>`;
