@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v255.2</title>
+    <title>COD Golf v256</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v255.2</div>
+            <div class="tx-xl">COD GOLF v256</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1936,6 +1936,33 @@
                 });
                 html += `</div>`;
 
+                // HANDICAP SUMMARY
+                const strokeHoles = [];
+                for (let h = 1; h <= 18; h++) {
+                    const hcpAlloc = c.hcp[h - 1];
+                    const getters = [];
+                    [0, 1, 2, 3].forEach(i => {
+                        const pops = this.getPops(i, h - 1);
+                        if (pops > 0) getters.push(`${this.d.ps[i]} (${pops})`);
+                    });
+                    if (getters.length > 0) strokeHoles.push({ h: h, hcp: hcpAlloc, list: getters });
+                }
+
+                html += `<div class="box" style="margin-top:12px;">
+                    <div class="tx-sm" style="color:white; margin-bottom:8px;">HANDICAP SUMMARY</div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">`;
+                if (strokeHoles.length > 0) {
+                    strokeHoles.forEach(item => {
+                        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px;">
+                            <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${item.h} <span style="color:#94A3B8; font-weight:400;">(HCP ${item.hcp})</span></span>
+                            <span style="color:#F59E0B; font-size:11px; font-weight:700; text-align:right;">${item.list.join(', ')}</span>
+                          </div>`;
+                    });
+                } else {
+                    html += `<div style="color:#94A3B8; font-size:12px; padding:6px;">No strokes given.</div>`;
+                }
+                html += `</div></div>`;
+
                 // JUNK DRAWER
                 const junk = this.getJunkStats();
                 html += `<div class="box" style="margin-top:12px;">
@@ -2531,6 +2558,33 @@
                     recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING BREAKDOWN</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div><div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div><div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div></div>`;
                     pRecap.forEach(p => { if (p.totalStrokes === 0) return; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div><div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div><div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div><div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div></div>`; });
                     recapHTML += `</div>`;
+
+                    // HANDICAP SUMMARY (Share)
+                    const sHoles = [];
+                    for (let h = 1; h <= 18; h++) {
+                        const hcpAlloc = c.hcp[h - 1];
+                        const getters = [];
+                        [0, 1, 2, 3].forEach(i => {
+                            const pops = this.getPops(i, h - 1);
+                            if (pops > 0) getters.push(`${ps[i]} (${pops})`);
+                        });
+                        if (getters.length > 0) sHoles.push({ h: h, hcp: hcpAlloc, list: getters });
+                    }
+
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;">
+                        <div class="tx-sm" style="color:white; margin-bottom:8px;">HANDICAP SUMMARY</div>
+                        <div style="display:flex; flex-direction:column; gap:4px;">`;
+                    if (sHoles.length > 0) {
+                        sHoles.forEach(item => {
+                            recapHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:4px 8px; border-radius:6px; border:1px solid #334155;">
+                                <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${item.h} <span style="color:#94A3B8; font-weight:400;">(HCP ${item.hcp})</span></span>
+                                <span style="color:#F59E0B; font-size:10px; font-weight:700; text-align:right;">${item.list.join(', ')}</span>
+                            </div>`;
+                        });
+                    } else {
+                        recapHTML += `<div style="color:#94A3B8; font-size:10px; padding:4px;">No strokes given.</div>`;
+                    }
+                    recapHTML += `</div></div>`;
 
                     // JUNK for Share
                     const junk = this.getJunkStats();
