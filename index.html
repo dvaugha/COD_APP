@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v254</title>
+    <title>COD Golf v254.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v254</div>
+            <div class="tx-xl">COD GOLF v254.1</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -2471,12 +2471,22 @@
                         });
                     }
                     let recapHTML = '';
-                    let bestNet = 999;
-                    pRecap.forEach(p => { if (p.totalStrokes > 0 && p.netToPar < bestNet) bestNet = p.netToPar; });
-                    const mvps = pRecap.filter(p => p.totalStrokes > 0 && p.netToPar === bestNet);
-                    if (mvps.length > 0) { const names = mvps.map(p => p.name).join(', '); const val = (bestNet > 0 ? '+' : '') + bestNet; recapHTML += `<div class="badge-box" style="border-color:#10B981; background:rgba(16, 185, 129, 0.1);"><div class="badge-icon">🏆</div><div><div class="badge-tl">MVP (Low Net)</div><div class="badge-nm">${names}</div><div class="badge-sub">${val} to Par</div></div></div>`; }
-                    let maxBirds = -1; pRecap.forEach(p => { if (p.birds > maxBirds) maxBirds = p.birds; }); const bMachs = (maxBirds > 0) ? pRecap.filter(p => p.birds === maxBirds) : []; if (bMachs.length > 0) { const names = bMachs.map(p => p.name).join(', '); recapHTML += `<div class="badge-box"><div class="badge-icon">🦅</div><div><div class="badge-tl">Birdie Machine</div><div class="badge-nm">${names}</div><div class="badge-sub">${maxBirds} Birdies</div></div></div>`; }
-                    let maxDbl = -1; pRecap.forEach(p => { if (p.dbls > maxDbl) maxDbl = p.dbls; }); const wrecks = (maxDbl > 0) ? pRecap.filter(p => p.dbls === maxDbl) : []; if (wrecks.length > 0) { const names = wrecks.map(p => p.name).join(', '); recapHTML += `<div class="badge-box"><div class="badge-icon">🚂</div><div><div class="badge-tl" style="color:#F87171">Train Wreck</div><div class="badge-nm">${names}</div><div class="badge-sub">${maxDbl} Doubles or Worse</div></div></div>`; }
+                    // FIREBALL BIRDIES
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:linear-gradient(135deg, #1E293B, #332d1e);">
+                        <div class="tx-sm" style="color:#F59E0B; margin-bottom:8px;">🔥 FIREBALL BIRDIES</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px;">`;
+                    let fireballs = false;
+                    pRecap.forEach(p => {
+                        if (p.birds > 0) {
+                            fireballs = true;
+                            recapHTML += `<div style="background:#0F172A; padding:6px 10px; border-radius:8px; border:1px solid #F59E0B; display:flex; align-items:center;">
+                                <span style="color:white; font-weight:700; margin-right:6px; font-size:12px;">${p.name.substring(0, 6)}</span>
+                                <span style="color:#10B981; font-weight:900; font-size:14px;">${p.birds}</span>
+                            </div>`;
+                        }
+                    });
+                    if (!fireballs) recapHTML += `<div style="color:#94A3B8; font-size:10px;">No Fireballs.</div>`;
+                    recapHTML += `</div></div>`;
 
                     recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING BREAKDOWN</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div><div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div><div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div></div>`;
                     pRecap.forEach(p => { if (p.totalStrokes === 0) return; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div><div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div><div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div><div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div></div>`; });
