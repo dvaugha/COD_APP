@@ -2485,6 +2485,7 @@
                             if (typeof s === 'number') { any = true; pRecap[i].totalStrokes += s; const d = s - par; if (d <= -1) { pRecap[i].dist.bird++; pRecap[i].birds++; } else if (d === 0) pRecap[i].dist.par++; else if (d === 1) pRecap[i].dist.bog++; else { pRecap[i].dist.dbl++; pRecap[i].dbls++; } const pops = this.getPops(i, x - 1); pRecap[i].netToPar += (s - pops) - par; }
                         });
                     }
+                    let recapHTML = '';
                     // FIREBALL HOLES (Share)
                     // Recalculate using pRecap scope data? No, need Hole Data.
                     // Loop holes again.
