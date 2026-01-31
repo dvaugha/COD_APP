@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v253.1</title>
+    <title>COD Golf v254</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v253.1</div>
+            <div class="tx-xl">COD GOLF v254</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1848,6 +1848,7 @@
                 const pStats = [0, 1, 2, 3].map(i => ({
                     id: i, name: this.d.ps[i],
                     dist: { bird: 0, par: 0, bog: 0, dbl: 0 },
+                    netDist: { bird: 0, par: 0, bog: 0, dbl: 0 },
                     p3: { tot: 0, cnt: 0 }, p4: { tot: 0, cnt: 0 }, p5: { tot: 0, cnt: 0 },
                     netToPar: 0, birds: 0, pars: 0, dbls: 0, totalStrokes: 0
                 }));
@@ -1870,6 +1871,14 @@
                             else if (grel === 0) { pStats[i].dist.par++; pStats[i].pars++; }
                             else if (grel === 1) pStats[i].dist.bog++;
                             else { pStats[i].dist.dbl++; pStats[i].dbls++; }
+
+                            // Net Dist
+                            const nrel = n - par;
+                            if (nrel <= -1) pStats[i].netDist.bird++;
+                            else if (nrel === 0) pStats[i].netDist.par++;
+                            else if (nrel === 1) pStats[i].netDist.bog++;
+                            else pStats[i].netDist.dbl++;
+
                             pStats[i].netToPar += d;
                             if (par === 3) { pStats[i].p3.tot += g; pStats[i].p3.cnt++; }
                             if (par === 4) { pStats[i].p4.tot += g; pStats[i].p4.cnt++; }
@@ -1883,31 +1892,7 @@
                 if (completedHoles === 0) { con.innerHTML = '<div style="padding:20px; text-align:center; color:#94A3B8;">No scores yet.</div>'; return; }
 
                 let html = '';
-                // BADGES
-                let bestNet = 999;
-                pStats.forEach(p => { if (p.totalStrokes > 0 && p.netToPar < bestNet) bestNet = p.netToPar; });
-                const mvps = pStats.filter(p => p.totalStrokes > 0 && p.netToPar === bestNet);
-                if (mvps.length > 0) {
-                    const names = mvps.map(p => p.name).join(', ');
-                    const val = (bestNet > 0 ? '+' : '') + bestNet;
-                    html += `<div class="badge-box" style="border-color:#10B981; background:rgba(16, 185, 129, 0.1);"><div class="badge-icon">🏆</div><div><div class="badge-tl">MVP (Low Net)</div><div class="badge-nm">${names}</div><div class="badge-sub">${val} to Par</div></div></div>`;
-                }
-                let maxBirds = -1;
-                pStats.forEach(p => { if (p.birds > maxBirds) maxBirds = p.birds; });
-                const bMachs = (maxBirds > 0) ? pStats.filter(p => p.birds === maxBirds) : [];
-                if (bMachs.length > 0) {
-                    const names = bMachs.map(p => p.name).join(', ');
-                    html += `<div class="badge-box"><div class="badge-icon">🦅</div><div><div class="badge-tl">Birdie Machine</div><div class="badge-nm">${names}</div><div class="badge-sub">${maxBirds} Birdies</div></div></div>`;
-                }
-                let maxDbl = -1;
-                pStats.forEach(p => { if (p.dbls > maxDbl) maxDbl = p.dbls; });
-                const wrecks = (maxDbl > 0) ? pStats.filter(p => p.dbls === maxDbl) : [];
-                if (wrecks.length > 0) {
-                    const names = wrecks.map(p => p.name).join(', ');
-                    html += `<div class="badge-box"><div class="badge-icon">🚂</div><div><div class="badge-tl" style="color:#F87171">Train Wreck</div><div class="badge-nm">${names}</div><div class="badge-sub">${maxDbl} Doubles or Worse</div></div></div>`;
-                }
-
-                // CHARTS
+                // 1. GROSS BREAKDOWN
                 html += `<div class="box" style="margin-top:20px;">
                     <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (GROSS)</div>
                     <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
@@ -1925,6 +1910,28 @@
                         <div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div>
                         <div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div>
                         <div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div>
+                    </div>`;
+                });
+                html += `</div>`;
+
+                // 2. NET BREAKDOWN
+                html += `<div class="box" style="margin-top:12px;">
+                    <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (NET)</div>
+                    <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
+                        <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div>
+                        <div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div>
+                    </div>`;
+                pStats.forEach(p => {
+                    if (p.totalStrokes === 0) return;
+                    html += `<div style="display:flex; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+                        <div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name}</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.netDist.bird}</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.netDist.par}</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.netDist.bog}</div>
+                        <div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.netDist.dbl}</div>
                     </div>`;
                 });
                 html += `</div>`;
@@ -1949,6 +1956,23 @@
                     </div>`;
                 });
                 html += `</div>`;
+
+                // FIREBALL BIRDIES (Replacing Badges? No, just added)
+                html += `<div class="box" style="margin-top:12px; background:linear-gradient(135deg, #1E293B, #332d1e);">
+                    <div class="tx-sm" style="color:#F59E0B; margin-bottom:8px;">🔥 FIREBALL BIRDIES</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:12px;">`;
+                pStats.forEach(p => {
+                    if (p.birds > 0) {
+                        html += `<div style="background:#0F172A; padding:8px 12px; border-radius:12px; border:1px solid #F59E0B; display:flex; align-items:center;">
+                            <span style="color:white; font-weight:700; margin-right:8px;">${p.name}</span>
+                            <span style="color:#10B981; font-weight:900; font-size:18px;">${p.birds}</span>
+                        </div>`;
+                    }
+                });
+                // If no birdies
+                const anyBirds = pStats.some(p => p.birds > 0);
+                if (!anyBirds) html += `<div style="color:#94A3B8; font-size:12px;">No Fireballs Yet.</div>`;
+                html += `</div></div>`;
 
                 // AVERAGES
                 html += `<div class="box" style="margin-top:12px;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING AVERAGES</div><div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px;"><div class="tx-sm" style="text-align:left;">PLAYER</div><div class="tx-sm" style="text-align:center;">PAR 3</div><div class="tx-sm" style="text-align:center;">PAR 4</div><div class="tx-sm" style="text-align:center;">PAR 5</div></div>`;
