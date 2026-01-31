@@ -22,15 +22,15 @@ This runs as a full-screen app on your phone.
 2. STARTING A ROUND
 -------------------
 1. Open the App.
-2. Tap "MANAGE" under history to add player names to the Roster if needed.
-3. Select 4 Players from the dropdowns.
-4. Choose "C.O.D. (6-6-6)" or "2-Man Scramble".
-5. Set the Pot Amount (usually $20).
+2. Choose "C.O.D. (6-6-6)" or "2-Man Scramble".
+3. Set the Pot Amount (usually $20).
+4. Tap "Name..." box under to add player names to the Roster if needed.  Click Add (Green Button)
+5. Select 4 Players from the dropdowns, Add names to correct location - Drivers / Passengers.
 6. Click "START ROUND".
 
 3. SCORING (Important!)
 -----------------------
-* ENTERING PAR: Tap the BIG PAR NUMBER in the center of the score button to instantly set that player closer to Par.
+* ENTERING PAR: Tap in the center of the score button to instantly set that player to Par.
 * ADJUSTING: Use the (+) and (-) buttons to adjust the score if needed.
 * JUNK BETS: If playing Junk (Greenies/Sandies), you can toggle the G/S/P buttons under each player's score.
 * NAVIGATION: The app auto-advances after everyone has a score. You can also swipe or use arrows at the top.
@@ -39,7 +39,7 @@ This runs as a full-screen app on your phone.
 ---------------
 1. After Hole 18, you will see the Round Summary card.
 2. Scroll down to see Match Results, Junk Payouts, and Net Scores.
-3. Tap "SHARE IMAGE SUMMARY" to generate a picture of the results and scorecard to text to the group!
+3. Tap "SHARE IMAGE SUMMARY" to generate a picture of the results and scorecard to text to the group!  You can ENTER YOUR PHONE # to see how it works.
 
 ----------------------------------
 Have fun testing! Let me know if you find any bugs.
