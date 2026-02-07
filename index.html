@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v258.1</div>
+            <div class="tx-xl">COD GOLF v258.1 (WIP)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1034,7 +1034,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v249</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v258.1</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1115,7 +1115,7 @@
         <div class="junk-row">
             <button id="j0-g" class="junk-btn" onclick="App.tJ(0, 'G')">G</button>
             <button id="j0-s" class="junk-btn" onclick="App.tJ(0, 'S')">S</button>
-            <button id="j0-p" class="junk-btn" onclick="App.tJ(0, 'P')">P</button>
+            <button id="j0-p" class="junk-btn" onclick="App.tJ(0, 'P')">LP</button>
         </div>
 
         <div id="slot-1" class="p-card">
@@ -1130,7 +1130,7 @@
         <div class="junk-row">
             <button id="j1-g" class="junk-btn" onclick="App.tJ(1, 'G')">G</button>
             <button id="j1-s" class="junk-btn" onclick="App.tJ(1, 'S')">S</button>
-            <button id="j1-p" class="junk-btn" onclick="App.tJ(1, 'P')">P</button>
+            <button id="j1-p" class="junk-btn" onclick="App.tJ(1, 'P')">LP</button>
         </div>
 
         <div id="lbl-t2"
@@ -1148,7 +1148,7 @@
         <div class="junk-row">
             <button id="j2-g" class="junk-btn" onclick="App.tJ(2, 'G')">G</button>
             <button id="j2-s" class="junk-btn" onclick="App.tJ(2, 'S')">S</button>
-            <button id="j2-p" class="junk-btn" onclick="App.tJ(2, 'P')">P</button>
+            <button id="j2-p" class="junk-btn" onclick="App.tJ(2, 'P')">LP</button>
         </div>
 
         <div id="slot-3" class="p-card">
@@ -1163,7 +1163,7 @@
         <div class="junk-row">
             <button id="j3-g" class="junk-btn" onclick="App.tJ(3, 'G')">G</button>
             <button id="j3-s" class="junk-btn" onclick="App.tJ(3, 'S')">S</button>
-            <button id="j3-p" class="junk-btn" onclick="App.tJ(3, 'P')">P</button>
+            <button id="j3-p" class="junk-btn" onclick="App.tJ(3, 'P')">LP</button>
         </div>
         <div style="height:30px;"></div>
         <div class="flex-r" style="gap:10px;"><button class="g-btn" style="background:#334155;"
@@ -1947,8 +1947,7 @@
                     const getters = [];
                     [0, 1, 2, 3].forEach(i => {
                         const pops = this.getPops(i, h - 1);
-                        const pid = this.slotMap[i];
-                        if (pops > 0) getters.push(`${this.d.ps[pid]} (${pops})`);
+                        if (pops > 0) getters.push(`${this.d.ps[i]} (${pops})`);
                     });
                     if (getters.length > 0) strokeHoles.push({ h: h, hcp: hcpAlloc, list: getters });
                 }
@@ -1976,7 +1975,7 @@
                         <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
                         <div style="flex:1; text-align:center; color:#10B981; font-size:14px;">🟢</div>
                         <div style="flex:1; text-align:center; color:#F59E0B; font-size:14px;">🏖️</div>
-                        <div style="flex:1; text-align:center; color:#8B5CF6; font-size:14px;">💈</div>
+                        <div style="flex:1; text-align:center; color:#8B5CF6; font-size:14px;">⛳</div>
                     </div>`;
                 pStats.forEach(p => {
                     const j = junk[p.name];
@@ -1989,16 +1988,15 @@
                 });
                 html += `</div>`;
 
-                // FIREBALL HOLES (Redefined v258.1)
+                // FIREBALL HOLES (Redefined v255.1)
                 const fbHoles = [];
                 for (let h = 1; h <= 18; h++) {
                     if (!this.d.s[h]) continue;
                     const par = c.p[h - 1];
                     const bMakers = [];
                     [0, 1, 2, 3].forEach(i => {
-                        const pid = this.slotMap[i];
-                        const s = (this.d.s[h] && this.d.s[h][pid]);
-                        if (typeof s === 'number' && s < par) bMakers.push(this.d.ps[pid]);
+                        const s = (this.d.s[h] && this.d.s[h][this.slotMap[i]]);
+                        if (typeof s === 'number' && s < par) bMakers.push(this.d.ps[i]);
                     });
                     if (bMakers.length > 0) fbHoles.push({ h: h, ps: bMakers });
                 }
@@ -2594,7 +2592,7 @@
 
                     // JUNK for Share
                     const junk = this.getJunkStats();
-                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:12px;">🟢</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:12px;">🏖️</div><div style="flex:1; text-align:center; color:#8B5CF6; font-size:12px;">💈</div></div>`;
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:12px;">🟢</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:12px;">🏖️</div><div style="flex:1; text-align:center; color:#8B5CF6; font-size:12px;">⛳</div></div>`;
                     pRecap.forEach(p => { const j = junk[p.name]; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.G : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.S : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.P : 0}</div></div>`; });
                     recapHTML += `</div>`;
 
