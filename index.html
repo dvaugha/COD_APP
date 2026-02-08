@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v258.1</title>
+    <title>COD Golf v258.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -896,7 +896,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v258.1 (WIP)</div>
+            <div class="tx-xl">COD GOLF v258.2 (WIP)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -966,7 +966,11 @@
                         <option value="so">Southern Oaks</option>
                         <option value="wl">Woodlands</option>
                         <option value="sc">Shallow Creek</option>
-                        <option value="gen">Generic 72</option>
+                        <option value="havana">Havana (Ken/Hem)</option>
+                        <option value="palmer">Palmer Legends</option>
+                        <option value="belle">Belle Glade</option>
+                        <option value="bonifay">Bonifay</option>
+                        <option value="lopez">Nancy Lopez</option>
                     </select>
                 </div>
                 <div style="width:80px;">
@@ -1034,7 +1038,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v258.1</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v258.2</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1296,7 +1300,11 @@
                 hcp: [13, 9, 5, 17, 15, 1, 7, 11, 3, 4, 16, 8, 14, 12, 2, 10, 6, 18],
                 cmb: []
             },
-            'gen': { n: 'Generic 72', p: [4, 4, 3, 4, 4, 5, 4, 3, 5, 4, 4, 3, 4, 4, 5, 4, 3, 5], y: { white: [], gold: [], combo: [] }, hcp: [], cmb: [] }
+            'havana': { n: 'Havana (Ken/Hem)', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] },
+            'palmer': { n: 'Palmer Legends', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] },
+            'belle': { n: 'Belle Glade', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] },
+            'bonifay': { n: 'Bonifay', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] },
+            'lopez': { n: 'Nancy Lopez', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] }
         };
 
         ['jones', 'maples', 'byrd', 'so', 'wl'].forEach(k => {
