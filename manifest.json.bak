@@ -1,0 +1,16 @@
+{
+  "name": "COD_GOLF_APP",
+  "short_name": "COD_APP",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "COD_APP_ICON.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
