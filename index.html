@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v258.2</title>
+    <title>COD Golf v259.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -897,7 +897,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v258.2 (WIP)</div>
+            <div class="tx-xl">COD GOLF v259.0 (WIP)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1055,7 +1055,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v258.2</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v259.0</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1324,28 +1324,49 @@
                         n: 'Kenya',
                         p: [4, 4, 4, 3, 5, 4, 3, 5, 4],
                         y: { white: [286, 304, 326, 121, 499, 343, 128, 451, 259], gold: [352, 354, 401, 174, 539, 431, 176, 539, 324] },
-                        hcp: [5, 6, 3, 8, 2, 1, 4, 9, 7]
+                        hcp: [5, 6, 3, 8, 2, 1, 4, 9, 7],
+                        cmb: [1, 1, 1, 1, 1, 1, 1, 1, 1]
                     },
                     'hem': {
                         n: 'Hemingway',
                         p: [4, 4, 3, 5, 3, 4, 4, 5, 4],
                         y: { white: [304, 336, 131, 473, 171, 274, 355, 424, 328], gold: [369, 397, 183, 532, 210, 317, 434, 500, 389] },
-                        hcp: [2, 3, 6, 4, 5, 8, 1, 9, 7]
+                        hcp: [2, 3, 6, 4, 5, 8, 1, 9, 7],
+                        cmb: [1, 1, 1, 1, 1, 1, 1, 1, 1]
                     },
                     'kil': {
                         n: 'Kilimanjaro',
                         p: [5, 4, 5, 4, 4, 3, 4, 4, 3],
                         y: { white: [458, 327, 463, 312, 389, 105, 291, 303, 121], gold: [499, 385, 520, 383, 415, 172, 392, 343, 153] },
-                        hcp: [2, 6, 7, 3, 1, 8, 4, 5, 9]
+                        hcp: [2, 6, 7, 3, 1, 8, 4, 5, 9],
+                        cmb: [1, 1, 1, 1, 1, 1, 1, 1, 1]
                     }
                 }
             },
             'palmer': {
                 n: 'Palmer Legends',
                 nines: {
-                    'cherry': { n: 'Cherry Hill', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
-                    'laurel': { n: 'Laurel Valley', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
-                    'riley': { n: 'Riley Grove', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                    'cherry': {
+                        n: 'Cherry Hill',
+                        p: [5, 4, 4, 4, 3, 4, 4, 3, 5],
+                        y: { white: [392, 340, 318, 314, 113, 319, 275, 134, 458], gold: [508, 400, 379, 383, 146, 388, 331, 183, 519] },
+                        hcp: [4, 1, 2, 5, 8, 6, 7, 9, 3],
+                        cmb: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+                    },
+                    'laurel': {
+                        n: 'Laurel Valley',
+                        p: [4, 5, 4, 5, 4, 3, 4, 3, 4],
+                        y: { white: [314, 463, 321, 429, 299, 103, 326, 128, 332], gold: [369, 565, 387, 550, 372, 145, 414, 177, 409] },
+                        hcp: [1, 3, 6, 5, 7, 8, 2, 9, 4],
+                        cmb: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+                    },
+                    'riley': {
+                        n: 'Riley Grove',
+                        p: [4, 4, 4, 5, 4, 3, 4, 3, 5],
+                        y: { white: [285, 337, 268, 452, 321, 106, 311, 125, 467], gold: [371, 400, 366, 504, 389, 154, 380, 185, 531] },
+                        hcp: [6, 1, 7, 5, 3, 9, 4, 8, 2],
+                        cmb: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+                    }
                 }
             },
             'belle': {
@@ -1778,29 +1799,43 @@
                 const val = el.value;
                 const c = CS[val];
 
+                // Helper to populate n2 based on n1
+                const populateN2 = (selectedN1) => {
+                    const cur2 = n2.value;
+                    n2.innerHTML = '';
+                    const keys = Object.keys(c.nines);
+                    keys.forEach(k => {
+                        if (k !== selectedN1) {
+                            n2.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`;
+                        }
+                    });
+                    // Restore selection if valid, else pick first available
+                    const available = Array.from(n2.options).map(o => o.value);
+                    if (cur2 && available.includes(cur2)) n2.value = cur2;
+                    else n2.value = available[0];
+                };
+
                 // Remove previous listener to avoid stacking
                 el.onchange = () => this.checkCourseOptions();
 
                 if (c && c.nines) {
                     optEl.style.display = 'block';
-                    // Populate if empty or if course changed
-                    // For simplicity, always repopulate if course changed or logic needed
-                    // But we want to preserve selection if just re-checking
-                    // We'll regenerate options always for safety when switching 27-hole courses
-                    // Store current values
-                    const cur1 = n1.value;
-                    const cur2 = n2.value;
 
-                    n1.innerHTML = ''; n2.innerHTML = '';
-                    const keys = Object.keys(c.nines);
-                    keys.forEach(k => {
-                        n1.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`;
-                        n2.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`;
-                    });
+                    // Listen for N1 changes to filter N2
+                    n1.onchange = () => populateN2(n1.value);
 
-                    // Set defaults or restore
-                    if (cur1 && c.nines[cur1]) n1.value = cur1; else n1.value = keys[0];
-                    if (cur2 && c.nines[cur2]) n2.value = cur2; else n2.value = keys[1] || keys[0];
+                    // Initial population
+                    if (n1.options.length !== Object.keys(c.nines).length) {
+                        const cur1 = n1.value;
+                        const keys = Object.keys(c.nines);
+                        n1.innerHTML = '';
+                        keys.forEach(k => { n1.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`; });
+                        if (cur1 && c.nines[cur1]) n1.value = cur1; else n1.value = keys[0];
+                    }
+
+                    // Always refresh N2 to be safe
+                    populateN2(n1.value);
+
                 } else {
                     optEl.style.display = 'none';
                 }
@@ -1820,14 +1855,18 @@
                 c.p = [...n1.p, ...n2.p];
 
                 // Construct HCPS (Odds Front, Evens Back)
-                // Assuming n.hcp contains 1-9 rankings
-                const h1 = n1.hcp.map(h => (h * 2) - 1); // 1->1, 2->3, ... 9->17
-                const h2 = n2.hcp.map(h => h * 2);       // 1->2, 2->4, ... 9->18
+                const h1 = n1.hcp.map(h => (h * 2) - 1);
+                const h2 = n2.hcp.map(h => h * 2);
                 c.hcp = [...h1, ...h2];
 
+                // Construct Combo Logic if present
+                if (n1.cmb && n2.cmb) {
+                    c.cmb = [...n1.cmb, ...n2.cmb];
+                } else {
+                    c.cmb = Array(18).fill(1); // Default to Gold if missing
+                }
+
                 // Construct Yards
-                // Detect tee names? assuming white/gold exist in nines
-                // If nines are placeholders, use [0..]
                 c.y = { white: [], gold: [], combo: [] };
 
                 const pushY = (color) => {
@@ -1837,8 +1876,12 @@
                 };
                 pushY('white');
                 pushY('gold');
-                // Auto-generate combo for now?
-                c.y.combo = []; // Leave empty, will duplicate white if logic triggers
+
+                // Build Combo Yards
+                for (let i = 0; i < 18; i++) {
+                    const useGold = c.cmb[i] === 1;
+                    c.y.combo[i] = useGold ? c.y.gold[i] : c.y.white[i];
+                }
             },
 
             getPops: function (pIdx, hIdx, useFull) {
