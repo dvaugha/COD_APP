@@ -959,7 +959,7 @@
             <div class="flex-r" style="gap:10px;">
                 <div style="flex:1;">
                     <div class="tx-sm">COURSE</div>
-                    <select id="s-course" class="g-inp">
+                    <select id="s-course" class="g-inp" onchange="App.checkCourseOptions()">
                         <option value="cc">Crow Creek</option>
                         <option value="jones">Sea Trail - Jones</option>
                         <option value="maples">Sea Trail - Maples</option>
@@ -967,7 +967,7 @@
                         <option value="so">Southern Oaks</option>
                         <option value="wl">Woodlands</option>
                         <option value="sc">Shallow Creek</option>
-                        <option value="havana">Havana (Ken/Hem)</option>
+                        <option value="havana">Havana CC</option>
                         <option value="palmer">Palmer Legends</option>
                         <option value="belle">Belle Glade</option>
                         <option value="bonifay">Bonifay</option>
@@ -1301,11 +1301,61 @@
                 hcp: [13, 9, 5, 17, 15, 1, 7, 11, 3, 4, 16, 8, 14, 12, 2, 10, 6, 18],
                 cmb: []
             },
-            'havana': { n: 'Havana (Ken/Hem)', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] },
-            'palmer': { n: 'Palmer Legends', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] },
-            'belle': { n: 'Belle Glade', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] },
-            'bonifay': { n: 'Bonifay', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] },
-            'lopez': { n: 'Nancy Lopez', p: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4], y: { white: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], gold: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], combo: [] }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], cmb: [] }
+            'havana': {
+                n: 'Havana Country Club',
+                nines: {
+                    'ken': {
+                        n: 'Kenya',
+                        p: [4, 4, 4, 3, 5, 4, 3, 5, 4],
+                        y: { white: [286, 304, 326, 121, 499, 343, 128, 451, 259], gold: [352, 354, 401, 174, 539, 431, 176, 539, 324] },
+                        hcp: [5, 6, 3, 8, 2, 1, 4, 9, 7]
+                    },
+                    'hem': {
+                        n: 'Hemingway',
+                        p: [4, 4, 3, 5, 3, 4, 4, 5, 4],
+                        y: { white: [304, 336, 131, 473, 171, 274, 355, 424, 328], gold: [369, 397, 183, 532, 210, 317, 434, 500, 389] },
+                        hcp: [2, 3, 6, 4, 5, 8, 1, 9, 7]
+                    },
+                    'kil': {
+                        n: 'Kilimanjaro',
+                        p: [4, 4, 3, 5, 3, 4, 4, 5, 4],
+                        y: { white: [286, 326, 121, 499, 128, 237, 259, 451, 304], gold: [352, 401, 174, 539, 176, 343, 324, 539, 369] },
+                        hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                    }
+                }
+            },
+            'palmer': {
+                n: 'Palmer Legends',
+                nines: {
+                    'cherry': { n: 'Cherry Hill', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'laurel': { n: 'Laurel Valley', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'riley': { n: 'Riley Grove', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                }
+            },
+            'belle': {
+                n: 'Belle Glade',
+                nines: {
+                    'calusa': { n: 'Calusa', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'tequesta': { n: 'Tequesta', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'seminole': { n: 'Seminole', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                }
+            },
+            'bonifay': {
+                n: 'Bonifay',
+                nines: {
+                    'pensacola': { n: 'Pensacola', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'ftwalton': { n: 'Ft. Walton', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'destin': { n: 'Destin', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                }
+            },
+            'lopez': {
+                n: 'Nancy Lopez',
+                nines: {
+                    'ashley': { n: 'Ashley Meadows', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'erinn': { n: 'Erinn Glenn', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'torri': { n: 'Torri Pines', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                }
+            }
         };
 
         ['jones', 'maples', 'byrd', 'so', 'wl'].forEach(k => {
@@ -1365,7 +1415,12 @@
                     const vEl = Array.from(document.querySelectorAll('.tx-xl')).find(e => e.innerText.includes('v241'));
                     if (vEl) vEl.innerText += " [R:" + this.d.roster.length + " " + this.d.roster[0] + "]";
                 } catch (e) { }
-                if (Object.keys(this.d.s).length > 0 && this.d.ps[0]) this.nav('v-dash'); else this.nav('v-setup');
+                if (Object.keys(this.d.s).length > 0 && this.d.ps[0]) {
+                    if (this.d.crs && CS[this.d.crs] && CS[this.d.crs].nines && this.d.nines) {
+                        this.buildComposite(this.d.crs, this.d.nines[0], this.d.nines[1]);
+                    }
+                    this.nav('v-dash');
+                } else this.nav('v-setup');
                 if ('wakeLock' in navigator) {
                     document.addEventListener('visibilitychange', () => {
                         if (document.visibilityState === 'visible') this.keepAwake();
@@ -1422,6 +1477,7 @@
             nav: function (id) {
                 document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
+                if (id === 'v-setup') { this.checkCourseOptions(); }
                 if (id === 'v-dash') { this.uDash(); this.updateJunkUI(); }
                 if (id === 'v-card') this.uCard();
                 if (id === 'v-recap') this.uRecap();
@@ -1664,6 +1720,7 @@
                     const prop = k.replace('s-', '').replace('g-mode', 'gameType').replace('hcp-mode', 'hcpMode');
                     if (el && this.d[prop] !== undefined) el.value = this.d[prop];
                 });
+                this.checkCourseOptions();
             },
             startRound: function () {
                 const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
@@ -1680,9 +1737,92 @@
                 this.d.junk = {};
                 this.d.press = {};
                 this.d.h = this.d.start;
+
+                // Composite Course Logic
+                const crsData = CS[this.d.crs];
+                if (crsData.nines) {
+                    const n1 = document.getElementById('s-n1').value;
+                    const n2 = document.getElementById('s-n2').value;
+                    this.d.nines = [n1, n2];
+                    this.buildComposite(this.d.crs, n1, n2);
+                } else {
+                    delete this.d.nines;
+                }
+
                 this.save();
                 this.nav('v-dash');
                 this.keepAwake();
+            },
+
+            checkCourseOptions: function () {
+                const el = document.getElementById('s-course');
+                const optEl = document.getElementById('course-routing-opt');
+                const n1 = document.getElementById('s-n1');
+                const n2 = document.getElementById('s-n2');
+                const val = el.value;
+                const c = CS[val];
+
+                // Remove previous listener to avoid stacking
+                el.onchange = () => this.checkCourseOptions();
+
+                if (c && c.nines) {
+                    optEl.style.display = 'block';
+                    // Populate if empty or if course changed
+                    // For simplicity, always repopulate if course changed or logic needed
+                    // But we want to preserve selection if just re-checking
+                    // We'll regenerate options always for safety when switching 27-hole courses
+                    // Store current values
+                    const cur1 = n1.value;
+                    const cur2 = n2.value;
+
+                    n1.innerHTML = ''; n2.innerHTML = '';
+                    const keys = Object.keys(c.nines);
+                    keys.forEach(k => {
+                        n1.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`;
+                        n2.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`;
+                    });
+
+                    // Set defaults or restore
+                    if (cur1 && c.nines[cur1]) n1.value = cur1; else n1.value = keys[0];
+                    if (cur2 && c.nines[cur2]) n2.value = cur2; else n2.value = keys[1] || keys[0];
+                } else {
+                    optEl.style.display = 'none';
+                }
+            },
+
+            buildComposite: function (crsId, k1, k2) {
+                const c = CS[crsId];
+                if (!c.nines || !c.nines[k1] || !c.nines[k2]) return;
+
+                const n1 = c.nines[k1];
+                const n2 = c.nines[k2];
+
+                // Construct Composite Name
+                c.n = `${n1.n} / ${n2.n}`;
+
+                // Concatenate Pars
+                c.p = [...n1.p, ...n2.p];
+
+                // Construct HCPS (Odds Front, Evens Back)
+                // Assuming n.hcp contains 1-9 rankings
+                const h1 = n1.hcp.map(h => (h * 2) - 1); // 1->1, 2->3, ... 9->17
+                const h2 = n2.hcp.map(h => h * 2);       // 1->2, 2->4, ... 9->18
+                c.hcp = [...h1, ...h2];
+
+                // Construct Yards
+                // Detect tee names? assuming white/gold exist in nines
+                // If nines are placeholders, use [0..]
+                c.y = { white: [], gold: [], combo: [] };
+
+                const pushY = (color) => {
+                    const arr1 = (n1.y[color] && n1.y[color].length === 9) ? n1.y[color] : Array(9).fill(0);
+                    const arr2 = (n2.y[color] && n2.y[color].length === 9) ? n2.y[color] : Array(9).fill(0);
+                    c.y[color] = [...arr1, ...arr2];
+                };
+                pushY('white');
+                pushY('gold');
+                // Auto-generate combo for now?
+                c.y.combo = []; // Leave empty, will duplicate white if logic triggers
             },
 
             getPops: function (pIdx, hIdx, useFull) {
