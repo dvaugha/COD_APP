@@ -958,7 +958,17 @@
             <div class="tx-sm">SETTINGS</div>
             <div class="flex-r" style="gap:10px;">
                 <div style="flex:1;">
-                    <div class="tx-sm">COURSE</div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div class="tx-sm">COURSE</div>
+                        <div style="display:flex; gap:4px; margin-bottom:4px;">
+                            <button onclick="App.filterCrs('ALL')" class="chip"
+                                style="font-size:10px; padding:2px 6px; background:#475569;">ALL</button>
+                            <button onclick="App.filterCrs('NC')" class="chip"
+                                style="font-size:10px; padding:2px 6px; background:#475569;">NC</button>
+                            <button onclick="App.filterCrs('FL')" class="chip"
+                                style="font-size:10px; padding:2px 6px; background:#475569;">FL</button>
+                        </div>
+                    </div>
                     <select id="s-course" class="g-inp" onchange="App.checkCourseOptions()">
                         <option value="cc">Crow Creek</option>
                         <option value="jones">Sea Trail - Jones</option>
@@ -1423,6 +1433,13 @@
             }
         });
 
+        // Initialize Regions
+        const regions = {
+            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC', 'wl': 'NC',
+            'so': 'FL', 'sc': 'FL', 'havana': 'FL', 'palmer': 'FL', 'belle': 'FL', 'bonifay': 'FL', 'lopez': 'FL'
+        };
+        Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
+
         const App = {
             d: { roster: ['Doug', 'Dan', 'Phil', 'Steve'], ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, history: [], gameId: null },
             slotMap: {}, tmr: null, corr: false, delMode: false, histEdit: false,
@@ -1807,6 +1824,28 @@
                 this.save();
                 this.nav('v-dash');
                 this.keepAwake();
+            },
+
+            filterCrs: function (reg) {
+                const el = document.getElementById('s-course');
+                const cur = el.value;
+                el.innerHTML = '';
+
+                Object.keys(CS).forEach(k => {
+                    const c = CS[k];
+                    // If reg is ALL, show all. If c has no region, maybe show in ALL?
+                    // We'll show if reg matches c.r or reg is ALL
+                    if (reg === 'ALL' || c.r === reg) {
+                        el.innerHTML += `<option value="${k}">${c.n}</option>`;
+                    }
+                });
+
+                // Restore selection if possible, else pick first
+                const available = Array.from(el.options).map(o => o.value);
+                if (cur && available.includes(cur)) el.value = cur;
+                else el.value = available[0] || '';
+
+                this.checkCourseOptions();
             },
 
             checkCourseOptions: function () {
