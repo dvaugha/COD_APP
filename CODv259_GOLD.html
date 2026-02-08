@@ -1,0 +1,3216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
+    <title>COD Golf v259.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" href="COD_APP_ICON.png">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --c1: #10B981;
+            --c1d: #059669;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --mut: #94A3B8;
+            --acc: #F59E0B;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: #F8FAFC;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .g-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg);
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            padding-bottom: 100px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .g-view.active {
+            display: flex;
+            z-index: 100;
+        }
+
+        .box {
+            background: var(--card);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .flex-r {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .g-btn {
+            background: var(--c1);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 16px;
+            padding: 16px;
+            text-transform: uppercase;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .g-btn-sm {
+            padding: 8px 16px;
+            font-size: 11px;
+            width: auto;
+            border-radius: 8px;
+        }
+
+        .g-btn-sec {
+            background: #334155;
+            border: 1px solid #475569;
+        }
+
+        .g-inp {
+            background: #0F172A;
+            border: 1px solid #334155;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            display: block;
+        }
+
+        .tx-xl {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+        }
+
+        .tx-sm {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--mut);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .chip {
+            display: inline-flex;
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            margin: 4px;
+            overflow: hidden;
+            transition: 0.2s;
+            -webkit-transform: translate3d(0, 0, 0);
+        }
+
+        .chip-lbl {
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            pointer-events: none;
+        }
+
+        .del-mode .chip {
+            background: #EF4444;
+            border-color: #fff;
+            cursor: pointer;
+        }
+
+        .del-mode .chip-lbl {
+            color: white;
+            text-decoration: line-through;
+            font-weight: 900;
+        }
+
+        .role-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background: #0F172A;
+            border-radius: 12px;
+            padding: 8px 12px;
+            border: 1px solid #334155;
+        }
+
+        .role-lbl {
+            width: 80px;
+            font-size: 10px;
+            font-weight: 900;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .role-sel {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            outline: none;
+        }
+
+        .role-sel option {
+            background: #0F172A;
+            color: white;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--card);
+            margin: -20px -20px 20px -20px;
+            padding: 16px;
+            padding-top: max(20px, env(safe-area-inset-top));
+            border-bottom: 4px solid var(--c1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn {
+            width: 52px;
+            height: 52px;
+            background: #334155;
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            font-weight: 900;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .h-stat {
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .h-stat-lbl {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 900;
+            color: var(--mut);
+        }
+
+        .h-stat-val {
+            font-size: 15px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .match-stat {
+            font-size: 14px;
+            font-weight: 900;
+            color: white;
+            text-align: right;
+            text-transform: uppercase;
+        }
+
+        .match-stat em {
+            color: #10B981;
+            font-style: normal;
+        }
+
+        .p-card {
+            background: #0F172A;
+            border-radius: 24px;
+            border: 1px solid #334155;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .p-card.has-score {
+            border-color: var(--c1);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+
+        .btn-act {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            font-size: 28px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .btn-minus {
+            background: #1E293B;
+            border: 1px solid #334155;
+            color: #F87171;
+        }
+
+        .btn-minus:active {
+            background: #334155;
+        }
+
+        .btn-plus {
+            background: var(--c1);
+            border-bottom: 4px solid var(--c1d);
+            color: white;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-plus:active {
+            border-bottom: 0;
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .ctr-area {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 64px;
+        }
+
+        .p-name {
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: var(--mut);
+            text-transform: uppercase;
+        }
+
+        .p-ghost {
+            font-size: 10px;
+            color: #475569;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .p-score {
+            font-size: 42px;
+            font-weight: 900;
+            color: white;
+            line-height: 1;
+            display: none;
+        }
+
+        .p-card.has-score .p-score {
+            display: block;
+        }
+
+        .p-card.has-score .p-ghost {
+            display: none;
+        }
+
+        /* CARD SPECIFIC CSS */
+        .card-con {
+            margin: -20px;
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+
+        .card-table-wrap {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            -webkit-overflow-scrolling: touch;
+            display: block;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            margin-bottom: 0;
+            table-layout: fixed;
+            min-width: 320px;
+        }
+
+        th,
+        td {
+            border: 1px solid #334155;
+            padding: 4px 2px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            height: 34px;
+            box-sizing: border-box;
+        }
+
+        th {
+            background: #0F172A;
+            color: white;
+            border-top: none;
+            height: 24px;
+            font-size: 11px;
+            vertical-align: middle;
+            font-weight: 900;
+        }
+
+        .par-row td {
+            background: #0F172A !important;
+            color: #F59E0B !important;
+            font-weight: 900;
+            border-bottom: 3px solid #64748b !important;
+        }
+
+        td {
+            background: #1E293B;
+            color: white;
+            vertical-align: middle;
+        }
+
+        th:first-child,
+        td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            border-right: 2px solid #334155;
+            width: 45px;
+            min-width: 45px;
+            max-width: 45px;
+            text-align: center;
+            padding: 0;
+            background: #0F172A;
+        }
+
+        td:first-child {
+            background: #1E293B;
+            color: var(--c1);
+            font-weight: 900;
+        }
+
+        .sc-val {
+            display: flex;
+            width: 22px;
+            height: 22px;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            margin: 0 auto;
+            font-size: 10px;
+        }
+
+        .sc-bird {
+            border-radius: 50%;
+            border: 1px solid #10B981;
+            color: #10B981;
+        }
+
+        .sc-eagle {
+            border-radius: 50%;
+            border: 3px double #10B981;
+            color: #10B981;
+        }
+
+        .sc-bog {
+            border: 1px solid #F87171;
+            color: #F87171;
+        }
+
+        .sc-dbl {
+            border: 3px double #F87171;
+            color: #F87171;
+        }
+
+        #auto-adv-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 16px;
+            text-align: center;
+            font-weight: 800;
+            font-size: 16px;
+            z-index: 200;
+            transform: translateY(150px);
+            transition: transform 0.3s;
+            border-radius: 16px;
+            pointer-events: none;
+        }
+
+        #auto-adv-banner.show {
+            transform: translateY(0);
+        }
+
+        .hist-item {
+            padding: 8px;
+            border-bottom: 1px solid #334155;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+        }
+
+        .hist-chk {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            accent-color: #EF4444;
+            display: none;
+        }
+
+        .hist-edit-mode .hist-chk {
+            display: block;
+        }
+
+        /* RECAP CSS */
+        .rec-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .rec-p-lbl {
+            width: 40px;
+            font-size: 11px;
+            font-weight: 900;
+            color: #94A3B8;
+        }
+
+        .rec-bars {
+            flex: 1;
+            margin-left: 8px;
+            display: flex;
+            gap: 2px;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #334155;
+        }
+
+        .avg-card {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .avg-lbl {
+            font-size: 10px;
+            color: #94A3B8;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .avg-val {
+            font-size: 16px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .badge-box {
+            background: #1E293B;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .badge-icon {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+
+        .badge-tl {
+            font-size: 10px;
+            color: #10B981;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .badge-nm {
+            font-size: 14px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .badge-sub {
+            font-size: 10px;
+            color: #94A3B8;
+        }
+
+        /* CAPTURE NODE (FLEXBOX V2) */
+        #share-node {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 580px;
+            /* Slightly wider for comfort */
+            background: #0F172A;
+            color: white;
+            padding: 24px;
+            font-family: 'Outfit', sans-serif;
+            border: 2px solid #334155;
+            box-sizing: border-box;
+        }
+
+        .sn-head {
+            font-size: 24px;
+            font-weight: 900;
+            color: #10B981;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .sn-sub {
+            font-size: 13px;
+            font-weight: 700;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .sn-sect {
+            background: #1E293B;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #334155;
+        }
+
+        .sn-sect-tl {
+            color: #F59E0B;
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .sn-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px solid #334155;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .sn-row:last-child {
+            border-bottom: none;
+        }
+
+        .sn-hl {
+            color: #10B981;
+        }
+
+        .sn-neg {
+            color: #F87171;
+        }
+
+        /* FLEX SCORECARD GRID */
+        .sn-grid {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            border: 1px solid #334155;
+            border-bottom: none;
+            /* Rows have borders */
+        }
+
+        .sn-g-row {
+            display: flex;
+            align-items: stretch;
+            border-bottom: 1px solid #334155;
+            width: 100%;
+        }
+
+        .sn-g-row.head {
+            background: #0F172A;
+            height: 22px;
+        }
+
+        .sn-g-row.body {
+            background: #1E293B;
+            height: 26px;
+        }
+
+        .sn-col {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #334155;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .sn-col:last-child {
+            border-right: none;
+        }
+
+        .sn-col.nm {
+            width: 50px;
+            justify-content: flex-start;
+            padding-left: 6px;
+            text-align: left;
+            font-weight: 900;
+        }
+
+        .sn-col.h {
+            flex: 1;
+            color: #94A3B8;
+        }
+
+        .sn-col.sc {
+            flex: 1;
+            font-weight: 900;
+        }
+
+        .sn-col.tot {
+            width: 40px;
+            color: #F59E0B;
+            font-weight: 900;
+        }
+
+        .sn-col.rnd {
+            width: 40px;
+            color: #10B981;
+            font-weight: 900;
+        }
+
+        .sn-ball {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 9px;
+            /* Borders applied inline */
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-box {
+            background: #1E293B;
+            padding: 24px;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 340px;
+            text-align: center;
+            border: 1px solid #475569;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* JUNK BUTTONS */
+        .junk-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: -6px;
+            margin-bottom: 16px;
+        }
+
+        .junk-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #334155;
+            background: #0F172A;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .junk-btn.active-g {
+            background: #10B981;
+            color: white;
+            border-color: #10B981;
+        }
+
+        .junk-btn.active-s {
+            background: #F59E0B;
+            color: white;
+            border-color: #F59E0B;
+        }
+
+        .junk-btn.active-p {
+            background: #8B5CF6;
+            color: white;
+            border-color: #8B5CF6;
+        }
+
+        /* Switch CSS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #10B981;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
+
+    <!-- Hidden Capture Node -->
+    <div id="share-node"></div>
+
+    <div id="press-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">PRESS OPTION</div>
+            <div id="pm-msg" style="margin-bottom:24px; color:#cbd5e1; font-size:16px; line-height:1.5;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closePress()">NO PRESS</button>
+                <button id="pm-btn" class="g-btn" style="background:#F59E0B; color:black;">YES, PRESS</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- HCP MODAL -->
+    <div id="hcp-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">ROUND HANDICAPS</div>
+            <div id="hcp-roster" style="margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closeHcpModal()">CANCEL</button>
+                <button class="g-btn" style="background:#10B981;" onclick="App.saveHcps()">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHARE PREVIEW MODAL -->
+    <div id="share-preview-modal" class="modal-overlay" style="z-index: 600;">
+        <div class="modal-box" style="max-width:400px; width:90%; padding:16px;">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">READY TO SHARE</div>
+            <img id="sp-img" style="width:100%; border-radius:8px; border:1px solid #334155; margin-bottom:16px;" />
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closeSharePreview()">CLOSE</button>
+                <button class="g-btn" style="background:#10B981;" onclick="App.doShareParams()">SHARE NOW</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === SETUP SCREEN === -->
+    <!-- === SETUP SCREEN === -->
+    <div id="v-setup" class="g-view active">
+        <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
+            <div class="tx-xl">COD GOLF v259.0 (WIP)</div>
+        </div>
+
+        <div class="box" style="text-align:center; padding:16px;">
+            <div class="tx-sm" style="color:#10B981; margin-bottom:6px;">GAME MODE</div>
+            <select id="g-mode" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;">
+                <option value="cod">COD (Match Play)</option>
+                <option value="scramble">6-Hole Scramble (Points)</option>
+            </select>
+
+            <div class="flex-r" style="justify-content:center; gap:10px; align-items:center; margin-bottom:16px;">
+                <div class="tx-sm">POT / BUY-IN $</div>
+                <input type="number" id="s-pot" class="g-inp" value="20" style="width:80px; text-align:center;">
+            </div>
+
+            <button class="g-btn g-btn-lg" style="background:#EF4444; width:100%; padding:14px; font-size:16px;"
+                onclick="App.tryNewGame(this)">START NEW GAME</button>
+        </div>
+
+        <!-- Roster/Seats/Settings... Same as before -->
+        <div class="box">
+            <div class="tx-sm">ROSTER</div>
+            <div class="flex-r" style="gap:8px; margin-bottom:12px;">
+                <input type="text" id="new-p-name" class="g-inp" placeholder="Name..." style="margin:0;">
+                <button class="g-btn g-btn-sm" style="height:48px;" onclick="App.addRoster()">ADD</button>
+            </div>
+            <div id="roster-list" style="display:flex; flex-wrap:wrap;"></div>
+            <button id="del-mode-btn" class="g-btn g-btn-sm" style="background:#334155; width:100%; margin-top:10px;"
+                onclick="App.toggleDelMode()">ENABLE DELETE MODE</button>
+            <div id="del-status"
+                style="display:none; text-align:center; margin-top:5px; color:#EF4444; font-weight:bold; font-size:12px;">
+                TAP NAME TO DELETE (NO UNDO)</div>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm">SEATS</div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#10B981">CART A<br>DRIVER</div><select id="sel-0" class="role-sel"
+                    onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#10B981">CART A<br>PASS</div><select id="sel-1" class="role-sel"
+                    onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#F59E0B">CART B<br>DRIVER</div><select id="sel-2" class="role-sel"
+                    onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#F59E0B">CART B<br>PASS</div><select id="sel-3" class="role-sel"
+                    onchange="App.onRole()"></select>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; width:100%; margin-top:10px; border:1px solid #475569;"
+                onclick="App.openHcpModal()">SET HANDICAPS ⛳</button>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm">SETTINGS</div>
+            <div class="flex-r" style="gap:10px;">
+                <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div class="tx-sm">COURSE</div>
+                        <div style="display:flex; gap:4px; margin-bottom:4px;">
+                            <button onclick="App.filterCrs('ALL')" class="chip"
+                                style="font-size:10px; padding:2px 6px; background:#475569;">ALL</button>
+                            <button onclick="App.filterCrs('NC')" class="chip"
+                                style="font-size:10px; padding:2px 6px; background:#475569;">NC</button>
+                            <button onclick="App.filterCrs('FL')" class="chip"
+                                style="font-size:10px; padding:2px 6px; background:#475569;">FL</button>
+                        </div>
+                    </div>
+                    <select id="s-course" class="g-inp" onchange="App.checkCourseOptions()">
+                        <option value="cc">Crow Creek</option>
+                        <option value="jones">Sea Trail - Jones</option>
+                        <option value="maples">Sea Trail - Maples</option>
+                        <option value="byrd">Sea Trail - Byrd</option>
+                        <option value="so">Southern Oaks</option>
+                        <option value="wl">Woodlands</option>
+                        <option value="sc">Shallow Creek</option>
+                        <option value="havana">Havana CC</option>
+                        <option value="palmer">Palmer Legends</option>
+                        <option value="belle">Belle Glade</option>
+                        <option value="bonifay">Bonifay</option>
+                        <option value="lopez">Nancy Lopez</option>
+                    </select>
+                </div>
+                <div style="width:80px;">
+                    <div class="tx-sm">SEG BET $</div>
+                    <input type="number" id="s-bet" class="g-inp" value="5">
+                </div>
+            </div>
+            <div class="flex-r" style="gap:10px; margin-top:10px;">
+                <div style="flex:1;">
+                    <div class="tx-sm">TEE</div>
+                    <select id="s-tee" class="g-inp">
+                        <option value="white">White</option>
+                        <option value="gold">Gold</option>
+                        <option value="combo">Combo</option>
+                    </select>
+                </div>
+                <div style="width:80px;">
+                    <div class="tx-sm">START</div>
+                    <select id="s-start" class="g-inp">
+                        <option value="1">#1</option>
+                        <option value="10">#10</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 27-Hole Routing Options -->
+            <div id="course-routing-opt"
+                style="display:none; background:#0F172A; padding:12px; border-radius:12px; margin-top:12px; border:1px solid #334155;">
+                <div class="tx-sm" style="color:#F59E0B; margin-bottom:8px;">COURSE ROUTING</div>
+                <div class="flex-r" style="gap:10px;">
+                    <div style="flex:1;">
+                        <div class="tx-sm">FRONT 9</div>
+                        <select id="s-n1" class="g-inp"></select>
+                    </div>
+                    <div style="flex:1;">
+                        <div class="tx-sm">BACK 9</div>
+                        <select id="s-n2" class="g-inp"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-r" style="gap:10px; margin-top:10px;">
+                <div style="flex:1;">
+                    <div class="tx-sm">GAME MODE</div>
+                    <select id="g-mode" class="g-inp">
+                        <option value="cod">C.O.D. (6-6-6)</option>
+                        <option value="scramble">2-Man Scramble</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm">HCP MODE</div>
+                    <select id="s-hcp-mode" class="g-inp">
+                        <option value="standard">Standard</option>
+                        <option value="spread">COD Balanced (Spread)</option>
+                    </select>
+                </div>
+                <div style="width:60px;">
+                    <div class="tx-sm">POT</div>
+                    <input type="number" id="s-pot" class="g-inp" value="20">
+                </div>
+            </div>
+        </div>
+
+        <button class="g-btn" style="margin-bottom:20px;" onclick="App.startRound()">CONTINUE ROUND</button>
+        <button class="g-btn g-btn-sec" style="margin-bottom:20px; border:1px solid #10B981; color:#10B981;"
+            onclick="App.openJunkModal()">JUNK BETTING ⚙️</button>
+
+        <div class="box">
+            <div class="tx-sm" style="color:#F59E0B">CAREER EARNINGS</div>
+            <div id="career-earnings" style="font-size:12px; margin-top:8px;"></div>
+        </div>
+
+        <div class="box">
+            <div class="flex-r">
+                <div class="tx-sm">HISTORY</div>
+                <button id="hist-edit-btn" class="g-btn g-btn-sm" style="background:#334155; width:auto;"
+                    onclick="App.handleManageClick()">MANAGE</button>
+            </div>
+            <div id="hist-list" style="max-height:200px; overflow-y:auto; font-size:12px;"></div>
+        </div>
+        <div style="margin-top:24px; text-align:center;">
+            <button class="g-btn g-btn-sm"
+                style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
+                onclick="App.hardReset()">⚠️ Reset App Data</button>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v259.0</div>
+        </div>
+        <div style="height:50px;"></div>
+    </div>
+
+    <!-- JUNK CONFIG MODAL -->
+    <div id="junk-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">JUNK SETTINGS</div>
+            <div class="flex-r" style="margin-bottom:16px;">
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">FREQUENCY</div>
+                    <select id="j-freq" class="g-input"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                        <option value="6">Every 6 Holes (COD)</option>
+                        <option value="9">Every 9 Holes</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">BET / PLAYER / SEG</div>
+                    <input type="number" id="j-bet" class="g-input" value="1"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                </div>
+            </div>
+            <div class="tx-sm" style="text-align:left; margin-bottom:8px;">PLAYERS IN POT</div>
+            <div id="j-players-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec"
+                    onclick="document.getElementById('junk-modal').classList.remove('active')">CANCEL</button>
+                <button class="g-btn" onclick="App.saveJunkSettings()">SAVE SETTINGS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === DASHBOARD === -->
+    <div id="v-dash" class="g-view">
+        <div class="top-bar">
+            <div class="flex-r" style="margin-bottom:8px;">
+                <button class="nav-btn" onclick="App.navH(-1)">←</button>
+                <div style="flex:1; text-align:center;">
+                    <div id="d-h-num" class="tx-sm" style="letter-spacing:2px; color:#94A3B8; margin:0;">HOLE 1</div>
+                    <div id="d-par" style="font-size:44px; font-weight:900; line-height:1; color:white;">4</div>
+                    <div id="d-tee-ind"
+                        style="font-size:10px; font-weight:900; color:#F59E0B; margin-top:-2px; text-transform:uppercase;">
+                        WHITE TEE</div>
+                </div>
+                <button class="nav-btn" style="background:#10B981;" onclick="App.navH(1)">→</button>
+            </div>
+            <div class="flex-r">
+                <div class="h-stat">
+                    <div class="h-stat-lbl">YARDS</div>
+                    <div id="d-dist" class="h-stat-val">-</div>
+                </div>
+                <div class="h-stat">
+                    <div class="h-stat-lbl">HCP</div>
+                    <div id="d-hcp" class="h-stat-val">-</div>
+                </div>
+                <div style="flex:1; padding-right:10px;">
+                    <div id="d-fmt" class="h-stat-lbl" style="text-align:right; color:#F59E0B;">CARTS</div>
+                    <div id="d-status" class="match-stat">ALL SQUARE</div>
+                </div>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; margin-top:8px; width:100%; border:1px solid #475569;"
+                onclick="App.testFill()">TEST: FILL 5 HOLES</button>
+        </div>
+        <div id="lbl-t1"
+            style="font-size:13px; font-weight:800; color:#10B981; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
+        </div>
+        <div id="slot-0" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(0,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(0)">
+                <div id="nm-0" class="p-name">P1</div>
+                <div id="gh-0" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-0" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(0,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j0-g" class="junk-btn" onclick="App.tJ(0, 'G')">G</button>
+            <button id="j0-s" class="junk-btn" onclick="App.tJ(0, 'S')">S</button>
+            <button id="j0-p" class="junk-btn" onclick="App.tJ(0, 'P')">LP</button>
+        </div>
+
+        <div id="slot-1" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(1,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(1)">
+                <div id="nm-1" class="p-name">P2</div>
+                <div id="gh-1" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-1" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(1,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j1-g" class="junk-btn" onclick="App.tJ(1, 'G')">G</button>
+            <button id="j1-s" class="junk-btn" onclick="App.tJ(1, 'S')">S</button>
+            <button id="j1-p" class="junk-btn" onclick="App.tJ(1, 'P')">LP</button>
+        </div>
+
+        <div id="lbl-t2"
+            style="font-size:13px; font-weight:800; color:#F59E0B; margin:16px 0 8px 4px; text-transform:uppercase;">
+            TEAM B</div>
+        <div id="slot-2" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(2,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(2)">
+                <div id="nm-2" class="p-name">P3</div>
+                <div id="gh-2" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-2" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(2,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j2-g" class="junk-btn" onclick="App.tJ(2, 'G')">G</button>
+            <button id="j2-s" class="junk-btn" onclick="App.tJ(2, 'S')">S</button>
+            <button id="j2-p" class="junk-btn" onclick="App.tJ(2, 'P')">LP</button>
+        </div>
+
+        <div id="slot-3" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(3,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(3)">
+                <div id="nm-3" class="p-name">P4</div>
+                <div id="gh-3" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-3" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(3,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j3-g" class="junk-btn" onclick="App.tJ(3, 'G')">G</button>
+            <button id="j3-s" class="junk-btn" onclick="App.tJ(3, 'S')">S</button>
+            <button id="j3-p" class="junk-btn" onclick="App.tJ(3, 'P')">LP</button>
+        </div>
+        <div style="height:30px;"></div>
+        <div class="flex-r" style="gap:10px;"><button class="g-btn" style="background:#334155;"
+                onclick="App.nav('v-setup')">MENU</button><button class="g-btn" style="background:#334155; flex:1;"
+                onclick="App.nav('v-card')">SCORECARD</button><button class="g-btn" style="background:#EF4444;"
+                onclick="App.nav('v-card')">END</button></div>
+    </div>
+
+    <!-- === CARD/SUMMARY SCREENS === -->
+    <div id="v-card" class="g-view">
+        <div class="flex-r" style="margin-bottom:10px;">
+            <div class="tx-xl">CARD</div><button class="g-btn g-btn-sm" style="width:auto;"
+                onclick="App.nav('v-dash')">BACK TO GAME</button>
+        </div>
+
+        <!-- Scorecard Container -->
+        <div id="card-con-body" class="card-con"></div>
+
+        <!-- === SPACER AND RESULTS === -->
+        <!-- Forced Spacer matching the gap above Gross Totals -->
+        <div style="height:20px; width:100%;"></div>
+
+        <div class="box" style="margin-top:0;">
+            <div class="tx-sm" style="color:#10B981">SEGMENT RESULTS</div>
+            <div id="res-txt" style="font-family:monospace; margin-top:10px; font-size:14px; line-height:1.5;"></div>
+        </div>
+
+        <div class="box" style="background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3);">
+            <div style="font-size:11px; color:#F59E0B; font-weight:700;">ℹ️ IPHONE TIP</div>
+            <div style="font-size:10px; color:#cbd5e1; margin-top:4px;">If tapping SEND doesn't open messages, the
+                scorecard is already copied. Just open Messages and Paste.</div>
+        </div>
+
+        <button class="g-btn" style="background:#334155; border:1px solid #F59E0B; color:#F59E0B; margin-bottom:12px;"
+            onclick="App.nav('v-recap')">📊 ROUND RECAP</button>
+
+        <button id="sms-btn" class="g-btn" style="margin-bottom:20px;" onclick="App.share()">SHARE IMAGE
+            SUMMARY</button>
+        <button id="hist-btn" class="g-btn g-btn-sec" style="margin-bottom:12px;" onclick="App.saveToHistory()">SAVE TO
+            HISTORY</button>
+        <button class="g-btn" style="background:#EF4444;" onclick="App.tryNewGame(this)">START NEW ROUND</button>
+    </div>
+
+    <!-- === ROUND RECAP === -->
+    <div id="v-recap" class="g-view">
+        <div class="flex-r" style="margin-bottom:16px;">
+            <div class="tx-xl">ROUND RECAP</div>
+            <button class="g-btn g-btn-sm" style="width:auto; background:#334155;"
+                onclick="App.nav('v-card')">CLOSE</button>
+        </div>
+        <div id="recap-body"></div>
+    </div>
+
+    <script>
+        const CS = {
+            'cc': {
+                n: 'Crow Creek',
+                p: [4, 4, 5, 4, 4, 3, 5, 3, 4, 4, 4, 5, 3, 4, 4, 3, 4, 5],
+                y: {
+                    white: [339, 382, 480, 331, 362, 165, 534, 168, 359, 358, 319, 517, 142, 417, 367, 156, 361, 519],
+                    gold: [302, 308, 440, 291, 323, 132, 487, 141, 319, 302, 306, 470, 129, 351, 323, 130, 316, 458],
+                    combo: [339, 308, 480, 331, 362, 132, 487, 141, 359, 358, 319, 470, 129, 351, 367, 130, 361, 458]
+                },
+                hcp: [17, 1, 5, 7, 9, 13, 3, 15, 11, 12, 16, 2, 18, 4, 10, 14, 6, 8],
+                cmb: [0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1]
+            },
+            'jones': {
+                n: 'Sea Trail - Jones',
+                p: [4, 3, 4, 4, 3, 4, 4, 5, 5, 4, 4, 4, 3, 4, 5, 4, 3, 5],
+                y: {
+                    white: [405, 178, 350, 365, 155, 375, 385, 482, 510, 328, 395, 385, 127, 320, 535, 405, 144, 490],
+                    gold: [385, 160, 327, 300, 115, 330, 327, 458, 488, 305, 355, 347, 110, 298, 455, 367, 134, 455],
+                    combo: []
+                },
+                hcp: [5, 17, 15, 11, 13, 3, 1, 7, 9, 10, 8, 6, 18, 14, 4, 2, 16, 12],
+                cmb: [0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1]
+            },
+            'maples': {
+                n: 'Sea Trail - Maples',
+                p: [4, 4, 3, 5, 3, 5, 4, 4, 4, 4, 3, 5, 4, 4, 5, 4, 3, 4],
+                y: {
+                    white: [295, 335, 150, 525, 170, 535, 375, 380, 445, 385, 140, 475, 315, 325, 540, 330, 160, 315],
+                    gold: [275, 315, 120, 510, 160, 520, 365, 365, 420, 345, 105, 420, 225, 245, 485, 275, 110, 270],
+                    combo: []
+                },
+                hcp: [15, 5, 17, 9, 13, 1, 3, 11, 7, 2, 18, 12, 14, 6, 4, 16, 10, 8],
+                cmb: [0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0]
+            },
+            'byrd': {
+                n: 'Sea Trail - Byrd',
+                p: [4, 3, 5, 4, 4, 4, 3, 4, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5],
+                y: {
+                    white: [344, 165, 445, 384, 395, 360, 138, 367, 513, 383, 343, 154, 494, 356, 366, 160, 359, 417],
+                    gold: [304, 139, 424, 326, 374, 313, 121, 327, 460, 359, 273, 116, 456, 343, 337, 125, 311, 344],
+                    combo: []
+                },
+                hcp: [13, 15, 3, 1, 7, 11, 17, 9, 5, 4, 8, 16, 2, 6, 12, 18, 10, 14],
+                cmb: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+            },
+            'so': {
+                n: 'Southern Oaks',
+                p: [5, 3, 5, 3, 4, 3, 4, 4, 5, 5, 3, 4, 5, 3, 5, 4, 3, 4],
+                y: {
+                    white: [489, 139, 453, 130, 346, 110, 322, 349, 438, 457, 154, 341, 448, 137, 432, 295, 131, 373],
+                    gold: [458, 125, 369, 115, 301, 78, 253, 290, 381, 406, 118, 254, 418, 100, 410, 266, 94, 310],
+                    combo: []
+                },
+                hcp: [5, 11, 13, 9, 1, 15, 7, 3, 17, 14, 8, 2, 10, 6, 18, 16, 12, 4],
+                cmb: [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1]
+            },
+            'wl': {
+                n: 'Woodlands',
+                p: [4, 4, 5, 3, 4, 5, 3, 4, 4, 4, 5, 4, 4, 3, 4, 5, 3, 4],
+                y: {
+                    white: [344, 364, 475, 116, 295, 460, 157, 323, 314, 337, 447, 348, 325, 132, 318, 452, 125, 353],
+                    gold: [306, 308, 461, 78, 278, 448, 130, 265, 256, 327, 374, 323, 286, 102, 285, 415, 102, 310],
+                    combo: []
+                },
+                hcp: [3, 1, 7, 17, 15, 5, 9, 11, 13, 6, 12, 8, 2, 14, 10, 16, 18, 4],
+                cmb: [1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1]
+            },
+            'sc': {
+                n: 'Shallow Creek',
+                p: [5, 3, 4, 4, 3, 4, 5, 3, 4, 4, 3, 4, 5, 3, 4, 3, 4, 5],
+                y: {
+                    white: [455, 128, 350, 262, 119, 310, 473, 130, 352, 327, 123, 324, 462, 146, 339, 137, 322, 450],
+                    gold: [501, 160, 391, 385, 220, 423, 557, 157, 429, 381, 180, 388, 523, 210, 403, 163, 466, 531],
+                    combo: []
+                },
+                hcp: [13, 9, 5, 17, 15, 1, 7, 11, 3, 4, 16, 8, 14, 12, 2, 10, 6, 18],
+                cmb: []
+            },
+            'havana': {
+                n: 'Havana Country Club',
+                nines: {
+                    'ken': {
+                        n: 'Kenya',
+                        p: [4, 4, 4, 3, 5, 4, 3, 5, 4],
+                        y: { white: [286, 304, 326, 121, 499, 343, 128, 451, 259], gold: [352, 354, 401, 174, 539, 431, 176, 539, 324] },
+                        hcp: [5, 6, 3, 8, 2, 1, 4, 9, 7],
+                        cmb: [1, 0, 1, 0, 1, 1, 1, 0, 0]
+                    },
+                    'hem': {
+                        n: 'Hemingway',
+                        p: [4, 4, 3, 5, 3, 4, 4, 5, 4],
+                        y: { white: [304, 336, 131, 473, 171, 274, 355, 424, 328], gold: [369, 397, 183, 532, 210, 317, 434, 500, 389] },
+                        hcp: [2, 3, 6, 4, 5, 8, 1, 9, 7],
+                        cmb: [1, 1, 0, 1, 1, 0, 1, 0, 0]
+                    },
+                    'kil': {
+                        n: 'Kilimanjaro',
+                        p: [5, 4, 5, 4, 4, 3, 4, 4, 3],
+                        y: { white: [458, 327, 463, 312, 389, 105, 291, 303, 121], gold: [499, 385, 520, 383, 415, 172, 392, 343, 153] },
+                        hcp: [2, 6, 7, 3, 1, 8, 4, 5, 9],
+                        cmb: [1, 0, 0, 1, 1, 0, 1, 1, 0]
+                    }
+                }
+            },
+            'palmer': {
+                n: 'Palmer Legends',
+                nines: {
+                    'cherry': {
+                        n: 'Cherry Hill',
+                        p: [5, 4, 4, 4, 3, 4, 4, 3, 5],
+                        y: { white: [392, 340, 318, 314, 113, 319, 275, 134, 458], gold: [508, 400, 379, 383, 146, 388, 331, 183, 519] },
+                        hcp: [4, 1, 2, 5, 8, 6, 7, 9, 3],
+                        cmb: [1, 1, 1, 1, 0, 0, 0, 0, 1]
+                    },
+                    'laurel': {
+                        n: 'Laurel Valley',
+                        p: [4, 5, 4, 5, 4, 3, 4, 3, 4],
+                        y: { white: [314, 463, 321, 429, 299, 103, 326, 128, 332], gold: [369, 565, 387, 550, 372, 145, 414, 177, 409] },
+                        hcp: [1, 3, 6, 5, 7, 8, 2, 9, 4],
+                        cmb: [1, 1, 0, 1, 0, 0, 1, 0, 1]
+                    },
+                    'riley': {
+                        n: 'Riley Grove',
+                        p: [4, 4, 4, 5, 4, 3, 4, 3, 5],
+                        y: { white: [285, 337, 268, 452, 321, 106, 311, 125, 467], gold: [371, 400, 366, 504, 389, 154, 380, 185, 531] },
+                        hcp: [6, 1, 7, 5, 3, 9, 4, 8, 2],
+                        cmb: [0, 1, 0, 1, 1, 0, 1, 0, 1]
+                    }
+                }
+            },
+            'belle': {
+                n: 'Belle Glade',
+                nines: {
+                    'calusa': {
+                        n: 'Calusa',
+                        p: [5, 4, 3, 4, 4, 3, 4, 5, 4],
+                        y: { white: [441, 328, 132, 338, 297, 104, 318, 418, 357], gold: [532, 363, 163, 385, 380, 133, 381, 518, 388] },
+                        hcp: [2, 7, 8, 3, 6, 9, 5, 1, 4],
+                        cmb: [1, 0, 0, 1, 0, 0, 1, 1, 1]
+                    },
+                    'tequesta': {
+                        n: 'Tequesta',
+                        p: [5, 4, 4, 4, 5, 3, 4, 3, 4],
+                        y: { white: [428, 344, 336, 305, 452, 121, 317, 120, 341], gold: [532, 399, 381, 372, 488, 154, 363, 156, 400] },
+                        hcp: [2, 6, 7, 4, 3, 5, 9, 8, 1],
+                        cmb: [1, 0, 0, 1, 1, 1, 0, 0, 1]
+                    },
+                    'seminole': {
+                        n: 'Seminole',
+                        p: [4, 4, 4, 4, 5, 4, 3, 5, 3],
+                        y: { white: [338, 326, 329, 286, 441, 252, 127, 432, 125], gold: [372, 365, 367, 370, 488, 330, 149, 489, 182] },
+                        hcp: [4, 6, 5, 3, 2, 7, 9, 1, 8],
+                        cmb: [1, 0, 1, 1, 1, 0, 0, 1, 0]
+                    }
+                }
+            },
+            'bonifay': {
+                n: 'Bonifay',
+                nines: {
+                    'pensacola': { n: 'Pensacola', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'ftwalton': { n: 'Ft. Walton', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'destin': { n: 'Destin', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                }
+            },
+            'lopez': {
+                n: 'Nancy Lopez',
+                nines: {
+                    'ashley': { n: 'Ashley Meadows', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'erinn': { n: 'Erinn Glenn', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+                    'torri': { n: 'Torri Pines', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                }
+            }
+        };
+
+        ['jones', 'maples', 'byrd', 'so', 'wl'].forEach(k => {
+            const c = CS[k];
+            if (c.y.combo.length === 0 && c.y.white.length > 0) {
+                for (let i = 0; i < 18; i++) {
+                    const useGold = c.cmb[i] === 1;
+                    c.y.combo[i] = useGold ? c.y.gold[i] : c.y.white[i];
+                }
+            }
+        });
+
+        // Initialize Regions
+        const regions = {
+            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC',
+            'wl': 'FL', 'so': 'FL', 'sc': 'FL', 'havana': 'FL', 'palmer': 'FL', 'belle': 'FL', 'bonifay': 'FL', 'lopez': 'FL'
+        };
+        Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
+
+        const App = {
+            d: { roster: ['Doug', 'Dan', 'Phil', 'Steve'], ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, history: [], gameId: null },
+            slotMap: {}, tmr: null, corr: false, delMode: false, histEdit: false,
+            selIds: [],
+            wakeLock: null,
+            keepAwake: async function () {
+                if ('wakeLock' in navigator) {
+                    try {
+                        this.wakeLock = await navigator.wakeLock.request('screen');
+                        console.log("WakeLock Active");
+                    } catch (e) { console.log("WakeLock Err", e); }
+                }
+            },
+
+            init: function () {
+                const defR = [...this.d.roster];
+                try {
+                    let s = localStorage.getItem('GOLF_241');
+                    if (!s) {
+                        const old = localStorage.getItem('GOLF_240');
+                        if (old) this.d = JSON.parse(old);
+                    } else {
+                        this.d = JSON.parse(s);
+                    }
+
+                    if (!this.d.roster) this.d.roster = defR;
+                    else {
+                        defR.forEach(n => { if (!this.d.roster.includes(n)) this.d.roster.push(n); });
+                    }
+                    if (!this.d.s) this.d.s = {};
+                    if (!this.d.ps) this.d.ps = ['', '', '', ''];
+                    if (!this.d.chosen) this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
+                    this.save();
+                    if (!this.d.history) this.d.history = [];
+                    if (!this.d.start) this.d.start = 1;
+                    if (!this.d.press) this.d.press = [null, null, null];
+                    if (!this.d.hcps) this.d.hcps = {};
+                    if (!this.d.gameType) this.d.gameType = 'cod';
+                    if (!this.d.pot) this.d.pot = 20;
+                    if (!this.d.hcpMode) this.d.hcpMode = 'standard';
+                    if (!this.d.permHcps) this.d.permHcps = {};
+                } catch (e) { }
+                this.renderRoster(); this.renderHistory(); this.refreshDrop(); this.restoreSet();
+                try {
+                    const vEl = Array.from(document.querySelectorAll('.tx-xl')).find(e => e.innerText.includes('v241'));
+                    if (vEl) vEl.innerText += " [R:" + this.d.roster.length + " " + this.d.roster[0] + "]";
+                } catch (e) { }
+                if (Object.keys(this.d.s).length > 0 && this.d.ps[0]) {
+                    if (this.d.crs && CS[this.d.crs] && CS[this.d.crs].nines && this.d.nines) {
+                        this.buildComposite(this.d.crs, this.d.nines[0], this.d.nines[1]);
+                    }
+                    this.nav('v-dash');
+                } else this.nav('v-setup');
+                if ('wakeLock' in navigator) {
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') this.keepAwake();
+                    });
+                    this.keepAwake();
+                }
+            },
+            save: (function () {
+                let t = null;
+                return function () {
+                    clearTimeout(t);
+                    t = setTimeout(() => {
+                        localStorage.setItem('GOLF_241', JSON.stringify(this.d));
+                    }, 500);
+                };
+            })(),
+
+            hardReset: function () {
+                if (confirm("This will Delete History and Reset Roster. Continue?")) {
+                    localStorage.removeItem('GOLF_241');
+                    location.reload();
+                }
+            },
+
+            tryNewGame: function (btn) {
+                if (btn.innerText === "CONFIRM NEW ROUND?") return; // Prevent double trigger if clicked fast
+
+                const oldText = btn.innerText;
+                btn.innerText = "CONFIRMED";
+                btn.style.backgroundColor = "#B91C1C";
+                setTimeout(() => {
+                    this.resetScores();
+                    btn.innerText = "START NEW ROUND";
+                    btn.style.backgroundColor = "#EF4444";
+                }, 2000);
+            },
+
+            resetScores: function () {
+                this.d.s = {};
+                this.d.junk = {};
+                this.d.hcps = {};
+                this.d.start = parseInt(document.getElementById('s-start').value);
+                this.d.h = this.d.start;
+                this.d.ps = ['', '', '', ''];
+                this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
+                delete this.d.gameId;
+                this.save();
+                this.renderRoster();
+                this.refreshDrop();
+                this.restoreSet();
+                this.nav('v-setup');
+            },
+
+            nav: function (id) {
+                document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                if (id === 'v-setup') { this.checkCourseOptions(); }
+                if (id === 'v-dash') { this.uDash(); this.updateJunkUI(); }
+                if (id === 'v-card') this.uCard();
+                if (id === 'v-recap') this.uRecap();
+            },
+
+            navH: function (d) {
+                if (this.tmr) clearTimeout(this.tmr);
+                document.getElementById('auto-adv-banner').classList.remove('show');
+
+                let n;
+                if (d === 1) {
+                    if (this.d.start === 10) {
+                        if (this.d.h === 18) n = 1;
+                        else if (this.d.h === 9) n = 19; // Done
+                        else n = this.d.h + 1;
+                    } else {
+                        n = this.d.h + 1;
+                    }
+                }
+                else {
+                    this.corr = true;
+                    if (this.d.start === 10) {
+                        if (this.d.h === 1) n = 18;
+                        else if (this.d.h === 10) n = 10;
+                        else n = this.d.h - 1;
+                    } else {
+                        if (this.d.h === 1) n = 1;
+                        else n = this.d.h - 1;
+                    }
+                }
+
+                if (n > 18) { alert("Done"); this.nav('v-card'); return; }
+                this.d.h = n;
+                this.save();
+                this.uDash();
+                this.updateJunkUI();
+                this.checkPressModal();
+            },
+            uDash: function () {
+                const h = this.d.h;
+                const c = CS[this.d.crs] || CS['cc'];
+                const par = c.p[h - 1];
+                const hcp = c.hcp[h - 1];
+                let dist = 0;
+                if (c.y[this.d.tee] && c.y[this.d.tee][h - 1]) dist = c.y[this.d.tee][h - 1];
+
+                document.getElementById('d-h-num').innerText = "HOLE " + h;
+                document.getElementById('d-par').innerText = par;
+                document.getElementById('d-tee-ind').innerText = this.d.tee.toUpperCase() + " TEE";
+                document.getElementById('d-tee-ind').style.color = (this.d.tee === 'gold' ? '#F59E0B' : 'white');
+                document.getElementById('d-dist').innerText = dist;
+                document.getElementById('d-hcp').innerText = hcp;
+                document.getElementById('d-fmt').innerText = (this.d.gameType === 'scramble') ? 'SCRAMBLE' : 'COD MATCH';
+
+                // Status
+                let segIdx = 0;
+                if (h > 6) segIdx = 1;
+                if (h > 12) segIdx = 2;
+                if (this.d.gameType === 'scramble') {
+                    // Scramble Status Logic Placeholder - Default to Segment Logic
+                    const r = this.calcSeg(segIdx);
+                    let st = "ALL SQUARE";
+                    const diff = r.w1 - r.w2;
+                    if (diff !== 0) st = (diff > 0 ? "TEAM 1" : "TEAM 2") + " UP " + Math.abs(diff);
+                    document.getElementById('d-status').innerText = st;
+                } else {
+                    const r = this.calcSeg(segIdx);
+                    let st = "ALL SQUARE";
+                    const diff = r.w1 - r.w2;
+                    if (diff !== 0) st = (diff > 0 ? "TEAM 1" : "TEAM 2") + " UP " + Math.abs(diff);
+                    document.getElementById('d-status').innerText = st;
+                }
+
+                // Players
+                [0, 1, 2, 3].forEach(i => {
+                    const pid = this.slotMap[i];
+                    if (this.d.chosen[i]) {
+                        document.getElementById('p-name-' + i).innerText = this.d.chosen[i];
+                        // Score
+                        const s = (this.d.s[h] && this.d.s[h][pid]) ? this.d.s[h][pid] : '-';
+                        const sEl = document.getElementById('sc-' + i);
+                        sEl.innerText = s;
+                        // Color (Based on Net)
+                        sEl.style.color = '#cbd5e1';
+                        if (s !== '-') {
+                            const pops = this.getPops(i, h - 1);
+                            const net = s - pops;
+                            if (net < par) sEl.style.color = '#10B981';
+                            else if (net > par) sEl.style.color = '#F87171';
+                            else sEl.style.color = 'white';
+                        }
+                    }
+                });
+            },
+
+            mod: function (idx, delta) {
+                if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
+                const pid = this.slotMap[idx];
+                const par = CS[this.d.crs].p[this.d.h - 1];
+                let s = this.d.s[this.d.h][pid] || par;
+                s += delta;
+                if (s < 1) s = 1;
+                if (s > par + 2) s = par + 2; // Cap at Double Bogey
+                this.d.s[this.d.h][pid] = s;
+                this.save();
+                this.uDash();
+                this.checkAuto();
+            },
+            setPar: function (idx) {
+                if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
+                const pid = this.slotMap[idx];
+                this.d.s[this.d.h][pid] = CS[this.d.crs].p[this.d.h - 1];
+                this.save();
+                this.uDash();
+                this.checkAuto();
+            },
+            checkAuto: function () {
+                const s = this.d.s[this.d.h];
+                if (s && Object.keys(s).length === 4 && Object.values(s).every(v => v > 0)) {
+                    document.getElementById('auto-adv-banner').classList.add('show');
+                    if (this.tmr) clearTimeout(this.tmr);
+                    this.tmr = setTimeout(() => { this.navH(1); }, 3000);
+                }
+            },
+
+            testFill: function () {
+                try {
+                    const c = CS[this.d.crs] || CS['cc'];
+                    if (!this.d.ps[0]) { alert("Start round first!"); return; }
+
+                    if (Object.keys(this.slotMap).length === 0) {
+                        [0, 1, 2, 3].forEach(i => this.slotMap[i] = i);
+                    }
+
+                    for (let i = 0; i < 5; i++) {
+                        const hIdx = this.d.h - 1;
+                        const par = c.p[hIdx];
+                        const hAlloc = c.hcp[hIdx];
+                        if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
+
+                        [0, 1, 2, 3].forEach(p => {
+                            const pid = (this.slotMap[p] !== undefined) ? this.slotMap[p] : p;
+                            // Variance: Tuned v253.1 - Handicap Based
+                            // Exp = Par + Strokes
+                            const pops = this.getPops(p, hIdx, true);
+                            const exp = par + pops;
+                            const rv = Math.random();
+                            let v = 0;
+                            // 1% Eagle, 19% Birdie, 60% Par, 15% Bogey, 5% Double
+                            if (rv < 0.01) v = -2;
+                            else if (rv < 0.20) v = -1;
+                            else if (rv < 0.80) v = 0;
+                            else if (rv < 0.95) v = 1;
+                            else v = 2;
+
+                            let s = exp + v;
+                            const max = par + 2;
+                            if (s > max) s = max; // Cap at Double Bogey
+
+                            this.d.s[this.d.h][pid] = Math.max(1, s);
+                            // Random Junk for Testing
+                            ['G', 'S', 'P'].forEach(t => {
+                                if (Math.random() < 0.03) {
+                                    if (!this.d.junk) this.d.junk = {};
+                                    if (!this.d.junk[this.d.h]) this.d.junk[this.d.h] = {};
+                                    this.d.junk[this.d.h][pid + '_' + t] = true;
+                                }
+                            });
+                        });
+
+                        let nextH;
+                        if (this.d.start === 10) {
+                            if (this.d.h === 18) nextH = 1;
+                            else if (this.d.h === 9) nextH = 99;
+                            else nextH = this.d.h + 1;
+                        } else {
+                            if (this.d.h === 18) nextH = 99;
+                            else nextH = this.d.h + 1;
+                        }
+
+                        if (nextH === 99) {
+                            this.save();
+                            this.nav('v-card');
+                            return;
+                        }
+                        this.d.h = nextH;
+                    }
+                    this.save();
+                    this.uDash();
+                    this.checkPressModal();
+                } catch (e) {
+                    alert("Test Error: " + e.message);
+                }
+            },
+
+            toggleDelMode: function () { this.delMode = !this.delMode; const b = document.getElementById('del-mode-btn'), l = document.getElementById('roster-list'), s = document.getElementById('del-status'); if (this.delMode) { b.innerText = "DONE DELETING"; b.style.background = "#EF4444"; l.classList.add('del-mode'); s.style.display = "block"; } else { b.innerText = "ENABLE DELETE MODE"; b.style.background = "#334155"; l.classList.remove('del-mode'); s.style.display = "none"; } },
+            renderRoster: function () { const c = document.getElementById('roster-list'); c.innerHTML = ''; this.d.roster.forEach(p => { const d = document.createElement('div'); d.className = 'chip'; d.innerHTML = `<div class="chip-lbl">${p}</div>`; d.setAttribute('onclick', `App.clickRoster('${p.replace(/'/g, "\\'")}')`); c.appendChild(d); }); },
+            clickRoster: function (p) { if (this.delMode) this.delP(p); },
+            addRoster: function () { const el = document.getElementById('new-p-name'); const v = el.value.trim(); if (v && !this.d.roster.includes(v)) { this.d.roster.push(v); el.value = ''; this.save(); this.renderRoster(); this.refreshDrop(); } },
+            delP: function (p) { this.d.roster = this.d.roster.filter(n => n !== p); this.save(); this.renderRoster(); this.refreshDrop(); },
+            refreshDrop: function () { [0, 1, 2, 3].forEach(i => { const el = document.getElementById('sel-' + i); const c = this.d.chosen[i]; const u = [];[0, 1, 2, 3].forEach(k => { if (k !== i && this.d.chosen[k]) u.push(this.d.chosen[k]) }); const o = this.d.roster.filter(n => !u.includes(n)); if (c && !u.includes(c) && !o.includes(c) && this.d.roster.includes(c)) o.push(c); let h = '<option value="">--</option>'; o.forEach(x => { h += `<option value="${x}" ${x === c ? 'selected' : ''}>${x}</option>` }); el.innerHTML = h; el.value = c; }); },
+            onRole: function () { [0, 1, 2, 3].forEach(i => this.d.chosen[i] = document.getElementById('sel-' + i).value); this.save(); this.refreshDrop(); },
+            openHcpModal: function () {
+                const c = document.getElementById('hcp-roster');
+                c.innerHTML = '';
+                [0, 1, 2, 3].forEach(i => {
+                    const p = this.d.chosen[i];
+                    let v = '';
+                    if (p) {
+                        if (this.d.hcps && this.d.hcps[p] !== undefined) v = this.d.hcps[p];
+                        else if (this.d.permHcps && this.d.permHcps[p] !== undefined) v = this.d.permHcps[p];
+                    }
+                    const lbl = p || `Seat ${i + 1}`;
+                    c.innerHTML += `<div class="flex-r" style="margin-bottom:8px;"><div style="font-weight:700; color:white; font-size:14px; flex:1; text-align:left;">${lbl}</div><input id="hcp-in-${i}" type="number" class="g-inp" style="width:80px; padding:8px;" value="${v}" placeholder="-"></div>`;
+                });
+                document.getElementById('hcp-modal').classList.add('active');
+            },
+            saveHcps: function () {
+                if (!this.d.hcps) this.d.hcps = {};
+                if (!this.d.permHcps) this.d.permHcps = {};
+                [0, 1, 2, 3].forEach(i => {
+                    const el = document.getElementById(`hcp-in-${i}`);
+                    const p = this.d.chosen[i];
+                    if (p && el.value !== '') {
+                        const val = Number(el.value);
+                        this.d.hcps[p] = val;
+                        this.d.permHcps[p] = val; // Persist
+                    } else if (p) {
+                        delete this.d.hcps[p];
+                    }
+                });
+                this.save();
+                this.closeHcpModal();
+            },
+            closeHcpModal: function () { document.getElementById('hcp-modal').classList.remove('active'); },
+            restoreSet: function () {
+                const ids = ['s-course', 's-tee', 's-bet', 's-start', 'g-mode', 's-pot', 's-hcp-mode'];
+                ids.forEach(k => {
+                    const el = document.getElementById(k);
+                    const prop = k.replace('s-', '').replace('g-mode', 'gameType').replace('hcp-mode', 'hcpMode');
+                    if (el && this.d[prop] !== undefined) el.value = this.d[prop];
+                });
+                this.checkCourseOptions();
+            },
+            startRound: function () {
+                const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
+                if (p.some(x => !x)) { alert("Seats!"); return; }
+                this.d.ps = p;
+                this.d.crs = document.getElementById('s-course').value;
+                this.d.tee = document.getElementById('s-tee').value;
+                this.d.bet = parseInt(document.getElementById('s-bet').value);
+                this.d.start = parseInt(document.getElementById('s-start').value);
+                this.d.gameType = document.getElementById('g-mode').value;
+                this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
+                this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
+                this.d.s = {};
+                this.d.junk = {};
+                this.d.press = {};
+                this.d.h = this.d.start;
+
+                // Composite Course Logic
+                const crsData = CS[this.d.crs];
+                if (crsData.nines) {
+                    const n1 = document.getElementById('s-n1').value;
+                    const n2 = document.getElementById('s-n2').value;
+                    this.d.nines = [n1, n2];
+                    this.buildComposite(this.d.crs, n1, n2);
+                } else {
+                    delete this.d.nines;
+                }
+
+                this.save();
+                this.nav('v-dash');
+                this.keepAwake();
+            },
+
+            filterCrs: function (reg) {
+                const el = document.getElementById('s-course');
+                const cur = el.value;
+                el.innerHTML = '';
+
+                Object.keys(CS).forEach(k => {
+                    const c = CS[k];
+                    // If reg is ALL, show all. If c has no region, maybe show in ALL?
+                    // We'll show if reg matches c.r or reg is ALL
+                    if (reg === 'ALL' || c.r === reg) {
+                        el.innerHTML += `<option value="${k}">${c.n}</option>`;
+                    }
+                });
+
+                // Restore selection if possible, else pick first
+                const available = Array.from(el.options).map(o => o.value);
+                if (cur && available.includes(cur)) el.value = cur;
+                else el.value = available[0] || '';
+
+                this.checkCourseOptions();
+            },
+
+            checkCourseOptions: function () {
+                const el = document.getElementById('s-course');
+                const optEl = document.getElementById('course-routing-opt');
+                const n1 = document.getElementById('s-n1');
+                const n2 = document.getElementById('s-n2');
+                const val = el.value;
+                const c = CS[val];
+
+                // Helper to populate n2 based on n1
+                const populateN2 = (selectedN1) => {
+                    const cur2 = n2.value;
+                    n2.innerHTML = '';
+                    const keys = Object.keys(c.nines);
+                    keys.forEach(k => {
+                        if (k !== selectedN1) {
+                            n2.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`;
+                        }
+                    });
+                    // Restore selection if valid, else pick first available
+                    const available = Array.from(n2.options).map(o => o.value);
+                    if (cur2 && available.includes(cur2)) n2.value = cur2;
+                    else n2.value = available[0];
+                };
+
+                // Remove previous listener to avoid stacking
+                el.onchange = () => this.checkCourseOptions();
+
+                if (c && c.nines) {
+                    optEl.style.display = 'block';
+
+                    // Listen for N1 changes to filter N2
+                    n1.onchange = () => populateN2(n1.value);
+
+                    // Initial population
+                    if (n1.options.length !== Object.keys(c.nines).length) {
+                        const cur1 = n1.value;
+                        const keys = Object.keys(c.nines);
+                        n1.innerHTML = '';
+                        keys.forEach(k => { n1.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`; });
+                        if (cur1 && c.nines[cur1]) n1.value = cur1; else n1.value = keys[0];
+                    }
+
+                    // Always refresh N2 to be safe
+                    populateN2(n1.value);
+
+                } else {
+                    optEl.style.display = 'none';
+                }
+            },
+
+            buildComposite: function (crsId, k1, k2) {
+                const c = CS[crsId];
+                if (!c.nines || !c.nines[k1] || !c.nines[k2]) return;
+
+                const n1 = c.nines[k1];
+                const n2 = c.nines[k2];
+
+                // Construct Composite Name
+                c.n = `${n1.n} / ${n2.n}`;
+
+                // Concatenate Pars
+                c.p = [...n1.p, ...n2.p];
+
+                // Construct HCPS (Odds Front, Evens Back)
+                const h1 = n1.hcp.map(h => (h * 2) - 1);
+                const h2 = n2.hcp.map(h => h * 2);
+                c.hcp = [...h1, ...h2];
+
+                // Construct Combo Logic if present
+                if (n1.cmb && n2.cmb) {
+                    c.cmb = [...n1.cmb, ...n2.cmb];
+                } else {
+                    c.cmb = Array(18).fill(1); // Default to Gold if missing
+                }
+
+                // Construct Yards
+                c.y = { white: [], gold: [], combo: [] };
+
+                const pushY = (color) => {
+                    const arr1 = (n1.y[color] && n1.y[color].length === 9) ? n1.y[color] : Array(9).fill(0);
+                    const arr2 = (n2.y[color] && n2.y[color].length === 9) ? n2.y[color] : Array(9).fill(0);
+                    c.y[color] = [...arr1, ...arr2];
+                };
+                pushY('white');
+                pushY('gold');
+
+                // Build Combo Yards
+                for (let i = 0; i < 18; i++) {
+                    const useGold = c.cmb[i] === 1;
+                    c.y.combo[i] = useGold ? c.y.gold[i] : c.y.white[i];
+                }
+            },
+
+            getPops: function (pIdx, hIdx, useFull) {
+                if (!this.d.hcps || Object.keys(this.d.hcps).length === 0) return 0;
+
+                // 1. Calculate Base Handicap / Difference
+                let ph = (this.d.chosen[pIdx] && this.d.hcps[this.d.chosen[pIdx]]) ? this.d.hcps[this.d.chosen[pIdx]] : 0;
+                let diff = ph;
+
+                if (!useFull) {
+                    const allH = [0, 1, 2, 3].map(i => { const n = this.d.chosen[i]; return (n && this.d.hcps[n] !== undefined) ? this.d.hcps[n] : 0; });
+                    const min = Math.min(...allH);
+                    diff = ph - min;
+                }
+
+                if (diff <= 0) return 0;
+
+                // 2. Allocation Logic
+                const mode = this.d.hcpMode || 'standard';
+                const course = CS[this.d.crs];
+                const holeAlloc = course.hcp[hIdx]; // 1-18
+
+                if (mode === 'spread') {
+                    // Spread: Distribute diff evenly across 3 segments (6 holes each)
+                    const basePerSeg = Math.floor(diff / 3);
+                    const rem = diff % 3;
+
+                    // Determine which segment this hole is in (relative to 1-18 logic, not start hole)
+                    // HIdx is 0-17. Holes 1-6=Seg0, 7-12=Seg1, 13-18=Seg2
+                    const segIdx = Math.floor(hIdx / 6);
+                    let strokesForSeg = basePerSeg;
+
+                    // Distribute remainder to segments with hardest holes?
+                    // Simple logic: Seg 0 gets 1st rem, Seg 1 gets 2nd.
+                    if (segIdx < rem) strokesForSeg++;
+
+                    if (strokesForSeg === 0) return 0;
+
+                    // Handling High Handicaps (where >1 stroke per hole might be needed)
+                    const baseStrokes = Math.floor(strokesForSeg / 6);
+                    const remStrokes = strokesForSeg % 6;
+
+                    // Within this segment, find the rank of this hole relative to others in segment
+                    const sStart = segIdx * 6;
+                    const sEnd = sStart + 6;
+                    const segHcpVals = course.hcp.slice(sStart, sEnd);
+
+                    // Rank these 6 holes (1 = hardest in seg, 6 = easiest)
+                    const sorted = [...segHcpVals].sort((a, b) => a - b);
+                    const myRank = sorted.indexOf(holeAlloc); // 0..5
+
+                    // If myRank < remStrokes, get an extra stroke on top of base
+                    if (myRank < remStrokes) return baseStrokes + 1;
+                    return baseStrokes;
+
+                } else {
+                    // Standard Match Play Allocation (1-18)
+                    if (diff < holeAlloc) return 0;
+                    return Math.floor((diff - holeAlloc) / 18) + 1;
+                }
+            },
+
+            calcSeg: function (idx) {
+                const segs = [{ t1: [0, 1], t2: [2, 3] }, { t1: [0, 3], t2: [1, 2] }, { t1: [0, 2], t2: [1, 3] }];
+                const seg = segs[idx];
+                const press = (this.d.press && this.d.press[idx]) ? this.d.press[idx] : null;
+
+                const getHoles = (segIdx) => {
+                    const hArr = [];
+                    const sRH = (segIdx * 6) + 1;
+                    for (let k = 0; k < 6; k++) {
+                        let rh = sRH + k; let absH = rh;
+                        if (this.d.start === 10) { if (rh <= 9) absH = rh + 9; else absH = rh - 9; }
+                        hArr.push(absH);
+                    }
+                    return hArr;
+                };
+                const holes = getHoles(idx);
+                let w1 = 0, w2 = 0; let lhWin = 0;
+                const gt = this.d.gameType;
+
+                let sum1 = 0, sum2 = 0; // For Scramble Totals
+                let birds = { t1: 0, t2: 0 };
+
+                holes.forEach((h, i) => {
+                    const s = this.d.s[h];
+                    if (s && Object.keys(s).length === 4) {
+                        const c = CS[this.d.crs] || CS['cc'];
+                        const par = c.p[h - 1];
+
+                        if (gt === 'scramble') {
+                            // Scramble: Team Score is MIN of partners
+                            // Assuming GROSS for now as requested
+                            const sc1 = Math.min(s[seg.t1[0]], s[seg.t1[1]]);
+                            const sc2 = Math.min(s[seg.t2[0]], s[seg.t2[1]]);
+                            sum1 += sc1;
+                            sum2 += sc2;
+                            if (sc1 < par) birds.t1++;
+                            if (sc2 < par) birds.t2++;
+                        } else {
+                            // COD Match Play (Net)
+                            let b1 = Math.min(s[seg.t1[0]] - this.getPops(seg.t1[0], h - 1), s[seg.t1[1]] - this.getPops(seg.t1[1], h - 1));
+                            let b2 = Math.min(s[seg.t2[0]] - this.getPops(seg.t2[0], h - 1), s[seg.t2[1]] - this.getPops(seg.t2[1], h - 1));
+                            if (b1 < b2) { w1++; if (i === 5) lhWin = 1; }
+                            else if (b2 < b1) { w2++; if (i === 5) lhWin = 2; }
+                        }
+                    }
+                });
+
+                if (gt === 'scramble') {
+                    let pts1 = birds.t1, pts2 = birds.t2;
+                    let winner = 0;
+                    // Block Win (3 pts) / Tie (1 pt)
+                    if (sum1 < sum2) { pts1 += 3; winner = 1; }
+                    else if (sum2 < sum1) { pts2 += 3; winner = 2; }
+                    else { pts1 += 1; pts2 += 1; } // Tie
+
+                    let amt = this.d.bet;
+                    if (press) amt = amt * 2;
+
+                    return { winner, amt, w1: pts1, w2: pts2, seg, press, isScramble: true };
+                }
+
+                // COD Standard
+                let winner = 0; let amt = this.d.bet;
+                if (press) {
+                    const pt = press.team;
+                    if (lhWin === pt) {
+                        if (press.type === 1) { winner = pt; amt = this.d.bet; }
+                        else { winner = 0; }
+                    } else if (lhWin !== 0 && lhWin !== pt) {
+                        winner = (pt === 1 ? 2 : 1); amt = this.d.bet * 2;
+                    } else {
+                        if (w1 > w2) winner = 1; else if (w2 > w1) winner = 2;
+                    }
+                } else {
+                    if (w1 > w2) winner = 1; else if (w2 > w1) winner = 2;
+                }
+                return { winner, amt, w1, w2, seg, press, isScramble: false };
+            },
+
+            togglePress: function (idx, type, team) {
+                if (this.d.press[idx]) this.d.press[idx] = null;
+                else this.d.press[idx] = { type, team };
+                this.save(); this.uDash();
+            },
+
+            checkPressModal: function () {
+                let rh = this.d.h;
+                if (this.d.start === 10) { if (this.d.h >= 10) rh = this.d.h - 9; else rh = this.d.h + 9; }
+                if (rh % 6 !== 0) return;
+                let m = (rh / 6) - 1;
+                let r = this.calcSeg(m);
+                let diff = r.w1 - r.w2;
+                if (this.d.press && this.d.press[m]) return;
+                if (diff !== 0) {
+                    let trailing = diff > 0 ? 2 : 1;
+                    let absD = Math.abs(diff);
+                    let type = absD === 1 ? 1 : 2;
+
+                    const tIdx = trailing === 1 ? r.seg.t1 : r.seg.t2;
+                    const names = tIdx.map(i => this.d.ps[i]).join(" & ");
+
+                    let pType = type === 1 ? "WIN SEGMENT" : "PUSH";
+                    document.getElementById('pm-msg').innerHTML = `<div style="font-weight:900; color:${trailing === 1 ? '#10B981' : '#F59E0B'}; font-size:18px;">${names}</div><div style="font-size:14px; margin-top:4px;">Down by ${absD}. Press?</div>`;
+                    const btn = document.getElementById('pm-btn');
+                    btn.innerText = `YES (${pType})`;
+                    btn.onclick = () => { this.togglePress(m, type, trailing); this.closePress(); };
+                    document.getElementById('press-modal').classList.add('active');
+                }
+            },
+            closePress: function () { document.getElementById('press-modal').classList.remove('active'); },
+
+            uRecap: function () {
+                const c = CS[this.d.crs] || CS['cc'];
+                const pStats = [0, 1, 2, 3].map(i => ({
+                    id: i, name: this.d.ps[i],
+                    dist: { bird: 0, par: 0, bog: 0, dbl: 0 },
+                    netDist: { bird: 0, par: 0, bog: 0, dbl: 0 },
+                    p3: { tot: 0, cnt: 0 }, p4: { tot: 0, cnt: 0 }, p5: { tot: 0, cnt: 0 },
+                    netToPar: 0, birds: 0, pars: 0, dbls: 0, totalStrokes: 0
+                }));
+
+                let completedHoles = 0;
+                for (let h = 1; h <= 18; h++) {
+                    if (!this.d.s[h]) continue;
+                    const par = c.p[h - 1];
+                    let any = false;
+                    [0, 1, 2, 3].forEach(i => {
+                        if (typeof this.d.s[h][i] === 'number') {
+                            any = true;
+                            const g = this.d.s[h][i];
+                            const pops = this.getPops(i, h - 1);
+                            const n = g - pops;
+                            const d = n - par;
+                            const grel = g - par;
+                            pStats[i].totalStrokes++;
+                            if (grel <= -1) { pStats[i].dist.bird++; pStats[i].birds++; }
+                            else if (grel === 0) { pStats[i].dist.par++; pStats[i].pars++; }
+                            else if (grel === 1) pStats[i].dist.bog++;
+                            else { pStats[i].dist.dbl++; pStats[i].dbls++; }
+
+                            // Net Dist
+                            const nrel = n - par;
+                            if (nrel <= -1) pStats[i].netDist.bird++;
+                            else if (nrel === 0) pStats[i].netDist.par++;
+                            else if (nrel === 1) pStats[i].netDist.bog++;
+                            else pStats[i].netDist.dbl++;
+
+                            pStats[i].netToPar += d;
+                            if (par === 3) { pStats[i].p3.tot += g; pStats[i].p3.cnt++; }
+                            if (par === 4) { pStats[i].p4.tot += g; pStats[i].p4.cnt++; }
+                            if (par === 5) { pStats[i].p5.tot += g; pStats[i].p5.cnt++; }
+                        }
+                    });
+                    if (any) completedHoles++;
+                }
+
+                const con = document.getElementById('recap-body');
+                if (completedHoles === 0) { con.innerHTML = '<div style="padding:20px; text-align:center; color:#94A3B8;">No scores yet.</div>'; return; }
+
+                let html = '';
+                // 1. GROSS BREAKDOWN
+                html += `<div class="box" style="margin-top:20px;">
+                    <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (GROSS)</div>
+                    <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
+                        <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div>
+                        <div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div>
+                    </div>`;
+                pStats.forEach(p => {
+                    if (p.totalStrokes === 0) return;
+                    html += `<div style="display:flex; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+                        <div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name}</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div>
+                        <div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div>
+                    </div>`;
+                });
+                html += `</div>`;
+
+                // 2. NET BREAKDOWN
+                html += `<div class="box" style="margin-top:12px;">
+                    <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (NET)</div>
+                    <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
+                        <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div>
+                        <div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div>
+                    </div>`;
+                pStats.forEach(p => {
+                    if (p.totalStrokes === 0) return;
+                    html += `<div style="display:flex; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+                        <div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name}</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.netDist.bird}</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.netDist.par}</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.netDist.bog}</div>
+                        <div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.netDist.dbl}</div>
+                    </div>`;
+                });
+                html += `</div>`;
+
+                // HANDICAP SUMMARY
+                const strokeHoles = [];
+                for (let h = 1; h <= 18; h++) {
+                    const hcpAlloc = c.hcp[h - 1];
+                    const getters = [];
+                    [0, 1, 2, 3].forEach(i => {
+                        const pops = this.getPops(i, h - 1);
+                        if (pops > 0) getters.push(`${this.d.ps[i]} (${pops})`);
+                    });
+                    if (getters.length > 0) strokeHoles.push({ h: h, hcp: hcpAlloc, list: getters });
+                }
+
+                html += `<div class="box" style="margin-top:12px;">
+                    <div class="tx-sm" style="color:white; margin-bottom:8px;">HANDICAP SUMMARY</div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">`;
+                if (strokeHoles.length > 0) {
+                    strokeHoles.forEach(item => {
+                        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px;">
+                            <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${item.h} <span style="color:#94A3B8; font-weight:400;">(HCP ${item.hcp})</span></span>
+                            <span style="color:#F59E0B; font-size:11px; font-weight:700; text-align:right;">${item.list.join(', ')}</span>
+                          </div>`;
+                    });
+                } else {
+                    html += `<div style="color:#94A3B8; font-size:12px; padding:6px;">No strokes given.</div>`;
+                }
+                html += `</div></div>`;
+
+                // JUNK DRAWER
+                const junk = this.getJunkStats();
+                html += `<div class="box" style="margin-top:12px;">
+                    <div class="tx-sm" style="color:white; margin-bottom:12px;">THE JUNK DRAWER</div>
+                    <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
+                        <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
+                        <div style="flex:1; text-align:center; color:#10B981; font-size:14px;">🟢</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-size:14px;">🏖️</div>
+                        <div style="flex:1; text-align:center; color:#8B5CF6; font-size:14px;">⛳</div>
+                    </div>`;
+                pStats.forEach(p => {
+                    const j = junk[p.name];
+                    html += `<div style="display:flex; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+                        <div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name}</div>
+                        <div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.G : 0}</div>
+                        <div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.S : 0}</div>
+                        <div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.P : 0}</div>
+                    </div>`;
+                });
+                html += `</div>`;
+
+                // FIREBALL HOLES (Redefined v255.1)
+                const fbHoles = [];
+                for (let h = 1; h <= 18; h++) {
+                    if (!this.d.s[h]) continue;
+                    const par = c.p[h - 1];
+                    const bMakers = [];
+                    [0, 1, 2, 3].forEach(i => {
+                        const s = (this.d.s[h] && this.d.s[h][this.slotMap[i]]);
+                        if (typeof s === 'number' && s < par) bMakers.push(this.d.ps[i]);
+                    });
+                    if (bMakers.length > 0) fbHoles.push({ h: h, ps: bMakers });
+                }
+
+                html += `<div class="box" style="margin-top:12px; background:linear-gradient(135deg, #1E293B, #332d1e);">
+                    <div class="flex-r" style="margin-bottom:8px;">
+                        <div class="tx-sm" style="color:#F59E0B;">🔥 FIREBALL HOLES</div>
+                        <div class="tx-sm" style="color:white;">Total: ${fbHoles.length}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">`;
+
+                if (fbHoles.length > 0) {
+                    fbHoles.forEach(item => {
+                        html += `<div style="background:#0F172A; padding:6px 12px; border-radius:8px; border:1px solid #F59E0B; display:flex; align-items:center; justify-content:space-between;">
+                            <span style="color:#F59E0B; font-weight:900; font-size:14px;">HOLE ${item.h}</span>
+                            <span style="color:white; font-weight:700; font-size:13px; text-align:right;">${item.ps.join(', ')}</span>
+                        </div>`;
+                    });
+                } else {
+                    html += `<div style="color:#94A3B8; font-size:12px; text-align:center; padding:8px;">No Fireballs Yet.</div>`;
+                }
+                html += `</div></div>`;
+
+                // AVERAGES
+                html += `<div class="box" style="margin-top:12px;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING AVERAGES</div><div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px;"><div class="tx-sm" style="text-align:left;">PLAYER</div><div class="tx-sm" style="text-align:center;">PAR 3</div><div class="tx-sm" style="text-align:center;">PAR 4</div><div class="tx-sm" style="text-align:center;">PAR 5</div></div>`;
+                pStats.forEach(p => {
+                    const a3 = p.p3.cnt ? (p.p3.tot / p.p3.cnt).toFixed(1) : '-';
+                    const a4 = p.p4.cnt ? (p.p4.tot / p.p4.cnt).toFixed(1) : '-';
+                    const a5 = p.p5.cnt ? (p.p5.tot / p.p5.cnt).toFixed(1) : '-';
+                    html += `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px; padding:6px 0; border-top:1px solid #334155;"><div style="font-size:12px; font-weight:700; color:#cbd5e1;">${p.name.substring(0, 8)}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a3}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a4}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a5}</div></div>`;
+                });
+                html += `</div>`;
+                con.innerHTML = html;
+            },
+
+            uDash: function () {
+                const c = CS[this.d.crs], par = c.p[this.d.h - 1];
+                document.getElementById('d-h-num').innerText = "HOLE " + this.d.h;
+                document.getElementById('d-par').innerText = par;
+                const dists = c.y[this.d.tee] || [];
+                document.getElementById('d-dist').innerText = dists[this.d.h - 1] || '-';
+                document.getElementById('d-hcp').innerText = (c.hcp[this.d.h - 1] || '-');
+                let tT = this.d.tee.toUpperCase() + " TEE";
+                if (this.d.tee === 'combo') { const isGold = (c.cmb && c.cmb[this.d.h - 1] === 1); if (isGold) tT = "GOLD TEE"; else tT = "WHITE TEE"; }
+                document.getElementById('d-tee-ind').innerText = tT;
+                document.getElementById('d-tee-ind').style.color = (tT.includes('GOLD') ? '#F59E0B' : 'white');
+
+                // RELATIVE HOLE LOGIC
+                let rh = this.d.h;
+                if (this.d.start === 10) {
+                    if (this.d.h >= 10) rh = this.d.h - 9;
+                    else rh = this.d.h + 9;
+                }
+
+                let m = 0; if (rh > 6) m = 1; if (rh > 12) m = 2;
+                let r = this.calcSeg(m);
+                let t1 = r.seg.t1, t2 = r.seg.t2;
+
+                let fmt; if (m === 0) fmt = "CARTS (1-6)"; else if (m === 1) fmt = "OPPOSITES (7-12)"; else fmt = "DRIVERS (13-18)";
+                document.getElementById('d-fmt').innerText = fmt;
+
+                // PRESS BUTTON LOGIC
+                let pBtn = '';
+                const isScramble = (this.d.gameType === 'scramble');
+                if (rh % 6 === 0 && !isScramble) {
+                    let diff = r.w1 - r.w2;
+                    if (diff !== 0) {
+                        let trailing = diff > 0 ? 2 : 1;
+                        let absD = Math.abs(diff);
+                        let type = absD === 1 ? 1 : 2;
+                        let isP = this.d.press && this.d.press[m];
+
+                        if (isP) {
+                            pBtn = `<button class="g-btn g-btn-sm" style="background:#F59E0B; color:black; margin-top:4px;" onclick="App.togglePress(${m}, ${type}, ${trailing})">PRESS ACTIVE (${isP.type === 1 ? 'WIN SEG' : 'PUSH'})</button>`;
+                        } else {
+                            const lbl = type === 1 ? "PRESS" : "PRESS (SAVE)";
+                            pBtn = `<button class="g-btn g-btn-sm" style="background:#334155; margin-top:4px; border:1px solid #F59E0B; color:#F59E0B;" onclick="App.togglePress(${m}, ${type}, ${trailing})">${lbl}</button>`;
+                        }
+                    }
+                }
+
+                let stat = "ALL SQUARE";
+                if (isScramble) {
+                    stat = `PTS: ${r.w1} - ${r.w2}`;
+                } else {
+                    let d = r.w1 - r.w2;
+                    if (d > 0) stat = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)} <em style="color:#10B981">${d} UP</em>`;
+                    else if (d < 0) stat = `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
+                    else if (r.winner !== 0) {
+                        if (r.winner === 1) stat = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)} <em style="color:#10B981">WINS</em>`;
+                        else stat = `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)} <em style="color:#10B981">WINS</em>`;
+                    }
+                }
+                document.getElementById('d-status').innerHTML = stat + pBtn;
+
+                const map = (id, pid) => {
+                    this.slotMap[id] = pid;
+                    const pops = this.getPops(pid, this.d.h - 1);
+                    const dots = " (H)".repeat(pops);
+                    const nmEl = document.getElementById('nm-' + id);
+                    nmEl.innerText = this.d.ps[pid] + dots;
+                    nmEl.style.color = pops > 0 ? '#F59E0B' : '#94A3B8';
+
+                    document.getElementById('gh-' + id).innerText = "PAR " + par;
+                    const sc = this.d.s[this.d.h] && this.d.s[this.d.h][pid];
+                    const ec = document.getElementById('slot-' + id);
+                    const es = document.getElementById('sc-' + id);
+                    // Net Score logic for color: sc - pops vs par
+                    if (sc) {
+                        ec.classList.add('has-score');
+                        es.innerText = sc;
+                        const net = sc - pops;
+                        es.style.color = net < par ? '#10B981' : (net > par ? '#F87171' : 'white');
+                    } else { ec.classList.remove('has-score'); }
+                };
+                map(0, t1[0]); map(1, t1[1]);
+                document.getElementById('lbl-t1').innerText = `TEAM A (${this.d.ps[t1[0]].substring(0, 3)} & ${this.d.ps[t1[1]].substring(0, 3)})`;
+                map(2, t2[0]); map(3, t2[1]);
+                document.getElementById('lbl-t2').innerText = `TEAM B (${this.d.ps[t2[0]].substring(0, 3)} & ${this.d.ps[t2[1]].substring(0, 3)})`;
+            },
+
+            tJ: function (idx, type) {
+                if (!this.d.junk) this.d.junk = {};
+                if (!this.d.junk[this.d.h]) this.d.junk[this.d.h] = {};
+                const pid = this.slotMap[idx];
+                const k = pid + '_' + type;
+                if (this.d.junk[this.d.h][k]) delete this.d.junk[this.d.h][k];
+                else this.d.junk[this.d.h][k] = true;
+                this.save();
+                this.updateJunkUI();
+            },
+            updateJunkUI: function () {
+                document.querySelectorAll('.junk-btn').forEach(b => b.className = 'junk-btn');
+                if (!this.d.junk || !this.d.junk[this.d.h]) return;
+
+                [0, 1, 2, 3].forEach(i => {
+                    const pid = this.slotMap[i];
+                    ['G', 'S', 'P'].forEach(t => {
+                        const btn = document.getElementById(`j${i}-${t.toLowerCase()}`);
+                        if (btn) {
+                            const active = this.d.junk[this.d.h][pid + '_' + t];
+                            if (active) btn.classList.add('active-' + t.toLowerCase());
+                        }
+                    });
+                });
+            },
+            getJunkStats: function () {
+                const map = {};
+                if (!this.d.ps) return map;
+                this.d.ps.forEach(name => { if (name) map[name] = { G: 0, S: 0, P: 0 }; });
+
+                if (this.d.junk) {
+                    Object.keys(this.d.junk).forEach(h => {
+                        const holeData = this.d.junk[h];
+                        Object.keys(holeData).forEach(k => {
+                            if (holeData[k]) {
+                                const parts = k.split('_');
+                                const type = parts.pop();
+                                const pIdx = parseInt(parts[0]);
+                                if (!isNaN(pIdx) && this.d.ps[pIdx]) {
+                                    const name = this.d.ps[pIdx];
+                                    if (map[name]) map[name][type]++;
+                                }
+                            }
+                        });
+                    });
+                }
+                return map;
+            },
+            openJunkModal: function () {
+                document.getElementById('junk-modal').classList.add('active');
+                const c = document.getElementById('j-players-list');
+                c.innerHTML = '';
+                [0, 1, 2, 3].forEach(i => {
+                    if (this.d.chosen[i]) {
+                        const name = this.d.chosen[i];
+                        const isIn = (!this.d.junkPlayers || this.d.junkPlayers.includes(i));
+                        c.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px; border-radius:8px; border:1px solid #334155;">
+                            <span style="color:white; font-weight:700;">${name}</span>
+                            <label class="switch">
+                                <input type="checkbox" id="jp-${i}" ${isIn ? 'checked' : ''}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>`;
+                    }
+                });
+                if (this.d.junkFreq) document.getElementById('j-freq').value = this.d.junkFreq;
+                if (this.d.junkBet !== undefined) document.getElementById('j-bet').value = this.d.junkBet;
+            },
+            saveJunkSettings: function () {
+                this.d.junkFreq = document.getElementById('j-freq').value;
+                this.d.junkBet = parseInt(document.getElementById('j-bet').value) || 0;
+                this.d.junkPlayers = [];
+                [0, 1, 2, 3].forEach(i => {
+                    const cb = document.getElementById('jp-' + i);
+                    if (cb && cb.checked) this.d.junkPlayers.push(i);
+                });
+                this.save();
+                document.getElementById('junk-modal').classList.remove('active');
+            },
+            calcJunkRes: function () {
+                const freq = parseInt(this.d.junkFreq || 6);
+                const bet = (this.d.junkBet !== undefined) ? this.d.junkBet : 1;
+                const players = (!this.d.junkPlayers || this.d.junkPlayers.length == 0) ? [0, 1, 2, 3] : this.d.junkPlayers;
+                const pot = bet * players.length;
+                if (pot === 0) return null;
+
+                const segs = [];
+                if (freq === 6) {
+                    segs.push({ name: "HOLES 1-6", h: [1, 6] });
+                    segs.push({ name: "HOLES 7-12", h: [7, 12] });
+                    segs.push({ name: "HOLES 13-18", h: [13, 18] });
+                } else {
+                    segs.push({ name: "FRONT 9", h: [1, 9] });
+                    segs.push({ name: "BACK 9", h: [10, 18] });
+                }
+                const results = [];
+                const net = { 0: 0, 1: 0, 2: 0, 3: 0 };
+
+                segs.forEach(sig => {
+                    const pts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                    for (let h = sig.h[0]; h <= sig.h[1]; h++) {
+                        if (this.d.junk && this.d.junk[h]) {
+                            Object.keys(this.d.junk[h]).forEach(k => {
+                                if (this.d.junk[h][k]) {
+                                    const pIdx = parseInt(k.split('_')[0]);
+                                    if (players.includes(pIdx)) pts[pIdx]++;
+                                }
+                            });
+                        }
+                    }
+                    let maxP = -1;
+                    players.forEach(i => { if (pts[i] > maxP) maxP = pts[i]; });
+                    const winners = [];
+                    if (maxP > 0) {
+                        players.forEach(i => { if (pts[i] === maxP) winners.push(i); });
+                    }
+                    const res = { name: sig.name, winners: [], pot: pot, push: false };
+                    if (winners.length > 0) {
+                        const winShare = pot / winners.length;
+                        players.forEach(i => { if (winners.includes(i)) net[i] += (winShare - bet); else net[i] -= bet; });
+                        res.winners = winners;
+                    } else { res.push = true; }
+                    results.push(res);
+                });
+                return { results, net, players };
+            },
+
+            uCard: function () {
+                const c = CS[this.d.crs] || CS['cc'];
+                const cardCon = document.getElementById('card-con-body');
+                if (!cardCon) return;
+
+                const build9 = (startH, label) => {
+                    let hH = `<tr><th>#</th>`;
+                    for (let i = startH; i < startH + 9; i++) hH += `<th>${i}</th>`;
+                    hH += '<th>TOT</th></tr>';
+
+                    let hP = '<tr class="par-row"><td>PAR</td>';
+                    let totP = 0;
+                    for (let i = startH; i < startH + 9; i++) { hP += `<td>${c.p[i - 1]}</td>`; totP += c.p[i - 1]; }
+                    hP += `<td>${totP}</td></tr>`;
+
+                    let pRows = '';
+                    [0, 1, 2, 3].forEach(pIdx => {
+                        let r = `<tr><td>${this.d.ps[pIdx].substring(0, 8)}</td>`;
+                        let tot = 0;
+                        for (let i = startH; i < startH + 9; i++) {
+                            const s = (this.d.s[i] && this.d.s[i][pIdx]);
+                            const par = c.p[i - 1];
+                            let valHTML = '';
+                            if (s) {
+                                tot += s;
+                                const d = s - par;
+                                let cls = '';
+                                if (d === -1) cls = 'sc-bird';
+                                else if (d <= -2) cls = 'sc-eagle';
+                                else if (d === 1) cls = 'sc-bog';
+                                else if (d >= 2) cls = 'sc-dbl';
+                                valHTML = `<div class="sc-val ${cls}">${s}</div>`;
+                            }
+
+                            // Handicap Dots
+                            const pops = this.getPops(pIdx, i - 1);
+                            if (pops > 0) {
+                                let dStr = '';
+                                for (let k = 0; k < pops; k++) dStr += '•';
+                                valHTML += `<div style="font-size:16px; line-height:10px; color:#F472B6; position:absolute; bottom:2px; right:2px; letter-spacing:-2px;">${dStr}</div>`;
+                            }
+
+                            r += `<td style="position:relative;">${valHTML}</td>`;
+                        }
+                        r += `<td>${tot}</td></tr>`;
+                        pRows += r;
+                    });
+
+                    return `<div style="margin-bottom:20px;">
+                        <div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:4px;">${label}</div>
+                        <div class="card-table-wrap">
+                            <table><thead id="tb-head-${startH}">${hH}</thead><tbody id="tb-body-${startH}">${hP}${pRows}</tbody></table>
+                        </div>
+                    </div>`;
+                };
+
+                cardCon.innerHTML = build9(1, 'FRONT 9') + build9(10, 'BACK 9');
+
+                // GROSS TOTALS SECTION
+                let totHTML = '<div style="margin-top:20px; padding:12px; background:#1E293B; border:1px solid #334155; border-radius:12px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:8px; text-transform:uppercase;">Gross Totals</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">';
+                this.d.ps.forEach((p, i) => {
+                    let t = 0;
+                    for (let h = 1; h <= 18; h++) if (this.d.s[h] && this.d.s[h][i]) t += this.d.s[h][i];
+                    totHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#94A3B8; text-transform:uppercase;">${p.substring(0, 8)}</span><span style="font-size:15px; font-weight:900; color:white;">${t || '-'}</span></div>`;
+                });
+                totHTML += '</div></div>';
+                cardCon.innerHTML += totHTML;
+
+                const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                const pts = { 0: 0, 1: 0, 2: 0, 3: 0 }; // Scramble Points
+                let resHTML = "";
+                const isScramble = (this.d.gameType === 'scramble');
+
+                ["CARTS (1-6)", "OPPOSITES (7-12)", "DRIVERS (13-18)"].forEach((lbl, idx) => {
+                    let r = this.calcSeg(idx);
+
+                    if (isScramble) {
+                        if (r.winner === 1) {
+                            r.seg.t1.forEach(p => bets[p] += r.amt);
+                            r.seg.t2.forEach(p => bets[p] -= r.amt);
+                        } else if (r.winner === 2) {
+                            r.seg.t2.forEach(p => bets[p] += r.amt);
+                            r.seg.t1.forEach(p => bets[p] -= r.amt);
+                        }
+                    } else {
+                        if (r.winner === 1) {
+                            r.seg.t1.forEach(p => bets[p] += r.amt);
+                            r.seg.t2.forEach(p => bets[p] -= r.amt);
+                        } else if (r.winner === 2) {
+                            r.seg.t2.forEach(p => bets[p] += r.amt);
+                            r.seg.t1.forEach(p => bets[p] -= r.amt);
+                        }
+                    }
+
+                    resHTML += `<div style="margin-bottom:16px;">`;
+                    let wTxt = "ALL SQUARE";
+                    let wCol = "white";
+
+                    if (isScramble) {
+                        if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN BLOCK (${r.w1} pts)`; wCol = "#10B981"; }
+                        else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN BLOCK (${r.w2} pts)`; wCol = "#F59E0B"; }
+                        else { wTxt = `BLOCK TIED (${r.w1} pts each)`; }
+                    } else {
+                        if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN $${r.amt}`; wCol = "#10B981"; }
+                        if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN $${r.amt}`; wCol = "#F59E0B"; }
+                    }
+
+                    // Press Badge (Only for COD)
+                    let pBadge = "";
+                    if (!isScramble && r.press) {
+                        if (r.winner === r.press.team) pBadge = ` <span style="color:#F472B6; font-size:11px;">🔥 PRESS WON</span>`;
+                        else if (r.winner === 0 && r.press.type === 2) pBadge = ` <span style="color:#94A3B8; font-size:11px;">🛡️ SAVED</span>`;
+                        else if (r.winner !== 0 && r.winner !== r.press.team) pBadge = ` <span style="color:#F87171; font-size:11px;">💀 PRESS LOST</span>`;
+                    }
+
+                    resHTML += `<div style="font-weight:900; color:#94A3B8; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${lbl}</div>`;
+                    resHTML += `<div style="font-size:14px; font-weight:900; color:${wCol}; margin-bottom:8px; border-bottom:1px solid #334155; padding-bottom:4px;">${wTxt}${pBadge}</div>`;
+
+
+                    // Hole Badges
+                    resHTML += `<div style="display:flex; flex-wrap:wrap; gap:6px;">`;
+                    // Regenerate Holes Array for this segment
+                    const sRH = (idx * 6) + 1;
+                    const hArr = [];
+                    for (let k = 0; k < 6; k++) {
+                        let rh = sRH + k; let absH = rh;
+                        if (this.d.start === 10) { if (rh <= 9) absH = rh + 9; else absH = rh - 9; }
+                        hArr.push(absH);
+                    }
+
+                    hArr.forEach(h => {
+                        const s = this.d.s[h];
+                        if (!s || Object.keys(s).length < 4) return;
+
+                        const p1a = r.seg.t1[0], p1b = r.seg.t1[1];
+                        const p2a = r.seg.t2[0], p2b = r.seg.t2[1];
+
+                        const n1a = s[p1a] - this.getPops(p1a, h - 1);
+                        const n1b = s[p1b] - this.getPops(p1b, h - 1);
+                        const n2a = s[p2a] - this.getPops(p2a, h - 1);
+                        const n2b = s[p2b] - this.getPops(p2b, h - 1);
+
+                        const best1 = Math.min(n1a, n1b);
+                        const best2 = Math.min(n2a, n2b);
+
+                        let bStyle = "background:#334155; color:#94A3B8;";
+                        let bTxt = `H${h}`;
+                        if (best1 < best2) {
+                            bStyle = "background:#10B981; color:#064E3B;"; // Green
+                            let pName = (n1a === best1) ? this.d.ps[p1a] : this.d.ps[p1b];
+                            if (n1a === best1 && n1b === best1) pName = "Team";
+                            bTxt = `H${h}: ${pName.substring(0, 3)} (${best1})`;
+                        } else if (best2 < best1) {
+                            bStyle = "background:#F59E0B; color:#78350F;"; // Amber
+                            let pName = (n2a === best2) ? this.d.ps[p2a] : this.d.ps[p2b];
+                            if (n2a === best2 && n2b === best2) pName = "Team";
+                            bTxt = `H${h}: ${pName.substring(0, 3)} (${best2})`;
+                        } else {
+                            // Tie
+                            bTxt = `H${h}: - (${best1})`;
+                        }
+                        resHTML += `<div style="${bStyle} padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">${bTxt}</div>`;
+                    });
+                    resHTML += `</div></div>`;
+                });
+
+                if (isScramble) {
+                    resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:8px;"><div style="font-size:11px; font-weight:900; color:white; margin-bottom:4px;">SCRAMBLE TOTALS (NET)</div>`;
+                    [0, 1, 2, 3].forEach(i => { resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${bets[i] >= 0 ? '#10B981' : '#F87171'}">${bets[i] >= 0 ? '+' : ''}$${bets[i]}</span></div>` });
+                    resHTML += `</div>`;
+                } else {
+                    resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:8px;"><div style="font-size:11px; font-weight:900; color:white; margin-bottom:4px;">NET TOTALS</div>`;
+                    [0, 1, 2, 3].forEach(i => { resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${bets[i] >= 0 ? '#10B981' : '#F87171'}">${bets[i] >= 0 ? '+' : ''}$${bets[i]}</span></div>` });
+                    resHTML += `</div>`;
+                }
+
+                const jRes = this.calcJunkRes();
+                if (jRes) {
+                    resHTML += `<div style="margin-top:20px; border-top:1px dashed #475569; padding-top:12px;"><div style="font-size:11px; font-weight:900; color:#F59E0B; margin-bottom:4px;">JUNK PAYOUTS</div>`;
+                    jRes.results.forEach(r => {
+                        let msg = "PUSH (No Winners)"; let col = "#94A3B8";
+                        if (r.winners.length > 0) {
+                            const n = r.winners.map(i => this.d.ps[i]).join(', ');
+                            msg = `WIN: ${n}`; col = "#10B981";
+                        }
+                        resHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; color:#cbd5e1; margin-bottom:2px;"><span>${r.name} ($${r.pot})</span><span style="color:${col}; font-weight:700;">${msg}</span></div>`;
+                    });
+                    resHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px;"><div style="font-size:10px; font-weight:900; color:#94A3B8;">JUNK NET</div>`;
+                    jRes.players.forEach(i => {
+                        const raw = jRes.net[i];
+                        const v = (raw >= 0) ? Math.round(raw) : -Math.round(Math.abs(raw));
+                        resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${v >= 0 ? '#10B981' : '#F87171'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
+                    });
+                    resHTML += `</div></div>`;
+                }
+
+                document.getElementById('res-txt').innerHTML = resHTML;
+
+                const btn = document.getElementById('hist-btn');
+                if (btn) {
+                    const exists = this.d.history.some(h => h.id === this.d.gameId);
+                    if (exists || Object.keys(this.d.s).length === 0) { btn.disabled = true; btn.innerText = "HISTORY SAVED"; btn.style.background = "#334155"; }
+                    else { btn.disabled = false; btn.innerText = "SAVE TO HISTORY"; btn.style.background = "#10B981"; }
+                }
+            },
+
+            share: async function () {
+                const btn = document.getElementById('sms-btn');
+                try {
+                    btn.innerText = "GENERATING PREVIEW...";
+
+                    const c = CS[this.d.crs] || CS['cc'];
+                    const ps = this.d.ps;
+
+                    const isScramble = (this.d.gameType === 'scramble');
+                    const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                    const pts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                    const segRes = [];
+
+                    [0, 1, 2].forEach(idx => {
+                        let r = this.calcSeg(idx);
+                        let wStr = "";
+
+                        if (isScramble) {
+                            if (r.winner === 1) {
+                                wStr = `${ps[r.seg.t1[0]]}/${ps[r.seg.t1[1]]} (+$${r.amt})`;
+                                r.seg.t1.forEach(p => bets[p] += r.amt);
+                                r.seg.t2.forEach(p => bets[p] -= r.amt);
+                            } else if (r.winner === 2) {
+                                wStr = `${ps[r.seg.t2[0]]}/${ps[r.seg.t2[1]]} (+$${r.amt})`;
+                                r.seg.t2.forEach(p => bets[p] += r.amt);
+                                r.seg.t1.forEach(p => bets[p] -= r.amt);
+                            }
+                            if (r.winner === 0) wStr = `TIE (${r.w1}-${r.w2})`;
+                            else wStr += ` (${Math.max(r.w1, r.w2)} pts)`;
+
+                            segRes.push({ name: ["BLOCK 1 (1-6)", "BLOCK 2 (7-12)", "BLOCK 3 (13-18)"][idx], val: wStr });
+                        } else {
+                            // COD Logic
+                            wStr = "TIE";
+                            if (r.winner === 1) {
+                                wStr = `${ps[r.seg.t1[0]]}/${ps[r.seg.t1[1]]} (+$${r.amt})`;
+                                r.seg.t1.forEach(p => bets[p] += r.amt);
+                                r.seg.t2.forEach(p => bets[p] -= r.amt);
+                            } else if (r.winner === 2) {
+                                wStr = `${ps[r.seg.t2[0]]}/${ps[r.seg.t2[1]]} (+$${r.amt})`;
+                                r.seg.t2.forEach(p => bets[p] += r.amt);
+                                r.seg.t1.forEach(p => bets[p] -= r.amt);
+                            }
+                            let pStatus = "";
+                            if (r.press && r.winner === r.press.team) pStatus = " 🔥 PRESS WON";
+                            else if (r.press && r.winner === 0 && r.press.type === 2) pStatus = " 🛡️ SAVED";
+                            else if (r.press && r.winner !== r.press.team && r.winner !== 0) pStatus = " 💀 PRESS LOST";
+                            segRes.push({ name: ["CARTS", "OPPOSITES", "DRIVERS"][idx], val: wStr + pStatus });
+                        }
+                    });
+
+                    // 2. Calculate Recap (Injected)
+                    const pRecap = [0, 1, 2, 3].map(i => ({
+                        id: i, name: ps[i],
+                        dist: { bird: 0, par: 0, bog: 0, dbl: 0 },
+                        totalStrokes: 0, netToPar: 0, birds: 0, dbls: 0
+                    }));
+                    for (let x = 1; x <= 18; x++) {
+                        const par = c.p[x - 1];
+                        let any = false;
+                        [0, 1, 2, 3].forEach(i => {
+                            const s = (this.d.s[x] && this.d.s[x][i]);
+                            if (typeof s === 'number') { any = true; pRecap[i].totalStrokes += s; const d = s - par; if (d <= -1) { pRecap[i].dist.bird++; pRecap[i].birds++; } else if (d === 0) pRecap[i].dist.par++; else if (d === 1) pRecap[i].dist.bog++; else { pRecap[i].dist.dbl++; pRecap[i].dbls++; } const pops = this.getPops(i, x - 1); pRecap[i].netToPar += (s - pops) - par; }
+                        });
+                    }
+                    let recapHTML = '';
+                    // FIREBALL HOLES (Share)
+                    // Recalculate using pRecap scope data? No, need Hole Data.
+                    // Loop holes again.
+                    const fbHoles = [];
+                    for (let h = 1; h <= 18; h++) {
+                        if (!this.d.s[h]) continue;
+                        const par = c.p[h - 1];
+                        const bMakers = [];
+                        [0, 1, 2, 3].forEach(i => {
+                            const s = (this.d.s[h] && this.d.s[h][i]); // Note: In Share, 'i' maps directly? 
+                            // Wait. In share(), pRecap used loop [0,1,2,3].
+                            // this.d.s[x][i] was accessed directly (line 2469).
+                            // Is d.s keyed by Seat Index (0-3) or Player ID?
+                            // Line 1517: this.d.s[this.d.h][pid] = s; (PID is from slotMap).
+                            // If SlotMap is 0->0, then PID is 0.
+                            // In old code, we verified pid is int.
+                            // Assuming share() logic at 2469 `this.d.s[x][i]` is correct (using 'i' as key), then we use 'i' here.
+
+                            if (typeof s === 'number' && s < par) bMakers.push(ps[i]);
+                        });
+                        if (bMakers.length > 0) fbHoles.push({ h: h, ps: bMakers });
+                    }
+
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:linear-gradient(135deg, #1E293B, #332d1e);">
+                        <div class="flex-r" style="margin-bottom:8px;">
+                            <div class="tx-sm" style="color:#F59E0B;">🔥 FIREBALL HOLES</div>
+                            <div class="tx-sm" style="color:white; font-size:10px;">TOTAL: ${fbHoles.length}</div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px;">`;
+
+                    if (fbHoles.length > 0) {
+                        fbHoles.forEach(item => {
+                            recapHTML += `<div style="background:#0F172A; padding:4px 8px; border-radius:6px; border:1px solid #F59E0B; display:flex; align-items:center; justify-content:space-between;">
+                                <span style="color:#F59E0B; font-weight:900; font-size:11px;">HOLE ${item.h}</span>
+                                <span style="color:white; font-weight:700; font-size:11px; text-align:right;">${item.ps.join(', ')}</span>
+                            </div>`;
+                        });
+                    } else {
+                        recapHTML += `<div style="color:#94A3B8; font-size:10px; text-align:center;">No Fireballs.</div>`;
+                    }
+                    recapHTML += `</div></div>`;
+
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING BREAKDOWN</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div><div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div><div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div></div>`;
+                    pRecap.forEach(p => { if (p.totalStrokes === 0) return; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div><div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div><div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div><div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div></div>`; });
+                    recapHTML += `</div>`;
+
+                    // HANDICAP SUMMARY (Share)
+                    const sHoles = [];
+                    for (let h = 1; h <= 18; h++) {
+                        const hcpAlloc = c.hcp[h - 1];
+                        const getters = [];
+                        [0, 1, 2, 3].forEach(i => {
+                            const pops = this.getPops(i, h - 1);
+                            if (pops > 0) getters.push(`${ps[i]} (${pops})`);
+                        });
+                        if (getters.length > 0) sHoles.push({ h: h, hcp: hcpAlloc, list: getters });
+                    }
+
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;">
+                        <div class="tx-sm" style="color:white; margin-bottom:8px;">HANDICAP SUMMARY</div>
+                        <div style="display:flex; flex-direction:column; gap:4px;">`;
+                    if (sHoles.length > 0) {
+                        sHoles.forEach(item => {
+                            recapHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:4px 8px; border-radius:6px; border:1px solid #334155;">
+                                <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${item.h} <span style="color:#94A3B8; font-weight:400;">(HCP ${item.hcp})</span></span>
+                                <span style="color:#F59E0B; font-size:10px; font-weight:700; text-align:right;">${item.list.join(', ')}</span>
+                            </div>`;
+                        });
+                    } else {
+                        recapHTML += `<div style="color:#94A3B8; font-size:10px; padding:4px;">No strokes given.</div>`;
+                    }
+                    recapHTML += `</div></div>`;
+
+                    // JUNK for Share
+                    const junk = this.getJunkStats();
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:12px;">🟢</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:12px;">🏖️</div><div style="flex:1; text-align:center; color:#8B5CF6; font-size:12px;">⛳</div></div>`;
+                    pRecap.forEach(p => { const j = junk[p.name]; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.G : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.S : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.P : 0}</div></div>`; });
+                    recapHTML += `</div>`;
+
+                    // 2. Build Capture HTML
+                    const sn = document.getElementById('share-node');
+                    let finHTML = '';
+
+                    if (isScramble) {
+                        [0, 1, 2, 3].forEach(i => {
+                            const v = bets[i];
+                            finHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
+                        });
+                    } else {
+                        [0, 1, 2, 3].forEach(i => {
+                            const v = bets[i];
+                            finHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
+                        });
+                    }
+
+                    let segHTML = '';
+                    segRes.forEach(s => {
+                        segHTML += `<div class="sn-row" style="font-size:14px;"><span style="color:#94A3B8">${s.name}</span><span>${s.val}</span></div>`;
+                    });
+                    // Add Junk Financials to Share
+                    const jRes = this.calcJunkRes();
+                    if (jRes) {
+                        segHTML += `<div style="margin-top:12px; border-top:1px dashed #475569; padding-top:6px; font-size:12px; color:#F59E0B; font-weight:900;">JUNK PAYOUTS</div>`;
+                        jRes.players.forEach(i => {
+                            const raw = jRes.net[i];
+                            const v = (raw >= 0) ? Math.round(raw) : -Math.round(Math.abs(raw));
+                            segHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
+                        });
+                    }
+
+                    // 3. Scorecard Grid (GROSS & NET)
+                    const buildCard_v2 = (start, lbl, isNet) => {
+                        // Standard Theme Shared by Both
+                        const theme = '#10B981';
+                        const subC = '#334155';
+                        const bgHead = '#0F172A';
+                        const bgBody = '#1E293B';
+
+                        let h = `<div style="margin-top:16px; font-size:11px; font-weight:900; color:${theme}; margin-bottom:4px; text-transform:uppercase;">${lbl}</div><div class="sn-grid" style="border-color:${subC};">`;
+
+                        // HEADER
+                        h += `<div class="sn-g-row head" style="background:${bgHead}; border-color:${subC};">`;
+                        h += `<div class="sn-col nm" style="border-color:${subC};">PLY</div>`;
+                        for (let i = start; i < start + 9; i++) h += `<div class="sn-col h" style="border-color:${subC};">${i}</div>`;
+                        h += `<div class="sn-col tot" style="border-color:${subC}; color:${theme};">TOT</div>`;
+                        if (start === 10) h += `<div class="sn-col rnd" style="border-color:${subC}; color:${theme};">RND</div>`;
+                        h += `</div>`;
+
+                        // ROWS
+                        [0, 1, 2, 3].forEach(pIdx => {
+                            let pName = ps[pIdx].substring(0, 3).toUpperCase();
+                            h += `<div class="sn-g-row body" style="border-color:${subC}; background:${bgBody};">`;
+                            h += `<div class="sn-col nm" style="border-color:${subC};">${pName}</div>`;
+
+                            let segTot = 0;
+                            // Holes
+                            for (let i = start; i < start + 9; i++) {
+                                const s = (this.d.s[i] && this.d.s[i][pIdx]);
+                                let disp = '-';
+                                let tCol = 'white'; let bStyle = '';
+
+                                if (typeof s === 'number') {
+                                    // Net Logic
+                                    const pops = isNet ? this.getPops(pIdx, i - 1, true) : 0;
+                                    const val = s - pops;
+                                    disp = val;
+                                    segTot += val;
+
+                                    const par = c.p[i - 1];
+                                    const d = val - par;
+
+                                    // 1. Determine Text Color (Lime if Stroked in Net, else White)
+                                    if (isNet && pops > 0) tCol = '#bef264'; // LIME
+
+                                    // 2. Determine Border (Birdie/Bogey)
+                                    if (d <= -1) {
+                                        const bCol = '#10B981'; // Green
+                                        bStyle = `border:${d === -1 ? '1px solid' : '3px double'} ${bCol}; border-radius:50%;`;
+                                        // If Net card and stroke, keep Lime text. Else use Green.
+                                        if (!isNet || pops === 0) tCol = bCol;
+                                    } else if (d >= 1) {
+                                        const bCol = '#F87171'; // Red
+                                        bStyle = `border:${d === 1 ? '1px solid' : '3px double'} ${bCol};`;
+                                        if (!isNet || pops === 0) tCol = bCol;
+                                    }
+                                }
+                                h += `<div class="sn-col sc" style="color:${tCol}; border-color:${subC};"><div class="sn-ball" style="${bStyle}">${disp}</div></div>`;
+                            }
+
+                            h += `<div class="sn-col tot" style="border-color:${subC}; color:${theme};">${segTot}</div>`;
+                            if (start === 10) {
+                                let grand = 0;
+                                for (let x = 1; x <= 18; x++) {
+                                    const rs = this.d.s[x] && this.d.s[x][pIdx];
+                                    if (typeof rs === 'number') {
+                                        grand += (isNet ? (rs - this.getPops(pIdx, x - 1)) : rs);
+                                    }
+                                }
+                                h += `<div class="sn-col rnd" style="border-color:${subC}; color:${theme};">${grand}</div>`;
+                            }
+                            h += `</div>`;
+                        });
+                        h += `</div>`;
+                        return h;
+                    };
+
+                    sn.innerHTML = `
+                        <div class="sn-head">${c.n}</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v241</div>
+                        <div class="sn-sect">
+                            <div class="sn-sect-tl">FINANCIALS</div>
+                            ${finHTML}
+                        </div>
+                        <div class="sn-sect">
+                            <div class="sn-sect-tl">MATCH RESULTS</div>
+                            ${segHTML}
+                        </div>
+                        <div class="sn-sect">
+                             <div class="sn-sect-tl">ROUND RECAP</div>
+                             ${recapHTML}
+                        </div>
+                        <div class="sn-sect">
+                             <div class="sn-sect-tl">GROSS SCORECARD</div>
+                             ${buildCard_v2(1, 'FRONT 9', false)}
+                             ${buildCard_v2(10, 'BACK 9', false)}
+                        </div>
+                        <div class="sn-sect">
+                             <div class="sn-sect-tl">NET SCORECARD</div>
+                             ${buildCard_v2(1, 'FRONT 9 (NET)', true)}
+                             ${buildCard_v2(10, 'BACK 9 (NET)', true)}
+                        </div>
+                    `;
+
+                    // Generate Image
+                    await new Promise(r => setTimeout(r, 200));
+                    const canvas = await html2canvas(sn, { backgroundColor: '#0F172A', scale: 2 });
+
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) throw new Error("Canvas Blob Failed");
+                        this.shareBlob = blob;
+                        const url = URL.createObjectURL(blob);
+
+                        document.getElementById('sp-img').src = url;
+                        document.getElementById('share-preview-modal').classList.add('active');
+                        btn.innerText = "SHARE IMAGE SUMMARY";
+
+                    }, 'image/png');
+
+                } catch (e) {
+                    alert("Image Share Error: " + e.message);
+                    btn.innerText = "SHARE ERROR";
+                }
+            },
+
+            closeSharePreview: function () {
+                document.getElementById('share-preview-modal').classList.remove('active');
+            },
+
+            doShareParams: async function () {
+                if (!this.shareBlob) return;
+                const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
+
+                [0, 1, 2].forEach(idx => {
+                    let r = this.calcSeg(idx);
+                    if (r.winner === 1) {
+                        r.seg.t1.forEach(p => bets[p] += r.amt);
+                        r.seg.t2.forEach(p => bets[p] -= r.amt);
+                    } else if (r.winner === 2) {
+                        r.seg.t2.forEach(p => bets[p] += r.amt);
+                        r.seg.t1.forEach(p => bets[p] -= r.amt);
+                    }
+                });
+
+                // 2. Who Pays Who
+                let debtors = [], creditors = [];
+                [0, 1, 2, 3].forEach(i => {
+                    if (bets[i] < 0) debtors.push({ id: i, val: Math.abs(bets[i]) });
+                    if (bets[i] > 0) creditors.push({ id: i, val: bets[i] });
+                });
+
+                let sett = "";
+                if (debtors.length === 0) sett = "\nALL SQUARE";
+                else {
+                    sett = "\n\nPAYOUTS:\n";
+                    debtors.forEach(d => {
+                        while (d.val > 0 && creditors.length > 0) {
+                            let c = creditors[0];
+                            let amt = Math.min(d.val, c.val);
+                            sett += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${amt}\n`;
+                            d.val -= amt;
+                            c.val -= amt;
+                            if (c.val === 0) creditors.shift();
+                        }
+                    });
+                }
+
+                const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
+                const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';
+                const sText = `Results from ${cName} on ${new Date().toLocaleDateString()}${sett}`;
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'COD Golf Summary',
+                            text: sText
+                        });
+                    } catch (e) {
+                        if (e.name !== 'AbortError') alert("Share Failed: " + e.message);
+                    }
+                } else {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(this.shareBlob);
+                    a.download = "cod_scorecard.png";
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                }
+            },
+
+
+            saveToHistory: function () {
+                if (!this.d.s || Object.keys(this.d.s).length === 0) return;
+                const c = CS[this.d.crs] || CS['cc'];
+                const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
+
+                [0, 1, 2].forEach(idx => {
+                    let r = this.calcSeg(idx);
+                    if (r.winner === 1) {
+                        r.seg.t1.forEach(p => bets[p] += r.amt);
+                        r.seg.t2.forEach(p => bets[p] -= r.amt);
+                    } else if (r.winner === 2) {
+                        r.seg.t2.forEach(p => bets[p] += r.amt);
+                        r.seg.t1.forEach(p => bets[p] -= r.amt);
+                    }
+                });
+                const rec = { id: Date.now(), date: new Date().toLocaleDateString(), course: c.n, ps: this.d.ps, net: [0, 1, 2, 3].map(i => bets[i]) };
+                this.d.gameId = rec.id;
+                this.d.history.push(rec);
+                this.save();
+                this.uCard();
+                this.renderHistory();
+            },
+
+            renderHistory: function () {
+                const div = document.getElementById('hist-list');
+                const careerDiv = document.getElementById('career-earnings');
+                if (!div || !careerDiv) return;
+
+                const stats = {};
+                const labels = {}; // Store display name
+
+                this.d.history.forEach(r => {
+                    r.ps.forEach((p, i) => {
+                        const k = p.trim().toUpperCase();
+                        if (!stats[k]) {
+                            stats[k] = 0;
+                            labels[k] = p.trim();
+                        }
+                        stats[k] += r.net[i];
+
+                        // If we have a stored label that is ALL CAPS, but this new one isn't, prefer the new one (e.g. switch DAN -> Dan)
+                        // This helps fix the "ugly" all caps history if a user corrected it later.
+                        const curLbl = labels[k];
+                        const newLbl = p.trim();
+                        if (curLbl === k && newLbl !== k) {
+                            labels[k] = newLbl;
+                        }
+                    });
+                });
+
+                let cHTML = '';
+                // Sort by earnings matching the case-insensitive aggregation
+                Object.keys(stats).sort((a, b) => stats[b] - stats[a]).forEach(k => {
+                    const v = stats[k];
+                    const pName = labels[k];
+                    cHTML += `<span style="display:inline-block; margin-right:12px; color:${v >= 0 ? '#10B981' : '#F87171'}"><strong>${pName}:</strong> ${v >= 0 ? '+' : ''}${v}</span>`;
+                });
+                if (cHTML === '') cHTML = 'No data yet.';
+
+                careerDiv.innerHTML = 'Updating...';
+                setTimeout(() => { careerDiv.innerHTML = cHTML; }, 10);
+
+                let hH = '';
+                const hist = this.d.history.slice().reverse();
+
+                const listClass = this.histEdit ? 'hist-edit-mode' : '';
+                div.className = listClass;
+
+                hist.forEach(r => {
+                    let netS = r.ps.map((p, i) => `${p}:${r.net[i] >= 0 ? '+' : ''}${r.net[i]}`).join(', ');
+                    hH += `<div class="hist-item">
+                        <input type="checkbox" class="hist-chk" onchange="App.onChk(${r.id}, this)">
+                        <div style="flex:1">
+                            <div style="font-weight:bold; color:white;">${r.date} - ${r.course}</div>
+                            <div style="font-size:11px;">${netS}</div>
+                        </div>
+                    </div>`;
+                });
+
+                if (hH === '') hH = '<div style="padding:10px; color:#64748b; font-style:italic;">No history yet.</div>';
+                div.innerHTML = hH;
+            },
+
+            onChk: function (id, el) {
+                if (el.checked) {
+                    if (!this.selIds.includes(id)) this.selIds.push(id);
+                } else {
+                    this.selIds = this.selIds.filter(x => x !== id);
+                }
+                const btn = document.getElementById('hist-edit-btn');
+                btn.innerText = `DELETE (${this.selIds.length})`;
+            },
+
+            handleManageClick: function () {
+                if (!this.histEdit) {
+                    this.histEdit = true;
+                    this.selIds = [];
+                    const btn = document.getElementById('hist-edit-btn');
+                    btn.innerText = "DELETE (0)";
+                    btn.style.backgroundColor = "#EF4444";
+                    this.renderHistory();
+                } else {
+                    this.doDelete();
+                }
+            },
+
+            doDelete: function () {
+                if (this.selIds.length === 0) {
+                    this.exitEditMode();
+                    return;
+                }
+                alert(`Deleting ${this.selIds.length} items...`);
+                this.d.history = this.d.history.filter(h => !this.selIds.includes(h.id));
+                this.save();
+                this.exitEditMode();
+            },
+
+            exitEditMode: function () {
+                this.histEdit = false;
+                this.selIds = [];
+                const btn = document.getElementById('hist-edit-btn');
+                btn.innerText = "MANAGE";
+                btn.style.backgroundColor = "#334155";
+
+                this.renderHistory();
+            }
+        };
+        window.addEventListener('load', () => App.init());
+        window.App = App;
+    </script>
+</body>
+
+</html>
