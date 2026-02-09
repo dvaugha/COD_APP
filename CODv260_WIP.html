@@ -1634,6 +1634,11 @@
                 uDash: function () {
                     const h = this.d.h;
                     const c = CS[this.d.crs] || CS['cc'];
+                    if (!c || !c.p) {
+                        alert("Course Data Missing. Please select a course again.");
+                        this.nav('v-setup');
+                        return;
+                    }
                     const par = c.p[h - 1];
                     const hcp = c.hcp[h - 1];
                     let dist = 0;
@@ -1838,35 +1843,47 @@
                     this.checkCourseOptions();
                 },
                 startRound: function () {
-                    const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
-                    if (p.some(x => !x)) { alert("Seats!"); return; }
-                    this.d.ps = p;
-                    this.d.crs = document.getElementById('s-course').value;
-                    this.d.tee = document.getElementById('s-tee').value;
-                    this.d.bet = parseInt(document.getElementById('s-bet').value);
-                    this.d.start = parseInt(document.getElementById('s-start').value);
-                    this.d.gameType = document.getElementById('g-mode').value;
-                    this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
-                    this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
-                    this.d.s = {};
-                    this.d.junk = {};
-                    this.d.press = {};
-                    this.d.h = this.d.start;
+                    try {
+                        const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
+                        if (p.some(x => !x)) { alert("Please assign all 4 seats!"); return; }
+                        this.d.ps = p;
+                        this.d.crs = document.getElementById('s-course').value;
+                        this.d.tee = document.getElementById('s-tee').value;
+                        this.d.bet = parseInt(document.getElementById('s-bet').value);
+                        this.d.start = parseInt(document.getElementById('s-start').value);
+                        this.d.gameType = document.getElementById('g-mode').value;
+                        this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
+                        this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
+                        this.d.s = {};
+                        this.d.junk = {};
+                        this.d.press = {};
+                        this.d.h = this.d.start;
 
-                    // Composite Course Logic
-                    const crsData = CS[this.d.crs];
-                    if (crsData.nines) {
-                        const n1 = document.getElementById('s-n1').value;
-                        const n2 = document.getElementById('s-n2').value;
-                        this.d.nines = [n1, n2];
-                        this.buildComposite(this.d.crs, n1, n2);
-                    } else {
-                        delete this.d.nines;
+                        // Composite Course Logic
+                        const crsData = CS[this.d.crs];
+                        if (crsData.nines) {
+                            const n1 = document.getElementById('s-n1').value;
+                            const n2 = document.getElementById('s-n2').value;
+                            if (!n1 || !n2) { alert("Please select both nines."); return; }
+                            this.d.nines = [n1, n2];
+                            this.buildComposite(this.d.crs, n1, n2);
+
+                            // Validate Build
+                            if (!CS[this.d.crs].p || !CS[this.d.crs].hcp) {
+                                alert("Error building course data. Please try re-selecting the course.");
+                                return;
+                            }
+                        } else {
+                            delete this.d.nines;
+                        }
+
+                        this.save();
+                        this.nav('v-dash');
+                        this.keepAwake();
+                    } catch (e) {
+                        alert("Start Error: " + e.message);
+                        console.error(e);
                     }
-
-                    this.save();
-                    this.nav('v-dash');
-                    this.keepAwake();
                 },
 
                 filterCrs: function (reg) {
