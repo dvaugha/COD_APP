@@ -1653,18 +1653,24 @@
                 },
                 uDash: function () {
                     try {
-                        alert("Debug: uDash Enter (Real)");
+                        // DESTRUCTIVE DEBUG
+                        document.body.innerHTML = "<h1 style='color:red; background:white; font-size:40px; padding:20px; z-index:9999; position:fixed; top:0; left:0; width:100%; height:100%;'>DEBUG: U-DASH RUNNING<br>Par Check...</h1>";
 
                         const h = this.d.h;
                         const c = CS[this.d.crs] || CS['cc'];
                         if (!c || !c.p) {
-                            alert("Course Data Missing. Please select a course again.");
-                            this.nav('v-setup');
+                            document.body.innerHTML += "<h2>DATA MISSING</h2>";
+                            // alert("Course Data Missing. Please select a course again.");
+                            // this.nav('v-setup'); 
                             return;
                         }
                         const par = c.p[h - 1];
-                        alert("Debug: Par is " + par);
+                        document.body.innerHTML += "<h2>Par: " + par + "</h2>";
 
+                        // Stop execution here to verify visual
+                        return;
+
+                        // Dead code below
                         const hcp = c.hcp[h - 1];
                         let dist = 0;
                         if (c.y[this.d.tee] && c.y[this.d.tee][h - 1]) dist = c.y[this.d.tee][h - 1];
