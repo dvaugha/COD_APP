@@ -1596,17 +1596,19 @@
 
                 nav: function (id) {
                     try {
-                        alert("Debug: Nav called with " + id);
+                        // alert("Debug: Nav called with " + id);
                         document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
                         const el = document.getElementById(id);
                         if (!el) { alert("Error: View " + id + " not found!"); return; }
                         el.classList.add('active');
+                        // alert("Debug: " + id + " classList: " + el.className);
+                        document.body.style.color = 'white'; // FORCE COLOR
 
                         if (id === 'v-setup') { this.checkCourseOptions(); }
                         if (id === 'v-dash') {
-                            alert("Debug: calling uDash... type: " + typeof this.uDash);
+                            // alert("Debug: calling uDash... type: " + typeof this.uDash);
                             try { this.uDash(); } catch (e) { alert("Nav uDash Error: " + e); }
-                            alert("Debug: calling updateJunkUI...");
+                            // alert("Debug: calling updateJunkUI...");
                             try { this.updateJunkUI(); } catch (e) { alert("Nav JunkUI Error: " + e); }
                         }
                         if (id === 'v-card') this.uCard();
@@ -1651,8 +1653,7 @@
                 },
                 uDash: function () {
                     try {
-                        // DEBUG
-                        alert("Debug: uDash Enter");
+                        alert("Debug: uDash Enter (Real)");
 
                         const h = this.d.h;
                         const c = CS[this.d.crs] || CS['cc'];
@@ -1662,19 +1663,24 @@
                             return;
                         }
                         const par = c.p[h - 1];
-                        alert("Debug: uDash Par: " + par);
+                        alert("Debug: Par is " + par);
 
                         const hcp = c.hcp[h - 1];
                         let dist = 0;
                         if (c.y[this.d.tee] && c.y[this.d.tee][h - 1]) dist = c.y[this.d.tee][h - 1];
 
-                        document.getElementById('d-h-num').innerText = "HOLE " + h;
+                        document.getElementById('d-h-num').innerText = "HOLE " + h + " (DEBUG)";
                         document.getElementById('d-par').innerText = par;
                         document.getElementById('d-tee-ind').innerText = this.d.tee.toUpperCase() + " TEE";
                         document.getElementById('d-tee-ind').style.color = (this.d.tee === 'gold' ? '#F59E0B' : 'white');
                         document.getElementById('d-dist').innerText = dist;
                         document.getElementById('d-hcp').innerText = hcp;
                         document.getElementById('d-fmt').innerText = (this.d.gameType === 'scramble') ? 'SCRAMBLE' : 'COD MATCH';
+
+                        // Force visible
+                        document.getElementById('v-dash').style.display = 'block';
+                        document.getElementById('d-h-num').style.color = 'red';
+
 
                         // Status
                         let segIdx = 0;
