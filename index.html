@@ -2402,6 +2402,14 @@
             },
 
             tJ: function (idx, type) {
+                const c = CS[this.d.crs] || CS['cc'];
+                if (!c || !c.p) return;
+
+                // Restriction: Greenies only on Par 3s
+                if (type === 'G') {
+                    if (c.p[this.d.h - 1] !== 3) { alert("Greenies only on Par 3s!"); return; }
+                }
+
                 if (!this.d.junk) this.d.junk = {};
                 if (!this.d.junk[this.d.h]) this.d.junk[this.d.h] = {};
                 const pid = this.slotMap[idx];
@@ -2412,7 +2420,28 @@
                 this.updateJunkUI();
             },
             updateJunkUI: function () {
-                document.querySelectorAll('.junk-btn').forEach(b => b.className = 'junk-btn');
+                const c = CS[this.d.crs] || CS['cc'];
+                if (!c || !c.p) return;
+
+                const par = c.p[this.d.h - 1];
+                const isPar3 = (par === 3);
+
+                document.querySelectorAll('.junk-btn').forEach(b => {
+                    b.className = 'junk-btn';
+                    if (b.id.endsWith('-g')) {
+                        if (!isPar3) {
+                            b.style.opacity = '0.2';
+                            b.style.pointerEvents = 'none';
+                        } else {
+                            b.style.opacity = '1';
+                            b.style.pointerEvents = 'auto';
+                        }
+                    } else {
+                        b.style.opacity = '1';
+                        b.style.pointerEvents = 'auto';
+                    }
+                });
+
                 if (!this.d.junk || !this.d.junk[this.d.h]) return;
 
                 [0, 1, 2, 3].forEach(i => {
