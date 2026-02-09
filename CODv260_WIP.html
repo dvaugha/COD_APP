@@ -1637,65 +1637,79 @@
                     this.checkPressModal();
                 },
                 uDash: function () {
-                    const h = this.d.h;
-                    const c = CS[this.d.crs] || CS['cc'];
-                    if (!c || !c.p) {
-                        alert("Course Data Missing. Please select a course again.");
-                        this.nav('v-setup');
-                        return;
-                    }
-                    const par = c.p[h - 1];
-                    const hcp = c.hcp[h - 1];
-                    let dist = 0;
-                    if (c.y[this.d.tee] && c.y[this.d.tee][h - 1]) dist = c.y[this.d.tee][h - 1];
+                    try {
+                        // DEBUG
+                        alert("Debug: uDash Enter");
 
-                    document.getElementById('d-h-num').innerText = "HOLE " + h;
-                    document.getElementById('d-par').innerText = par;
-                    document.getElementById('d-tee-ind').innerText = this.d.tee.toUpperCase() + " TEE";
-                    document.getElementById('d-tee-ind').style.color = (this.d.tee === 'gold' ? '#F59E0B' : 'white');
-                    document.getElementById('d-dist').innerText = dist;
-                    document.getElementById('d-hcp').innerText = hcp;
-                    document.getElementById('d-fmt').innerText = (this.d.gameType === 'scramble') ? 'SCRAMBLE' : 'COD MATCH';
-
-                    // Status
-                    let segIdx = 0;
-                    if (h > 6) segIdx = 1;
-                    if (h > 12) segIdx = 2;
-                    if (this.d.gameType === 'scramble') {
-                        // Scramble Status Logic Placeholder - Default to Segment Logic
-                        const r = this.calcSeg(segIdx);
-                        let st = "ALL SQUARE";
-                        const diff = r.w1 - r.w2;
-                        if (diff !== 0) st = (diff > 0 ? "TEAM 1" : "TEAM 2") + " UP " + Math.abs(diff);
-                        document.getElementById('d-status').innerText = st;
-                    } else {
-                        const r = this.calcSeg(segIdx);
-                        let st = "ALL SQUARE";
-                        const diff = r.w1 - r.w2;
-                        if (diff !== 0) st = (diff > 0 ? "TEAM 1" : "TEAM 2") + " UP " + Math.abs(diff);
-                        document.getElementById('d-status').innerText = st;
-                    }
-
-                    // Players
-                    [0, 1, 2, 3].forEach(i => {
-                        const pid = this.slotMap[i];
-                        if (this.d.chosen[i]) {
-                            document.getElementById('p-name-' + i).innerText = this.d.chosen[i];
-                            // Score
-                            const s = (this.d.s[h] && this.d.s[h][pid]) ? this.d.s[h][pid] : '-';
-                            const sEl = document.getElementById('sc-' + i);
-                            sEl.innerText = s;
-                            // Color (Based on Net)
-                            sEl.style.color = '#cbd5e1';
-                            if (s !== '-') {
-                                const pops = this.getPops(i, h - 1);
-                                const net = s - pops;
-                                if (net < par) sEl.style.color = '#10B981';
-                                else if (net > par) sEl.style.color = '#F87171';
-                                else sEl.style.color = 'white';
-                            }
+                        const h = this.d.h;
+                        const c = CS[this.d.crs] || CS['cc'];
+                        if (!c || !c.p) {
+                            alert("Course Data Missing. Please select a course again.");
+                            this.nav('v-setup');
+                            return;
                         }
-                    });
+                        const par = c.p[h - 1];
+                        alert("Debug: uDash Par: " + par);
+
+                        const hcp = c.hcp[h - 1];
+                        let dist = 0;
+                        if (c.y[this.d.tee] && c.y[this.d.tee][h - 1]) dist = c.y[this.d.tee][h - 1];
+
+                        document.getElementById('d-h-num').innerText = "HOLE " + h;
+                        document.getElementById('d-par').innerText = par;
+                        document.getElementById('d-tee-ind').innerText = this.d.tee.toUpperCase() + " TEE";
+                        document.getElementById('d-tee-ind').style.color = (this.d.tee === 'gold' ? '#F59E0B' : 'white');
+                        document.getElementById('d-dist').innerText = dist;
+                        document.getElementById('d-hcp').innerText = hcp;
+                        document.getElementById('d-fmt').innerText = (this.d.gameType === 'scramble') ? 'SCRAMBLE' : 'COD MATCH';
+
+                        // Status
+                        let segIdx = 0;
+                        if (h > 6) segIdx = 1;
+                        if (h > 12) segIdx = 2;
+
+                        alert("Debug: uDash calling calcSeg");
+
+                        // Simplify calcSeg call just for debug if needed, but keeping logic
+                        if (this.d.gameType === 'scramble') {
+                            const r = this.calcSeg(segIdx);
+                            let st = "ALL SQUARE";
+                            const diff = r.w1 - r.w2;
+                            if (diff !== 0) st = (diff > 0 ? "TEAM 1" : "TEAM 2") + " UP " + Math.abs(diff);
+                            document.getElementById('d-status').innerText = st;
+                        } else {
+                            const r = this.calcSeg(segIdx);
+                            let st = "ALL SQUARE";
+                            const diff = r.w1 - r.w2;
+                            if (diff !== 0) st = (diff > 0 ? "TEAM 1" : "TEAM 2") + " UP " + Math.abs(diff);
+                            document.getElementById('d-status').innerText = st;
+                        }
+
+                        alert("Debug: uDash status set");
+
+                        // Players
+                        [0, 1, 2, 3].forEach(i => {
+                            const pid = this.slotMap[i];
+                            if (this.d.chosen[i]) {
+                                document.getElementById('p-name-' + i).innerText = this.d.chosen[i];
+                                // Score
+                                const s = (this.d.s[h] && this.d.s[h][pid]) ? this.d.s[h][pid] : '-';
+                                const sEl = document.getElementById('sc-' + i);
+                                sEl.innerText = s;
+                                // Color (Based on Net)
+                                sEl.style.color = '#cbd5e1';
+                                if (s !== '-') {
+                                    const pops = this.getPops(pid, h - 1);
+                                    const net = s - pops;
+                                    if (net < par) sEl.style.color = '#10B981';
+                                    else if (net > par) sEl.style.color = '#F87171';
+                                    else sEl.style.color = 'white';
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        alert("uDash Error: " + e.message + "\n" + e.stack);
+                    }
                 },
 
                 mod: function (idx, delta) {
