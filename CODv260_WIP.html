@@ -1595,12 +1595,25 @@
                 },
 
                 nav: function (id) {
-                    document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
-                    document.getElementById(id).classList.add('active');
-                    if (id === 'v-setup') { this.checkCourseOptions(); }
-                    if (id === 'v-dash') { this.uDash(); this.updateJunkUI(); }
-                    if (id === 'v-card') this.uCard();
-                    if (id === 'v-recap') this.uRecap();
+                    try {
+                        alert("Debug: Nav called with " + id);
+                        document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
+                        const el = document.getElementById(id);
+                        if (!el) { alert("Error: View " + id + " not found!"); return; }
+                        el.classList.add('active');
+
+                        if (id === 'v-setup') { this.checkCourseOptions(); }
+                        if (id === 'v-dash') {
+                            alert("Debug: calling uDash... type: " + typeof this.uDash);
+                            try { this.uDash(); } catch (e) { alert("Nav uDash Error: " + e); }
+                            alert("Debug: calling updateJunkUI...");
+                            try { this.updateJunkUI(); } catch (e) { alert("Nav JunkUI Error: " + e); }
+                        }
+                        if (id === 'v-card') this.uCard();
+                        if (id === 'v-recap') this.uRecap();
+                    } catch (e) {
+                        alert("Nav Error: " + e.message);
+                    }
                 },
 
                 navH: function (d) {
