@@ -1561,7 +1561,23 @@
                 this.renderRoster();
                 this.refreshDrop();
                 this.restoreSet();
+                this.resetCourseNames();
                 this.nav('v-setup');
+            },
+
+            resetCourseNames: function () {
+                Object.keys(CS).forEach(k => {
+                    const c = CS[k];
+                    if (c.origN) {
+                        c.n = c.origN;
+                        // update dropdown option text?
+                        // The dropdown is rebuilt by filterCrs or static HTML.
+                        // If static HTML, we need to update DOM?
+                        // Or just let filterCrs handle it.
+                    }
+                });
+                // Force refresh of course dropdown if possible
+                this.filterCrs("ALL"); // This rebuilds options
             },
 
             nav: function (id) {
@@ -1736,6 +1752,9 @@
                             // Random Junk for Testing
                             ['G', 'S', 'P'].forEach(t => {
                                 if (Math.random() < 0.03) {
+                                    // Respect Greenies Par 3 Rule in Test
+                                    if (t === 'G' && par !== 3) return;
+
                                     if (!this.d.junk) this.d.junk = {};
                                     if (!this.d.junk[this.d.h]) this.d.junk[this.d.h] = {};
                                     this.d.junk[this.d.h][pid + '_' + t] = true;
@@ -1927,6 +1946,9 @@
 
                 const n1 = c.nines[k1];
                 const n2 = c.nines[k2];
+
+                // Preserve original name if not already done
+                if (!c.origN) c.origN = c.n;
 
                 // Construct Composite Name
                 c.n = `${n1.n} / ${n2.n}`;
