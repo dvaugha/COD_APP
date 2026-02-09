@@ -1849,6 +1849,9 @@
                 },
                 startRound: function () {
                     try {
+                        // DEBUG
+                        alert("Debug: Start Round Clicked");
+
                         const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
                         if (p.some(x => !x)) { alert("Please assign all 4 seats!"); return; }
                         this.d.ps = p;
@@ -1875,18 +1878,20 @@
 
                             // Validate Build
                             if (!CS[this.d.crs].p || !CS[this.d.crs].hcp) {
-                                alert("Error building course data. Please try re-selecting the course.");
+                                alert("Error: Course build failed. p/hcp missing.");
                                 return;
                             }
+                            alert("Debug: Build Success. P length: " + CS[this.d.crs].p.length);
                         } else {
                             delete this.d.nines;
                         }
 
                         this.save();
+                        alert("Debug: Saved. Navigating...");
                         this.nav('v-dash');
                         this.keepAwake();
                     } catch (e) {
-                        alert("Start Error: " + e.message);
+                        alert("Start Error: " + e.message + "\nStack: " + e.stack);
                         console.error(e);
                     }
                 },
