@@ -1609,6 +1609,11 @@
             uDash: function () {
                 const h = this.d.h;
                 const c = CS[this.d.crs] || CS['cc'];
+                if (!c || !c.p) {
+                    // console.error("uDash: Course data missing or not built.");
+                    this.nav('v-setup');
+                    return;
+                }
                 const par = c.p[h - 1];
                 const hcp = c.hcp[h - 1];
                 let dist = 0;
