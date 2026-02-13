@@ -3120,6 +3120,7 @@
             doShareParams: async function () {
                 if (!this.shareBlob) return;
                 const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                let sett = "";
 
                 [0, 1, 2].forEach(idx => {
                     let r = this.calcSeg(idx);
@@ -3163,10 +3164,9 @@
                     if (bets[i] > 0) creditors.push({ id: i, val: bets[i] });
                 });
 
-                let sett = "";
-                if (debtors.length === 0) sett = "\nALL SQUARE";
+                if (debtors.length === 0) sett += "\nALL SQUARE";
                 else {
-                    sett = "\n\nPAYOUTS:\n";
+                    sett += "\n\nPAYOUTS:\n";
                     debtors.forEach(d => {
                         while (d.val > 0 && creditors.length > 0) {
                             let c = creditors[0];
