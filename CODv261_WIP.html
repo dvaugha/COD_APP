@@ -2285,7 +2285,7 @@
                         <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
                         <div style="flex:1; text-align:center; color:#10B981; font-size:14px;">🟢</div>
                         <div style="flex:1; text-align:center; color:#F59E0B; font-size:14px;">🏖️</div>
-                        <div style="flex:1; text-align:center; color:#8B5CF6; font-size:14px;">⛳</div>
+                        <div style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; color:#8B5CF6; font-size:11px; font-weight:900;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v13" /><rect x="9" y="16" width="8" height="4" rx="1" /><ellipse cx="5" cy="18" rx="3" ry="1.5" /></svg> LP</div>
                     </div>`;
                 pStats.forEach(p => {
                     const j = junk[p.name];
@@ -2931,7 +2931,7 @@
 
                     // JUNK for Share
                     const junk = this.getJunkStats();
-                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:12px;">🟢</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:12px;">🏖️</div><div style="flex:1; text-align:center; color:#8B5CF6; font-size:12px;">⛳</div></div>`;
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:12px;">🟢</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:12px;">🏖️</div><div style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; color:#8B5CF6; font-size:11px; font-weight:900;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v13" /><rect x="9" y="16" width="8" height="4" rx="1" /><ellipse cx="5" cy="18" rx="3" ry="1.5" /></svg> LP</div></div>`;
                     pRecap.forEach(p => { const j = junk[p.name]; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.G : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.S : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.P : 0}</div></div>`; });
                     recapHTML += `</div>`;
 
