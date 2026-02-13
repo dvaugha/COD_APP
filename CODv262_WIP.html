@@ -3132,6 +3132,14 @@
                     }
                 });
 
+                // 1b. Add Junk Payouts to Total
+                const jRes = this.calcJunkRes();
+                if (jRes && jRes.net) {
+                    [0, 1, 2, 3].forEach(i => {
+                        if (jRes.net[i]) bets[i] += jRes.net[i];
+                    });
+                }
+
                 // 2. Who Pays Who
                 let debtors = [], creditors = [];
                 [0, 1, 2, 3].forEach(i => {
