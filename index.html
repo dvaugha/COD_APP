@@ -3290,7 +3290,9 @@
 
                 // Fireball Check
                 const fireballers = [];
+                let totalBirdies = 0;
                 [0, 1, 2, 3].forEach(i => {
+                    totalBirdies += birdCounts[i];
                     if (birdCounts[i] > 2) fireballers.push({ name: this.d.ps[i], count: birdCounts[i] });
                 });
 
@@ -3302,6 +3304,10 @@
                         const names = fireballers.map(f => f.name).join(' & ');
                         summary += `\n\n🔥 ALERT: ${names} were lighting it up with multiple birdies each! Did someone check for corked clubs?`;
                     }
+                }
+
+                if (totalBirdies > 4) {
+                    summary += `\n\n🔥 ${totalBirdies} TOTAL BIRDIES! Do we need to go back to the ABC store?`;
                 }
 
                 if (summary) sett += summary;
