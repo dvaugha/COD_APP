@@ -3155,6 +3155,64 @@
                     });
                 }
 
+                // 3. Generate Fun Summary
+                const isNet = (this.d.gameType !== 'scramble'); // Scramble usually doesn't track individual gross
+                let bestGross = 999;
+                let bestPlayerKey = -1;
+
+                if (isNet) {
+                    [0, 1, 2, 3].forEach(i => {
+                        let gTot = 0;
+                        let valid = false;
+                        for (let h = 1; h <= 18; h++) {
+                            const s = this.d.s[h] && this.d.s[h][i];
+                            if (typeof s === 'number') { gTot += s; valid = true; }
+                        }
+                        if (valid && gTot < bestGross) { bestGross = gTot; bestPlayerKey = i; }
+                    });
+                }
+
+                // Find Biggest Loser (or Winner if everyone won/tied)
+                let amount = 99999;
+                let moneyPlayerKey = -1;
+                let isLoser = true;
+
+                // First look for the biggest loser (lowest negative number)
+                let minVal = 0;
+                [0, 1, 2, 3].forEach(i => {
+                    if (bets[i] < minVal) { minVal = bets[i]; moneyPlayerKey = i; }
+                });
+
+                if (moneyPlayerKey === -1) {
+                    // No losers? Find biggest winner
+                    isLoser = false;
+                    let maxVal = -1;
+                    [0, 1, 2, 3].forEach(i => {
+                        if (bets[i] > maxVal) { maxVal = bets[i]; moneyPlayerKey = i; }
+                    });
+                }
+
+                let summary = "";
+                if (bestPlayerKey !== -1 && moneyPlayerKey !== -1) {
+                    const bp = this.d.ps[bestPlayerKey];
+                    const mp = this.d.ps[moneyPlayerKey];
+
+                    if (bestPlayerKey === moneyPlayerKey && isLoser) {
+                        summary = `\n\nAppears ${bp} played the best golf (${bestGross}), but the teams didn't go his way and he lost the most money ($${Math.abs(minVal)}). Ouch!`;
+                    } else if (bestPlayerKey === moneyPlayerKey && !isLoser) {
+                        summary = `\n\n${bp} was the MVP today! Lowest score (${bestGross}) and walked away with the most cash.`;
+                    } else if (isLoser) {
+                        summary = `\n\n${bp} had the low round of the day (${bestGross}), but unfortunately ${mp} took the biggest hit to the wallet. Better luck next time!`;
+                    } else {
+                        summary = `\n\n${bp} had the low round (${bestGross}).`;
+                    }
+                } else if (moneyPlayerKey !== -1 && isLoser) {
+                    const mp = this.d.ps[moneyPlayerKey];
+                    summary = `\n\nLooks like ${mp} is buying the first round after losing the most bets today!`;
+                }
+
+                if (summary) sett += summary;
+
                 const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
                 const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';
                 const sText = `Results from ${cName} on ${new Date().toLocaleDateString()}${sett}`;
