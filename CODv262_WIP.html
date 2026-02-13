@@ -3209,43 +3209,76 @@
                     });
                 }
 
-                // Find Biggest Loser (or Winner if everyone won/tied)
-                let amount = 99999;
-                let moneyPlayerKey = -1;
+                // Find Biggest Loser(s) (or Winner if everyone won/tied)
+                let minVal = 0; // Initialize high for search
+                let losers = [];
                 let isLoser = true;
 
-                // First look for the biggest loser (lowest negative number)
-                let minVal = 0;
+                // 1. Find the lowest NET value (biggest loss)
+                // Note: minVal stays at 0 if no one is negative (no losers)
                 [0, 1, 2, 3].forEach(i => {
-                    if (bets[i] < minVal) { minVal = bets[i]; moneyPlayerKey = i; }
+                    if (bets[i] < minVal) minVal = bets[i];
                 });
 
-                if (moneyPlayerKey === -1) {
-                    // No losers? Find biggest winner
-                    isLoser = false;
-                    let maxVal = -1;
+                // 2. Who has that value?
+                if (minVal < 0) {
                     [0, 1, 2, 3].forEach(i => {
-                        if (bets[i] > maxVal) { maxVal = bets[i]; moneyPlayerKey = i; }
+                        if (bets[i] === minVal) losers.push(this.d.ps[i]);
+                    });
+                }
+
+                // If no losers (all positive or 0), look for winners
+                let winners = [];
+                let maxVal = -1;
+
+                if (losers.length === 0) {
+                    isLoser = false;
+                    [0, 1, 2, 3].forEach(i => {
+                        if (bets[i] > maxVal) maxVal = bets[i];
+                    });
+                    [0, 1, 2, 3].forEach(i => {
+                        if (bets[i] === maxVal) winners.push(this.d.ps[i]);
                     });
                 }
 
                 let summary = "";
-                if (bestPlayerKey !== -1 && moneyPlayerKey !== -1) {
-                    const bp = this.d.ps[bestPlayerKey];
-                    const mp = this.d.ps[moneyPlayerKey];
+                // Formatting for Multiple Losers/Winners
+                const formatNames = (arr) => {
+                    if (arr.length === 1) return arr[0];
+                    if (arr.length === 2) return `${arr[0]} & ${arr[1]}`;
+                    return arr.join(', ');
+                };
 
-                    if (bestPlayerKey === moneyPlayerKey && isLoser) {
-                        summary = `\n\nAppears ${bp} played the best golf (${bestGross}), but the teams didn't go his way and he lost the most money ($${Math.abs(minVal)}). Ouch!`;
-                    } else if (bestPlayerKey === moneyPlayerKey && !isLoser) {
+                const loserStr = formatNames(losers);
+                // winAmount/loseAmount calculation
+                const loseAmount = Math.abs(minVal);
+
+                // Case 1: We have a Best Gross Player
+                if (bestPlayerKey !== -1) {
+                    const bp = this.d.ps[bestPlayerKey];
+
+                    // Is Best Gross one of the Biggest Losers?
+                    if (isLoser && losers.includes(bp)) {
+                        const otherLosers = losers.filter(l => l !== bp);
+                        let lTxt = "he";
+                        if (otherLosers.length > 0) lTxt = `he (and ${formatNames(otherLosers)})`;
+                        summary = `\n\nAppears ${bp} played the best golf (${bestGross}), but the teams didn't go his way and ${lTxt} lost the most money ($${loseAmount}). Ouch!`;
+                    }
+                    // Is Best Gross one of the Biggest Winners?
+                    else if (!isLoser && winners.includes(bp)) {
                         summary = `\n\n${bp} was the MVP today! Lowest score (${bestGross}) and walked away with the most cash.`;
-                    } else if (isLoser) {
-                        summary = `\n\n${bp} had the low round of the day (${bestGross}), but unfortunately ${mp} took the biggest hit to the wallet. Better luck next time!`;
-                    } else {
+                    }
+                    // Best Gross distinct from money leaders
+                    else if (isLoser) {
+                        summary = `\n\n${bp} had the low round of the day (${bestGross}), but unfortunately ${loserStr} took the biggest hit to the wallet ($${loseAmount}). Better luck next time!`;
+                    }
+                    else {
                         summary = `\n\n${bp} had the low round (${bestGross}).`;
                     }
-                } else if (moneyPlayerKey !== -1 && isLoser) {
-                    const mp = this.d.ps[moneyPlayerKey];
-                    summary = `\n\nLooks like ${mp} is buying the first round after losing the most bets today!`;
+                }
+                // Case 2: No Gross Scores (Scramble or incomplete)
+                else if (isLoser) {
+                    summary = `\n\nLooks like ${loserStr} ${losers.length > 1 ? 'are' : 'is'} buying the first round after losing the most bets today!`;
                 }
 
                 if (summary) sett += summary;
