@@ -2576,8 +2576,21 @@
                     }
                     const res = { name: sig.name, winners: [], pot: pot, push: false };
                     if (winners.length > 0) {
-                        const winShare = pot / winners.length;
-                        players.forEach(i => { if (winners.includes(i)) net[i] += (winShare - bet); else net[i] -= bet; });
+                        const count = winners.length;
+                        const base = Math.floor(pot / count);
+                        let rem = pot % count;
+
+                        players.forEach(i => {
+                            if (winners.includes(i)) {
+                                let share = base;
+                                // Distribute remainder to first winners in list order
+                                // This is a simple tie-break for the odd dollar
+                                if (rem > 0) { share++; rem--; }
+                                net[i] += (share - bet);
+                            } else {
+                                net[i] -= bet;
+                            }
+                        });
                         res.winners = winners;
                     } else { res.push = true; }
                     results.push(res);
