@@ -3197,13 +3197,20 @@
                 let bestGross = 999;
                 let bestPlayerKey = -1;
 
+                const birdCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
                 if (isNet) {
                     [0, 1, 2, 3].forEach(i => {
                         let gTot = 0;
                         let valid = false;
                         for (let h = 1; h <= 18; h++) {
                             const s = this.d.s[h] && this.d.s[h][i];
-                            if (typeof s === 'number') { gTot += s; valid = true; }
+                            if (typeof s === 'number') {
+                                gTot += s;
+                                valid = true;
+                                // Birdie Check
+                                const c = CS[this.d.crs] || CS['cc'];
+                                if (c && c.p[h - 1] && s < c.p[h - 1]) birdCounts[i]++;
+                            }
                         }
                         if (valid && gTot < bestGross) { bestGross = gTot; bestPlayerKey = i; }
                     });
@@ -3279,6 +3286,22 @@
                 // Case 2: No Gross Scores (Scramble or incomplete)
                 else if (isLoser) {
                     summary = `\n\nLooks like ${loserStr} ${losers.length > 1 ? 'are' : 'is'} buying the first round after losing the most bets today!`;
+                }
+
+                // Fireball Check
+                const fireballers = [];
+                [0, 1, 2, 3].forEach(i => {
+                    if (birdCounts[i] > 2) fireballers.push({ name: this.d.ps[i], count: birdCounts[i] });
+                });
+
+                if (fireballers.length > 0) {
+                    if (fireballers.length === 1) {
+                        const f = fireballers[0];
+                        summary += `\n\n🔥 ALERT: ${f.name} made ${f.count} birdies! Someone call the fire department!`;
+                    } else {
+                        const names = fireballers.map(f => f.name).join(' & ');
+                        summary += `\n\n🔥 ALERT: ${names} were lighting it up with multiple birdies each! Did someone check for corked clubs?`;
+                    }
                 }
 
                 if (summary) sett += summary;
