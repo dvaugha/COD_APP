@@ -3135,9 +3135,25 @@
                 // 1b. Add Junk Payouts to Total
                 const jRes = this.calcJunkRes();
                 if (jRes && jRes.net) {
-                    [0, 1, 2, 3].forEach(i => {
-                        if (jRes.net[i]) bets[i] += jRes.net[i];
+                    let jText = "\n\nJUNK RESULTS:";
+                    let anyJunk = false;
+                    jRes.results.forEach(r => {
+                        if (r.winners.length > 0) {
+                            anyJunk = true;
+                            const wNames = r.winners.map(idx => this.d.ps[idx]).join(', ');
+                            jText += `\n${r.name}: ${wNames} ($${r.pot})`;
+                        } else {
+                            // jText += `\n${r.name}: Pushed`; // Optional: Hide pushes to keep it clean?
+                        }
                     });
+
+                    if (anyJunk) {
+                        sett += jText;
+                        // Now add to bets for final payout calculation
+                        [0, 1, 2, 3].forEach(i => {
+                            if (jRes.net[i]) bets[i] += jRes.net[i];
+                        });
+                    }
                 }
 
                 // 2. Who Pays Who
