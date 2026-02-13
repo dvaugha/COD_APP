@@ -131,6 +131,7 @@
             overflow: hidden;
             transition: 0.2s;
             -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
         }
 
         .chip-lbl {
@@ -2806,38 +2807,57 @@
                     [0, 1, 2].forEach(idx => {
                         let r = this.calcSeg(idx);
                         let wStr = "";
+                        let col = "white"; // Default text color
 
                         if (isScramble) {
                             if (r.winner === 1) {
-                                wStr = `${ps[r.seg.t1[0]]}/${ps[r.seg.t1[1]]} (+$${r.amt})`;
+                                wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won (+${r.w1} pts)`;
                                 r.seg.t1.forEach(p => bets[p] += r.amt);
                                 r.seg.t2.forEach(p => bets[p] -= r.amt);
+                                col = "#10B981";
                             } else if (r.winner === 2) {
-                                wStr = `${ps[r.seg.t2[0]]}/${ps[r.seg.t2[1]]} (+$${r.amt})`;
+                                wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won (+${r.w2} pts)`;
                                 r.seg.t2.forEach(p => bets[p] += r.amt);
                                 r.seg.t1.forEach(p => bets[p] -= r.amt);
+                                col = "#F59E0B";
+                            } else {
+                                wStr = `Tie (${r.w1} pts each)`;
                             }
-                            if (r.winner === 0) wStr = `TIE (${r.w1}-${r.w2})`;
-                            else wStr += ` (${Math.max(r.w1, r.w2)} pts)`;
 
-                            segRes.push({ name: ["BLOCK 1 (1-6)", "BLOCK 2 (7-12)", "BLOCK 3 (13-18)"][idx], val: wStr });
+                            segRes.push({
+                                name: ["BLOCK 1", "BLOCK 2", "BLOCK 3"][idx],
+                                val: wStr,
+                                color: col
+                            });
                         } else {
                             // COD Logic
-                            wStr = "TIE";
                             if (r.winner === 1) {
-                                wStr = `${ps[r.seg.t1[0]]}/${ps[r.seg.t1[1]]} (+$${r.amt})`;
+                                wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won $${r.amt}`;
                                 r.seg.t1.forEach(p => bets[p] += r.amt);
                                 r.seg.t2.forEach(p => bets[p] -= r.amt);
+                                col = "#10B981";
                             } else if (r.winner === 2) {
-                                wStr = `${ps[r.seg.t2[0]]}/${ps[r.seg.t2[1]]} (+$${r.amt})`;
+                                wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won $${r.amt}`;
                                 r.seg.t2.forEach(p => bets[p] += r.amt);
                                 r.seg.t1.forEach(p => bets[p] -= r.amt);
+                                col = "#F59E0B";
+                            } else {
+                                wStr = "Tie (No Blood)";
                             }
+
+                            // Press Details
                             let pStatus = "";
-                            if (r.press && r.winner === r.press.team) pStatus = " 🔥 PRESS WON";
-                            else if (r.press && r.winner === 0 && r.press.type === 2) pStatus = " 🛡️ SAVED";
-                            else if (r.press && r.winner !== r.press.team && r.winner !== 0) pStatus = " 💀 PRESS LOST";
-                            segRes.push({ name: ["CARTS", "OPPOSITES", "DRIVERS"][idx], val: wStr + pStatus });
+                            if (r.press) {
+                                if (r.winner === r.press.team) pStatus = " • Press Won!";
+                                else if (r.winner === 0 && r.press.type === 2) pStatus = " • Press Saved";
+                                else if (r.winner !== 0 && r.winner !== r.press.team) pStatus = " • Press Lost";
+                            }
+
+                            segRes.push({
+                                name: ["CARTS", "OPPOSITES", "DRIVERS"][idx],
+                                val: wStr + pStatus,
+                                color: col
+                            });
                         }
                     });
 
@@ -2953,7 +2973,10 @@
 
                     let segHTML = '';
                     segRes.forEach(s => {
-                        segHTML += `<div class="sn-row" style="font-size:14px;"><span style="color:#94A3B8">${s.name}</span><span>${s.val}</span></div>`;
+                        segHTML += `<div class="sn-row" style="font-size:13px; margin-bottom:4px;">
+                            <span style="color:#94A3B8; font-weight:700; width:80px;">${s.name}</span>
+                            <span style="color:${s.color || 'white'}; font-weight:700;">${s.val}</span>
+                        </div>`;
                     });
                     // Add Junk Financials to Share
                     const jRes = this.calcJunkRes();
@@ -3131,6 +3154,64 @@
                         }
                     });
                 }
+
+                // 3. Generate Fun Summary
+                const isNet = (this.d.gameType !== 'scramble'); // Scramble usually doesn't track individual gross
+                let bestGross = 999;
+                let bestPlayerKey = -1;
+
+                if (isNet) {
+                    [0, 1, 2, 3].forEach(i => {
+                        let gTot = 0;
+                        let valid = false;
+                        for (let h = 1; h <= 18; h++) {
+                            const s = this.d.s[h] && this.d.s[h][i];
+                            if (typeof s === 'number') { gTot += s; valid = true; }
+                        }
+                        if (valid && gTot < bestGross) { bestGross = gTot; bestPlayerKey = i; }
+                    });
+                }
+
+                // Find Biggest Loser (or Winner if everyone won/tied)
+                let amount = 99999;
+                let moneyPlayerKey = -1;
+                let isLoser = true;
+
+                // First look for the biggest loser (lowest negative number)
+                let minVal = 0;
+                [0, 1, 2, 3].forEach(i => {
+                    if (bets[i] < minVal) { minVal = bets[i]; moneyPlayerKey = i; }
+                });
+
+                if (moneyPlayerKey === -1) {
+                    // No losers? Find biggest winner
+                    isLoser = false;
+                    let maxVal = -1;
+                    [0, 1, 2, 3].forEach(i => {
+                        if (bets[i] > maxVal) { maxVal = bets[i]; moneyPlayerKey = i; }
+                    });
+                }
+
+                let summary = "";
+                if (bestPlayerKey !== -1 && moneyPlayerKey !== -1) {
+                    const bp = this.d.ps[bestPlayerKey];
+                    const mp = this.d.ps[moneyPlayerKey];
+
+                    if (bestPlayerKey === moneyPlayerKey && isLoser) {
+                        summary = `\n\nAppears ${bp} played the best golf (${bestGross}), but the teams didn't go his way and he lost the most money ($${Math.abs(minVal)}). Ouch!`;
+                    } else if (bestPlayerKey === moneyPlayerKey && !isLoser) {
+                        summary = `\n\n${bp} was the MVP today! Lowest score (${bestGross}) and walked away with the most cash.`;
+                    } else if (isLoser) {
+                        summary = `\n\n${bp} had the low round of the day (${bestGross}), but unfortunately ${mp} took the biggest hit to the wallet. Better luck next time!`;
+                    } else {
+                        summary = `\n\n${bp} had the low round (${bestGross}).`;
+                    }
+                } else if (moneyPlayerKey !== -1 && isLoser) {
+                    const mp = this.d.ps[moneyPlayerKey];
+                    summary = `\n\nLooks like ${mp} is buying the first round after losing the most bets today!`;
+                }
+
+                if (summary) sett += summary;
 
                 const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
                 const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';
