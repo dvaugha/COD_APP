@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COD Golf Rules</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1E293B;
+            border-bottom: 2px solid #1E293B;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #0F172A;
+            margin-top: 30px;
+            border-left: 5px solid #10B981;
+            padding-left: 10px;
+        }
+
+        h3 {
+            color: #334155;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .box {
+            background: #F1F5F9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+            margin: 10px 0;
+        }
+
+        .highlight {
+            color: #059669;
+            font-weight: bold;
+        }
+
+        .danger {
+            color: #DC2626;
+            font-weight: bold;
+        }
+
+        ul {
+            list-style-type: square;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        @media print {
+            body {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .box {
+                border: 1px solid #999;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print" style="text-align:center; margin-bottom:20px;">
+        <button onclick="window.print()"
+            style="background:#1E293B; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-size:16px;">🖨️
+            PRINT RULES</button>
+    </div>
+
+    <h1>COD GOLF • OFFICIAL RULES</h1>
+
+    <p style="text-align:center; font-style:italic;">A 4-Player Rotational Partner Game</p>
+
+    <div class="box">
+        <h3>⛳ THE FORMAT</h3>
+        <p>The 18-hole round is split into three 6-hole "Segments". Each segment is a separate match with a new partner.
+        </p>
+        <ul>
+            <li><strong>HOLES 1-6 (CARTS):</strong> Partners are determined by cart pairings.</li>
+            <li><strong>HOLES 7-12 (OPPOSITES):</strong> Partners swap (Driver of Cart 1 pairs with Passenger of Cart
+                2).</li>
+            <li><strong>HOLES 13-18 (DRIVERS):</strong> Partners swap again (Drivers vs Passengers).</li>
+        </ul>
+    </div>
+
+    <h2>SCORING</h2>
+    <p>Each segment is played as <strong>Net Best Ball Match Play</strong>.</p>
+    <ul>
+        <li>Each team takes their single best <strong>Net Score</strong> on the hole.</li>
+        <li>Lower score wins the hole (1 Point).</li>
+        <li>Ties result in no points (Push).</li>
+        <li>The team with the most points at the end of the 6-hole segment wins the bet.</li>
+        <li>If points are tied at the end (e.g., 3-3), the segment is a <strong>WASH</strong> (No money exchanges
+            hands).</li>
+    </ul>
+
+    <h2>THE PRESS</h2>
+    <div class="box">
+        <p>If a team is losing, they may have the option to <strong>PRESS</strong>. This creates a high-stakes scenario
+            on the final hole of the segment (Holes 6, 12, and 18).</p>
+        <ul>
+            <li><span class="highlight">PRESS SAVE (Type 2):</span> If the pressing team <strong>WINS the last
+                    hole</strong>, the entire segment bet is <strong>SAVED</strong> (Washed/Tied).</li>
+            <li><span class="highlight">PRESS WIN (Type 1):</span> If the pressing team <strong>WINS the last
+                    hole</strong>, they <strong>WIN</strong> the segment bet outright.</li>
+            <li><span class="danger">PRESS LOSS:</span> If the pressing team <strong>LOSES the last hole</strong>, they
+                lose <strong>DOUBLE</strong> the original bet.</li>
+            <li>If the last hole is tied, the press is ignored and the segment is decided by total points as usual.</li>
+        </ul>
+    </div>
+
+    <h2>THE JUNK DRAWER</h2>
+    <p>Optional side bets that pay out individually. These are played as a <strong>Group Pot</strong>.</p>
+    <p><em>Example: Everyone puts in $1. Pot is $4. If you are the only winner, you get $4 (Net +$3). If two people win,
+            they split ($2 each).</em></p>
+
+    <h3>🟢 GREENIES (Par 3s)</h3>
+    <p>Closest to the pin on the green in regulation on a Par 3.</p>
+
+    <h3>🏖️ SANDIES</h3>
+    <p>Getting up and down from a greenside bunker to make <strong>Par or Better</strong>.</p>
+
+    <h3>🕳️ LONG PUTT (LP)</h3>
+    <p>Making a putt that is longer than the flagstick (approx. 7 feet or more) for Par or Better.</p>
+
+    <div class="box" style="margin-top:30px; background:#ECFDF5; border-color:#10B981;">
+        <h3>💰 SETTLEMENT</h3>
+        <p>At the end of the round, all debts are netted out.</p>
+        <ul>
+            <li><strong>Match Winnings:</strong> Paid by the losing partners to the winning partners.</li>
+            <li><strong>Junk Winnings:</strong> Paid from the pot (collected from all players).</li>
+            <li><strong>Payouts:</strong> The app automatically calculates "Who Pays Who" to minimize the number of
+                transactions.</li>
+        </ul>
+    </div>
+
+    <p style="text-align:center; margin-top:40px; font-size:12px; color:#94A3B8;">Generated by COD Golf App</p>
+
+</body>
+
+</html>
