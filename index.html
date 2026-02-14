@@ -891,7 +891,9 @@
                 <button class="g-btn g-btn-sec" onclick="App.closeSharePreview()">CLOSE</button>
                 <div style="flex:1; display:flex; gap:8px;">
                     <button class="g-btn" style="background:#10B981; font-size:12px; padding:0;"
-                        onclick="App.doShareParams('image')">IMAGE 🖼️</button>
+                        onclick="App.doShareParams('image')">IMG 🖼️</button>
+                    <button class="g-btn" style="background:#8B5CF6; font-size:12px; padding:0;"
+                        onclick="App.doShareParams('copy')">COPY 📋</button>
                     <button class="g-btn" style="background:#0EA5E9; font-size:12px; padding:0;"
                         onclick="App.doShareParams('text')">TXT 📝</button>
                 </div>
@@ -3321,9 +3323,7 @@
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
-                                files: [file],
-                                title: 'COD Scorecard',
-                                text: ' '
+                                files: [file]
                             });
                         } catch (e) {
                             if (e.name !== 'AbortError') alert("Image Share Error: " + e.message);
@@ -3335,6 +3335,15 @@
                         a.href = URL.createObjectURL(this.shareBlob);
                         a.download = "cod_scorecard.jpg";
                         document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    }
+                } else if (type === 'copy') {
+                    // COPY IMAGE TO CLIPBOARD
+                    try {
+                        const data = [new ClipboardItem({ [this.shareBlob.type]: this.shareBlob })];
+                        await navigator.clipboard.write(data);
+                        alert("Image Copied! Open Messages and PASTE.");
+                    } catch (e) {
+                        alert("Copy Failed: " + e.message);
                     }
                 } else {
                     // TEXT SHARE
