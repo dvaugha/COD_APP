@@ -3263,29 +3263,21 @@
                 // Case 1: We have a Best Gross Player
                 if (bestPlayerKey !== -1) {
                     const bp = this.d.ps[bestPlayerKey];
-
-                    // Is Best Gross one of the Biggest Losers?
-                    if (isLoser && losers.includes(bp)) {
-                        const otherLosers = losers.filter(l => l !== bp);
-                        let lTxt = "he";
-                        if (otherLosers.length > 0) lTxt = `he (and ${formatNames(otherLosers)})`;
-                        summary = `\n\nAppears ${bp} played the best golf (${bestGross}), but the teams didn't go his way and ${lTxt} lost the most money ($${loseAmount}). Ouch!`;
-                    }
-                    // Is Best Gross one of the Biggest Winners?
-                    else if (!isLoser && winners.includes(bp)) {
-                        summary = `\n\n${bp} was the MVP today! Lowest score (${bestGross}) and walked away with the most cash.`;
-                    }
-                    // Best Gross distinct from money leaders
-                    else if (isLoser) {
-                        summary = `\n\n${bp} had the low round of the day (${bestGross}), but unfortunately ${loserStr} took the biggest hit to the wallet ($${loseAmount}). Better luck next time!`;
-                    }
-                    else {
-                        summary = `\n\n${bp} had the low round (${bestGross}).`;
-                    }
+                    // Compact Stats: Low Round
+                    summary = `\nLow: ${bp} (${bestGross})`;
                 }
-                // Case 2: No Gross Scores (Scramble or incomplete)
-                else if (isLoser) {
-                    summary = `\n\nLooks like ${loserStr} ${losers.length > 1 ? 'are' : 'is'} buying the first round after losing the most bets today!`;
+
+                // Add Loser Stat if applicable
+                if (isLoser) {
+                    const loseAmt = Math.abs(minVal);
+                    // Compact Stats: Biggest Loser
+                    const loserStr = formatNames(losers);
+                    summary += `. Lost Max: ${loserStr} ($${loseAmt})`;
+                }
+                // If not loser (all winners)
+                else if (!isLoser) {
+                    // Maybe show biggest winner?
+                    // summary += `. Top Winner: ...`; // Keep it simple.
                 }
 
                 // Fireball Check
@@ -3314,7 +3306,8 @@
 
                 const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
                 const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';
-                const sText = `Results from ${cName} on ${new Date().toLocaleDateString()}${sett}`;
+                // Compact Header: "Course - Date" instead of "Results from Course on Date"
+                const sText = `${cName} - ${new Date().toLocaleDateString()}${sett}`;
 
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
