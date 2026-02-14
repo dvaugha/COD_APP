@@ -3107,7 +3107,6 @@
 
                     // Generate Image (JPEG for smaller size)
                     await new Promise(r => setTimeout(r, 200));
-                    window.scrollTo(0, 0); // Ensure top for clean capture
                     const canvas = await html2canvas(sn, { backgroundColor: '#0F172A', scale: 2, scrollY: 0 });
 
                     canvas.toBlob(async (blob) => {
@@ -3119,7 +3118,7 @@
                         document.getElementById('share-preview-modal').classList.add('active');
                         btn.innerText = "SHARE IMAGE SUMMARY";
 
-                    }, 'image/jpeg', 0.9);
+                    }, 'image/png');
 
                 } catch (e) {
                     alert("Image Share Error: " + e.message);
@@ -3313,16 +3312,25 @@
 
                 if (summary) sett += summary;
 
-                const file = new File([this.shareBlob], "cod_scorecard.jpg", { type: "image/jpeg" });
+                const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
                 const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';
                 const sText = `Results from ${cName} on ${new Date().toLocaleDateString()}${sett}`;
 
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
+                        // 1. Try to Copy Text to Clipboard
+                        if (navigator.clipboard) {
+                            try {
+                                await navigator.clipboard.writeText(sText);
+                                alert("Summary Text Copied to Clipboard!\n\nPlease PASTE it into your message after selecting the recipient.");
+                            } catch (err) {
+                                console.error("Clipboard failed", err);
+                            }
+                        }
+
+                        // 2. Share Image Only (More reliable)
                         await navigator.share({
-                            files: [file],
-                            title: 'COD Golf Summary',
-                            text: sText
+                            files: [file]
                         });
                     } catch (e) {
                         if (e.name !== 'AbortError') alert("Share Failed: " + e.message);
@@ -3330,7 +3338,7 @@
                 } else {
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(this.shareBlob);
-                    a.download = "cod_scorecard.jpg";
+                    a.download = "cod_scorecard.png";
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 }
             },
