@@ -3112,7 +3112,7 @@
                         </div>
                     `;
 
-                    // Generate Image (JPEG for smaller size)
+                    // Generate Image (PNG - High Quality)
                     await new Promise(r => setTimeout(r, 200));
                     const canvas = await html2canvas(sn, { backgroundColor: '#0F172A', scale: 2, scrollY: 0 });
 
@@ -3123,9 +3123,9 @@
 
                         document.getElementById('sp-img').src = url;
                         document.getElementById('share-preview-modal').classList.add('active');
-                        btn.innerText = "SHARE IMAGE SUMMARY";
+                        // btn.innerText = "SHARE IMAGE SUMMARY"; // Button text is static in HTML now
 
-                    }, 'image/jpeg', 0.85);
+                    }, 'image/png');
 
                 } catch (e) {
                     alert("Image Share Error: " + e.message);
@@ -3317,8 +3317,8 @@
                 const sText = `${cName} - ${new Date().toLocaleDateString()}${sett}`;
 
                 if (type === 'image') {
-                    // Update file to match extension? Actually, blob is now jpeg.
-                    const file = new File([this.shareBlob], "cod_scorecard.jpg", { type: "image/jpeg" });
+                    // GOLD STANDARD: Single PNG File, No Text, No Title
+                    const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
 
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
@@ -3326,24 +3326,13 @@
                                 files: [file]
                             });
                         } catch (e) {
-                            if (e.name !== 'AbortError') alert("Image Share Error: " + e.message);
+                            if (e.name !== 'AbortError') alert("Share Failed: " + e.message);
                         }
                     } else {
-                        // Fallback Download
-                        alert("Native Image Share not supported. Downloading instead.");
                         const a = document.createElement('a');
                         a.href = URL.createObjectURL(this.shareBlob);
-                        a.download = "cod_scorecard.jpg";
+                        a.download = "cod_scorecard.png";
                         document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    }
-                } else if (type === 'copy') {
-                    // COPY IMAGE TO CLIPBOARD
-                    try {
-                        const data = [new ClipboardItem({ [this.shareBlob.type]: this.shareBlob })];
-                        await navigator.clipboard.write(data);
-                        alert("Image Copied! Open Messages and PASTE.");
-                    } catch (e) {
-                        alert("Copy Failed: " + e.message);
                     }
                 } else {
                     // TEXT SHARE
