@@ -3299,15 +3299,15 @@
                 if (fireballers.length > 0) {
                     if (fireballers.length === 1) {
                         const f = fireballers[0];
-                        summary += `\n\n🔥 ALERT: ${f.name} made ${f.count} birdies! Someone call the fire department!`;
+                        summary += `\n🔥 ${f.name.substring(0, 8)}: ${f.count} Birds!`;
                     } else {
-                        const names = fireballers.map(f => f.name).join(' & ');
-                        summary += `\n\n🔥 ALERT: ${names} were lighting it up with multiple birdies each! Did someone check for corked clubs?`;
+                        const names = fireballers.map(f => f.name.substring(0, 8)).join(', ');
+                        summary += `\n🔥 Birds: ${names}`;
                     }
                 }
 
                 if (totalBirdies > 4) {
-                    summary += `\n\n🔥 ${totalBirdies} TOTAL BIRDIES! Do we need to go back to the ABC store?`;
+                    summary += `\n🔥 ${totalBirdies} Team Birds! ABC Store?`;
                 }
 
                 if (summary) sett += summary;
@@ -3318,19 +3318,9 @@
 
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
-                        // 1. Try to Copy Text to Clipboard
-                        if (navigator.clipboard) {
-                            try {
-                                await navigator.clipboard.writeText(sText);
-                                alert("Summary Text Copied to Clipboard!\n\nPlease PASTE it into your message after selecting the recipient.");
-                            } catch (err) {
-                                console.error("Clipboard failed", err);
-                            }
-                        }
-
-                        // 2. Share Image Only (More reliable)
                         await navigator.share({
-                            files: [file]
+                            files: [file],
+                            text: sText
                         });
                     } catch (e) {
                         if (e.name !== 'AbortError') alert("Share Failed: " + e.message);
