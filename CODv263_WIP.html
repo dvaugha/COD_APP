@@ -889,7 +889,12 @@
             <img id="sp-img" style="width:100%; border-radius:8px; border:1px solid #334155; margin-bottom:16px;" />
             <div class="flex-r" style="gap:12px;">
                 <button class="g-btn g-btn-sec" onclick="App.closeSharePreview()">CLOSE</button>
-                <button class="g-btn" style="background:#10B981;" onclick="App.doShareParams()">SHARE NOW</button>
+                <div style="flex:1; display:flex; gap:8px;">
+                    <button class="g-btn" style="background:#10B981; font-size:12px; padding:0;"
+                        onclick="App.doShareParams('image')">IMAGE 🖼️</button>
+                    <button class="g-btn" style="background:#0EA5E9; font-size:12px; padding:0;"
+                        onclick="App.doShareParams('text')">TXT 📝</button>
+                </div>
             </div>
         </div>
     </div>
@@ -3130,7 +3135,7 @@
                 document.getElementById('share-preview-modal').classList.remove('active');
             },
 
-            doShareParams: async function () {
+            doShareParams: async function (type) {
                 if (!this.shareBlob) return;
                 const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
                 let sett = "";
@@ -3309,20 +3314,37 @@
                 // Compact Header: "Course - Date" instead of "Results from Course on Date"
                 const sText = `${cName} - ${new Date().toLocaleDateString()}${sett}`;
 
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            text: sText
-                        });
-                    } catch (e) {
-                        if (e.name !== 'AbortError') alert("Share Failed: " + e.message);
+                if (type === 'image') {
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file]
+                            });
+                        } catch (e) {
+                            if (e.name !== 'AbortError') alert("Image Share Failed: " + e.message);
+                        }
+                    } else {
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(this.shareBlob);
+                        a.download = "cod_scorecard.png";
+                        document.body.appendChild(a); a.click(); document.body.removeChild(a);
                     }
                 } else {
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(this.shareBlob);
-                    a.download = "cod_scorecard.png";
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    // TEXT SHARE
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                text: sText
+                            });
+                        } catch (e) {
+                            if (e.name !== 'AbortError') {
+                                // Fallback to clipboard
+                                navigator.clipboard.writeText(sText).then(() => alert("Share failed. Text copied to clipboard!"));
+                            }
+                        }
+                    } else {
+                        navigator.clipboard.writeText(sText).then(() => alert("Text copied to clipboard!"));
+                    }
                 }
             },
 
