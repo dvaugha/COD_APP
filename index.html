@@ -3105,9 +3105,10 @@
                         </div>
                     `;
 
-                    // Generate Image
+                    // Generate Image (JPEG for smaller size)
                     await new Promise(r => setTimeout(r, 200));
-                    const canvas = await html2canvas(sn, { backgroundColor: '#0F172A', scale: 2 });
+                    window.scrollTo(0, 0); // Ensure top for clean capture
+                    const canvas = await html2canvas(sn, { backgroundColor: '#0F172A', scale: 2, scrollY: 0 });
 
                     canvas.toBlob(async (blob) => {
                         if (!blob) throw new Error("Canvas Blob Failed");
@@ -3118,7 +3119,7 @@
                         document.getElementById('share-preview-modal').classList.add('active');
                         btn.innerText = "SHARE IMAGE SUMMARY";
 
-                    }, 'image/png');
+                    }, 'image/jpeg', 0.9);
 
                 } catch (e) {
                     alert("Image Share Error: " + e.message);
@@ -3312,7 +3313,7 @@
 
                 if (summary) sett += summary;
 
-                const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
+                const file = new File([this.shareBlob], "cod_scorecard.jpg", { type: "image/jpeg" });
                 const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';
                 const sText = `Results from ${cName} on ${new Date().toLocaleDateString()}${sett}`;
 
@@ -3329,7 +3330,7 @@
                 } else {
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(this.shareBlob);
-                    a.download = "cod_scorecard.png";
+                    a.download = "cod_scorecard.jpg";
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 }
             },
