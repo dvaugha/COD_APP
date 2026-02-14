@@ -3123,7 +3123,7 @@
                         document.getElementById('share-preview-modal').classList.add('active');
                         btn.innerText = "SHARE IMAGE SUMMARY";
 
-                    }, 'image/png');
+                    }, 'image/jpeg', 0.85);
 
                 } catch (e) {
                     alert("Image Share Error: " + e.message);
@@ -3315,18 +3315,25 @@
                 const sText = `${cName} - ${new Date().toLocaleDateString()}${sett}`;
 
                 if (type === 'image') {
+                    // Update file to match extension? Actually, blob is now jpeg.
+                    const file = new File([this.shareBlob], "cod_scorecard.jpg", { type: "image/jpeg" });
+
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
-                                files: [file]
+                                files: [file],
+                                title: 'COD Scorecard',
+                                text: ' '
                             });
                         } catch (e) {
-                            if (e.name !== 'AbortError') alert("Image Share Failed: " + e.message);
+                            if (e.name !== 'AbortError') alert("Image Share Error: " + e.message);
                         }
                     } else {
+                        // Fallback Download
+                        alert("Native Image Share not supported. Downloading instead.");
                         const a = document.createElement('a');
                         a.href = URL.createObjectURL(this.shareBlob);
-                        a.download = "cod_scorecard.png";
+                        a.download = "cod_scorecard.jpg";
                         document.body.appendChild(a); a.click(); document.body.removeChild(a);
                     }
                 } else {
