@@ -888,13 +888,11 @@
             <div class="tx-xl" style="margin-bottom:12px; color:white;">READY TO SHARE</div>
             <img id="sp-img" style="width:100%; border-radius:8px; border:1px solid #334155; margin-bottom:16px;" />
             <div class="flex-r" style="gap:12px;">
-                <button class="g-btn g-btn-sec" onclick="App.closeSharePreview()">CLOSE</button>
-                <div style="flex:1; display:flex; gap:8px;">
-                    <button class="g-btn" style="background:#10B981; font-size:12px; padding:0;"
-                        onclick="App.doShareParams('image')">IMG 🖼️</button>
-                    <button class="g-btn" style="background:#0EA5E9; font-size:12px; padding:0;"
-                        onclick="App.doShareParams('text')">TXT 📝</button>
-                </div>
+                <button class="g-btn g-btn-sec" style="flex:1;" onclick="App.closeSharePreview()">CLOSE</button>
+                <button class="g-btn" style="background:#10B981; flex:1;" onclick="App.doShareParams('image')">IMG
+                    🖼️</button>
+                <button class="g-btn" style="background:#0EA5E9; flex:1;" onclick="App.doShareParams('text')">TXT
+                    📝</button>
             </div>
         </div>
     </div>
