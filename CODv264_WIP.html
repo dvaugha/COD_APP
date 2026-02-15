@@ -3147,25 +3147,34 @@
                         r.seg.t2.forEach(p => bets[p] += r.amt);
                         r.seg.t1.forEach(p => bets[p] -= r.amt);
                     }
+
+                    // Add Segment Text
+                    let segLbl = (idx === 0) ? "HOLES 1-6" : (idx === 1 ? "HOLES 7-12" : "HOLES 13-18");
+                    let wTxt = "ALL SQUARE";
+                    if (r.winner === 1) wTxt = `${this.d.ps[r.seg.t1[0]]} / ${this.d.ps[r.seg.t1[1]]} (WIN)`;
+                    else if (r.winner === 2) wTxt = `${this.d.ps[r.seg.t2[0]]} / ${this.d.ps[r.seg.t2[1]]} (WIN)`;
+                    sett += `\n${segLbl}: ${wTxt}`;
                 });
 
                 // 1b. Add Junk Payouts to Total
+                // 1b. Add Junk Payouts to Total
                 const jRes = this.calcJunkRes();
                 if (jRes && jRes.net) {
-                    let jText = "\n\nJUNK RESULTS:";
+                    let jText = "";
                     let anyJunk = false;
                     jRes.results.forEach(r => {
                         if (r.winners.length > 0) {
                             anyJunk = true;
                             const wNames = r.winners.map(idx => this.d.ps[idx]).join(', ');
-                            jText += `\n${r.name}: ${wNames} ($${r.pot})`;
+                            jText += `\n${r.name} (Junk): ${wNames} ($${r.pot})`;
                         } else {
-                            // jText += `\n${r.name}: Pushed`; // Optional: Hide pushes to keep it clean?
+                            anyJunk = true; // Still want to show the line
+                            jText += `\n${r.name} (Junk): PUSH`;
                         }
                     });
 
                     if (anyJunk) {
-                        sett += jText;
+                        sett += `\n${jText}`;
                         // Now add to bets for final payout calculation
                         [0, 1, 2, 3].forEach(i => {
                             if (jRes.net[i]) bets[i] += jRes.net[i];
