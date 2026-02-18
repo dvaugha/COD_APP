@@ -1046,6 +1046,20 @@
                     <input type="number" id="s-pot" class="g-inp" value="20">
                 </div>
             </div>
+
+            <!-- SCORING MODE -->
+            <div style="margin-top:16px; border-top:1px solid #334155; padding-top:12px;">
+                <div class="tx-sm" style="margin-bottom:8px;">SCORING MODE</div>
+                <div class="flex-r" style="gap:8px;">
+                    <button id="sm-std" class="g-btn" style="flex:1; font-size:12px;"
+                        onclick="App.setScoringMode('std')">STANDARD</button>
+                    <button id="sm-cc" class="g-btn g-btn-sec" style="flex:1; font-size:12px;"
+                        onclick="App.setScoringMode('cc')">CAPT. CHOICE ⚔️</button>
+                </div>
+                <div id="sm-desc" style="font-size:11px; color:#94A3B8; margin-top:6px; font-style:italic;">
+                    Enter individual scores for each player.
+                </div>
+            </div>
         </div>
 
         <button class="g-btn" style="margin-bottom:20px;" onclick="App.startRound()">CONTINUE ROUND</button>
@@ -1645,7 +1659,9 @@
                 document.getElementById('d-tee-ind').style.color = (this.d.tee === 'gold' ? '#F59E0B' : 'white');
                 document.getElementById('d-dist').innerText = dist;
                 document.getElementById('d-hcp').innerText = hcp;
-                document.getElementById('d-fmt').innerText = (this.d.gameType === 'scramble') ? 'SCRAMBLE' : 'COD MATCH';
+                let fmt = (this.d.gameType === 'scramble') ? 'SCRAMBLE' : 'COD MATCH';
+                if (this.d.scoringMode === 'cc') fmt += ' (CC)';
+                document.getElementById('d-fmt').innerText = fmt;
 
                 // Status
                 let segIdx = 0;
@@ -1697,6 +1713,14 @@
                 if (s < 1) s = 1;
                 if (s > par + 2) s = par + 2; // Cap at Double Bogey
                 this.d.s[this.d.h][pid] = s;
+
+                // Captain's Choice Auto-Fill
+                if (this.d.scoringMode === 'cc') {
+                    const partnerIdx = (idx === 0) ? 1 : (idx === 1 ? 0 : (idx === 2 ? 3 : 2));
+                    const pPid = this.slotMap[partnerIdx];
+                    this.d.s[this.d.h][pPid] = s;
+                }
+
                 this.save();
                 this.uDash();
                 this.checkAuto();
@@ -1704,7 +1728,16 @@
             setPar: function (idx) {
                 if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
                 const pid = this.slotMap[idx];
-                this.d.s[this.d.h][pid] = CS[this.d.crs].p[this.d.h - 1];
+                const s = CS[this.d.crs].p[this.d.h - 1];
+                this.d.s[this.d.h][pid] = s;
+
+                // Captain's Choice Auto-Fill
+                if (this.d.scoringMode === 'cc') {
+                    const partnerIdx = (idx === 0) ? 1 : (idx === 1 ? 0 : (idx === 2 ? 3 : 2));
+                    const pPid = this.slotMap[partnerIdx];
+                    this.d.s[this.d.h][pPid] = s;
+                }
+
                 this.save();
                 this.uDash();
                 this.checkAuto();
@@ -1831,6 +1864,28 @@
                 this.closeHcpModal();
             },
             closeHcpModal: function () { document.getElementById('hcp-modal').classList.remove('active'); },
+            setScoringMode: function (mode) {
+                this.d.scoringMode = mode;
+                this.updateScoringModeUI();
+                this.save();
+            },
+            updateScoringModeUI: function () {
+                const mode = this.d.scoringMode || 'std';
+                const bStd = document.getElementById('sm-std');
+                const bCc = document.getElementById('sm-cc');
+                const desc = document.getElementById('sm-desc');
+
+                if (mode === 'cc') {
+                    bStd.className = 'g-btn g-btn-sec';
+                    bCc.className = 'g-btn'; bCc.style.background = '#F59E0B'; bCc.style.color = 'black';
+                    desc.innerText = "Captain's Choice: Partner score auto-fills (Gross). Net calculated independently.";
+                } else {
+                    bStd.className = 'g-btn';
+                    bCc.className = 'g-btn g-btn-sec'; bCc.style.background = '#334155'; bCc.style.color = 'white';
+                    desc.innerText = "Standard: Enter individual scores for each player.";
+                }
+            },
+
             restoreSet: function () {
                 const ids = ['s-course', 's-tee', 's-bet', 's-start', 'g-mode', 's-pot', 's-hcp-mode'];
                 ids.forEach(k => {
@@ -1838,6 +1893,7 @@
                     const prop = k.replace('s-', '').replace('g-mode', 'gameType').replace('hcp-mode', 'hcpMode');
                     if (el && this.d[prop] !== undefined) el.value = this.d[prop];
                 });
+                this.updateScoringModeUI();
                 this.checkCourseOptions();
             },
             startRound: function () {
@@ -1851,6 +1907,7 @@
                 this.d.gameType = document.getElementById('g-mode').value;
                 this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
                 this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
+                if (!this.d.scoringMode) this.d.scoringMode = 'std';
                 this.d.s = {};
                 this.d.junk = {};
                 this.d.press = {};
