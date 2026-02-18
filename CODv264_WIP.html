@@ -1876,11 +1876,11 @@
                 const desc = document.getElementById('sm-desc');
 
                 if (mode === 'cc') {
-                    bStd.className = 'g-btn g-btn-sec';
+                    bStd.className = 'g-btn g-btn-sec'; bStd.style.background = '#334155'; bStd.style.color = 'white';
                     bCc.className = 'g-btn'; bCc.style.background = '#F59E0B'; bCc.style.color = 'black';
                     desc.innerText = "Captain's Choice: Partner score auto-fills (Gross). Net calculated independently.";
                 } else {
-                    bStd.className = 'g-btn';
+                    bStd.className = 'g-btn'; bStd.style.background = '#10B981'; bStd.style.color = 'white';
                     bCc.className = 'g-btn g-btn-sec'; bCc.style.background = '#334155'; bCc.style.color = 'white';
                     desc.innerText = "Standard: Enter individual scores for each player.";
                 }
