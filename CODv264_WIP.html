@@ -2145,9 +2145,9 @@
                 let rh = this.getRelHole(this.d.h);
                 let m = Math.floor((rh - 1) / 6);
 
-                // Prevent multiple presses on the same hole by the same team
-                if (this.d.press[m] && this.d.press[m].some(p => p.team === team && p.startH === rh)) {
-                    alert("A press is already active for this hole!");
+                // Only allow one press per team per segment
+                if (this.d.press[m] && this.d.press[m].some(p => p.team === team)) {
+                    alert("A press is already active for this team in this segment!");
                     return;
                 }
 
@@ -2408,11 +2408,16 @@
                 if (this.d.gameType !== 'scramble' && (rh % 6 !== 0)) {
                     const diff1 = main.w1 - main.w2;
                     const diff2 = main.w2 - main.w1;
-                    if (diff1 < 0) {
+
+                    // Only show button if no press already exists for that team in this segment
+                    const hasP1 = this.d.press[m] && this.d.press[m].some(p => p.team === 1);
+                    const hasP2 = this.d.press[m] && this.d.press[m].some(p => p.team === 2);
+
+                    if (diff1 < 0 && !hasP1) {
                         const nameA = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)}`;
                         pressButtons += `<button class="g-btn g-btn-sm" style="background:#EF4444; width:auto; margin-top:4px; margin-right:4px; padding:6px 10px; font-size:10px;" onclick="App.initiatePress(1)">${nameA} PRESS</button>`;
                     }
-                    if (diff2 < 0) {
+                    if (diff2 < 0 && !hasP2) {
                         const nameB = `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)}`;
                         pressButtons += `<button class="g-btn g-btn-sm" style="background:#F59E0B; width:auto; margin-top:4px; padding:6px 10px; font-size:10px;" onclick="App.initiatePress(2)">${nameB} PRESS</button>`;
                     }
