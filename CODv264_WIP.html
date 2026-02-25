@@ -2206,6 +2206,7 @@
             initiatePress: function (team) {
                 let rh = this.getRelHole(this.d.h);
                 let m = Math.floor((rh - 1) / 6);
+                // Check trailing status based on holes completed BEFORE this one
                 const r = this.calcMatch(m, (m * 6) + 1, rh, 0, null);
                 const diff = (team === 1) ? (r.w1 - r.w2) : (r.w2 - r.w1);
 
@@ -2214,13 +2215,9 @@
                     return;
                 }
 
-                const startH = rh + 1;
-                if (startH > (m + 1) * 6) {
-                    alert("No holes remaining in segment!");
-                    return;
-                }
+                const startH = rh; // Starts on the hole they are currently viewing/teeing off on
 
-                if (!confirm(`Initiate PRESS starting on next hole (Hole ${this.getAbsHole(startH)})?`)) return;
+                if (!confirm(`Initiate PRESS starting on current hole (Hole ${this.getAbsHole(startH)})?\n\nReminder: Press must be initiated BEFORE any player tees off.`)) return;
 
                 if (!this.d.press[m]) this.d.press[m] = [];
                 this.d.press[m].push({ team, startH, initialDiff: diff });
@@ -2479,10 +2476,12 @@
                     const diff1 = main.w1 - main.w2;
                     const diff2 = main.w2 - main.w1;
                     if (diff1 < 0) {
-                        pressButtons += `<button class="g-btn g-btn-sm" style="background:#EF4444; width:auto; margin-top:8px; margin-right:4px;" onclick="App.initiatePress(1)">TEAM A PRESS</button>`;
+                        const nameA = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)}`;
+                        pressButtons += `<button class="g-btn g-btn-sm" style="background:#EF4444; width:auto; margin-top:8px; margin-right:4px; padding:8px 12px; font-size:11px;" onclick="App.initiatePress(1)">${nameA} PRESS</button>`;
                     }
                     if (diff2 < 0) {
-                        pressButtons += `<button class="g-btn g-btn-sm" style="background:#F59E0B; width:auto; margin-top:8px;" onclick="App.initiatePress(2)">TEAM B PRESS</button>`;
+                        const nameB = `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)}`;
+                        pressButtons += `<button class="g-btn g-btn-sm" style="background:#F59E0B; width:auto; margin-top:8px; padding:8px 12px; font-size:11px;" onclick="App.initiatePress(2)">${nameB} PRESS</button>`;
                     }
                 }
                 document.getElementById('d-status').innerHTML = stat + '<br>' + pressButtons;
