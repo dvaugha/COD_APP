@@ -2146,8 +2146,8 @@
                 let m = Math.floor((rh - 1) / 6);
 
                 // Prevent multiple presses on the same hole by the same team
-                if (this.d.press[m] && this.d.press[m].some(p => p.team === team && p.startH === (rh + 1))) {
-                    alert("A press is already active for the next hole!");
+                if (this.d.press[m] && this.d.press[m].some(p => p.team === team && p.startH === rh)) {
+                    alert("A press is already active for this hole!");
                     return;
                 }
 
@@ -2160,13 +2160,9 @@
                     return;
                 }
 
-                const startH = rh + 1; // Starts on the NEXT hole
-                if (startH > (m + 1) * 6) {
-                    alert("No holes remaining in this segment!");
-                    return;
-                }
+                const startH = rh; // Starts IMMEDIATELY on the CURRENT hole
 
-                if (!confirm(`Initiate PRESS starting on NEXT hole (Hole ${this.getAbsHole(startH)})?`)) return;
+                if (!confirm(`Initiate PRESS starting on CURRENT hole (Hole ${this.getAbsHole(startH)})?`)) return;
 
                 if (!this.d.press[m]) this.d.press[m] = [];
                 this.d.press[m].push({ team, startH, initialDiff: diff });
