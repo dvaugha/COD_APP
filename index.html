@@ -901,7 +901,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v263.0 (GOLD)</div>
+            <div class="tx-xl">COD GOLF v264.0 (WIP)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1511,7 +1511,7 @@
                     this.save();
                     if (!this.d.history) this.d.history = [];
                     if (!this.d.start) this.d.start = 1;
-                    if (!this.d.press) this.d.press = [null, null, null];
+                    if (!this.d.press) this.d.press = { 0: [], 1: [], 2: [] };
                     if (!this.d.hcps) this.d.hcps = {};
                     if (!this.d.gameType) this.d.gameType = 'cod';
                     if (!this.d.pot) this.d.pot = 20;
@@ -1569,7 +1569,7 @@
             resetScores: function () {
                 this.d.s = {};
                 this.d.junk = {};
-                this.d.hcps = {};
+                this.d.press = { 0: [], 1: [], 2: [] };
                 this.d.start = parseInt(document.getElementById('s-start').value);
                 this.d.h = this.d.start;
                 this.d.ps = ['', '', '', ''];
@@ -1638,7 +1638,6 @@
                 this.save();
                 this.uDash();
                 this.updateJunkUI();
-                this.checkPressModal();
             },
             uDash: function () {
                 const h = this.d.h;
@@ -1818,7 +1817,6 @@
                     }
                     this.save();
                     this.uDash();
-                    this.checkPressModal();
                 } catch (e) {
                     alert("Test Error: " + e.message);
                 }
@@ -1923,7 +1921,7 @@
                 if (!this.d.scoringMode) this.d.scoringMode = 'std';
                 this.d.s = {};
                 this.d.junk = {};
-                this.d.press = {};
+                this.d.press = { 0: [], 1: [], 2: [] };
                 this.d.h = this.d.start;
 
                 // Composite Course Logic
@@ -2120,89 +2118,114 @@
                 }
             },
 
-            calcSeg: function (idx) {
+            getAbsHole: function (rh) {
+                if (this.d.start === 1) return rh;
+                if (rh <= 9) return rh + 9;
+                return rh - 9;
+            },
+            getRelHole: function (absH) {
+                if (this.d.start === 1) return absH;
+                if (absH >= 10) return absH - 9;
+                return absH + 9;
+            },
+
+            calcMatch: function (segIdx, startRh, endRh, initialDiff, teamPressed) {
                 const segs = [{ t1: [0, 1], t2: [2, 3] }, { t1: [0, 3], t2: [1, 2] }, { t1: [0, 2], t2: [1, 3] }];
-                const seg = segs[idx];
-                const press = (this.d.press && this.d.press[idx]) ? this.d.press[idx] : null;
-
-                const getHoles = (segIdx) => {
-                    const hArr = [];
-                    const sRH = (segIdx * 6) + 1;
-                    for (let k = 0; k < 6; k++) {
-                        let rh = sRH + k; let absH = rh;
-                        if (this.d.start === 10) { if (rh <= 9) absH = rh + 9; else absH = rh - 9; }
-                        hArr.push(absH);
-                    }
-                    return hArr;
-                };
-                const holes = getHoles(idx);
-                let w1 = 0, w2 = 0; let lhWin = 0;
+                const seg = segs[segIdx];
                 const gt = this.d.gameType;
+                const c = CS[this.d.crs] || CS['cc'];
 
-                let sum1 = 0, sum2 = 0; // For Scramble Totals
+                let w1 = 0, w2 = 0;
                 let birds = { t1: 0, t2: 0 };
+                let sum1 = 0, sum2 = 0;
+                let completedHoles = 0;
 
-                holes.forEach((h, i) => {
+                for (let rh = startRh; rh <= endRh; rh++) {
+                    const h = this.getAbsHole(rh);
                     const s = this.d.s[h];
                     if (s && Object.keys(s).length === 4) {
-                        const c = CS[this.d.crs] || CS['cc'];
+                        completedHoles++;
                         const par = c.p[h - 1];
-
                         if (gt === 'scramble') {
-                            // Scramble: Team Score is MIN of partners
-                            // Assuming GROSS for now as requested
                             const sc1 = Math.min(s[seg.t1[0]], s[seg.t1[1]]);
                             const sc2 = Math.min(s[seg.t2[0]], s[seg.t2[1]]);
-                            sum1 += sc1;
-                            sum2 += sc2;
+                            sum1 += sc1; sum2 += sc2;
                             if (sc1 < par) birds.t1++;
                             if (sc2 < par) birds.t2++;
                         } else {
-                            // COD Match Play (Net)
                             let b1 = Math.min(s[seg.t1[0]] - this.getPops(seg.t1[0], h - 1), s[seg.t1[1]] - this.getPops(seg.t1[1], h - 1));
                             let b2 = Math.min(s[seg.t2[0]] - this.getPops(seg.t2[0], h - 1), s[seg.t2[1]] - this.getPops(seg.t2[1], h - 1));
-                            if (b1 < b2) { w1++; if (i === 5) lhWin = 1; }
-                            else if (b2 < b1) { w2++; if (i === 5) lhWin = 2; }
+                            if (b1 < b2) w1++; else if (b2 < b1) w2++;
                         }
                     }
-                });
+                }
+
+                let winner = 0;
+                let amt = 5;
 
                 if (gt === 'scramble') {
                     let pts1 = birds.t1, pts2 = birds.t2;
-                    let winner = 0;
-                    // Block Win (3 pts) / Tie (1 pt)
                     if (sum1 < sum2) { pts1 += 3; winner = 1; }
                     else if (sum2 < sum1) { pts2 += 3; winner = 2; }
-                    else { pts1 += 1; pts2 += 1; } // Tie
-
-                    let amt = this.d.bet;
-                    if (press) amt = amt * 2;
-
-                    return { winner, amt, w1: pts1, w2: pts2, seg, press, isScramble: true };
-                }
-
-                // COD Standard
-                let winner = 0; let amt = this.d.bet;
-                if (press) {
-                    const pt = press.team;
-                    if (lhWin === pt) {
-                        if (press.type === 1) { winner = pt; amt = this.d.bet; }
-                        else { winner = 0; }
-                    } else if (lhWin !== 0 && lhWin !== pt) {
-                        winner = (pt === 1 ? 2 : 1); amt = this.d.bet * 2;
-                    } else {
-                        if (w1 > w2) winner = 1; else if (w2 > w1) winner = 2;
-                    }
+                    else { pts1 += 1; pts2 += 1; }
+                    return { winner, amt, w1: pts1, w2: pts2, seg, isScramble: true, holes: [startRh, endRh] };
                 } else {
-                    if (w1 > w2) winner = 1; else if (w2 > w1) winner = 2;
+                    if (w1 > w2) winner = 1;
+                    else if (w2 > w1) winner = 2;
+                    else {
+                        if (teamPressed && Math.abs(initialDiff) >= 3 && completedHoles > 0) {
+                            winner = (teamPressed === 1 ? 2 : 1);
+                            amt = 2.5;
+                        } else {
+                            winner = 0;
+                            amt = 0;
+                        }
+                    }
+                    return { winner, amt, w1, w2, seg, isScramble: false, teamPressed, startRh, endRh };
                 }
-                return { winner, amt, w1, w2, seg, press, isScramble: false };
             },
 
-            togglePress: function (idx, type, team) {
-                if (this.d.press[idx]) this.d.press[idx] = null;
-                else this.d.press[idx] = { type, team };
-                this.save(); this.uDash();
+            calcSegResults: function (segIdx) {
+                const results = [];
+                // 1. Main Match
+                results.push(this.calcMatch(segIdx, (segIdx * 6) + 1, (segIdx * 6) + 6, 0, null));
+                // 2. Presses
+                if (this.d.press && this.d.press[segIdx]) {
+                    this.d.press[segIdx].forEach(p => {
+                        results.push(this.calcMatch(segIdx, p.startH, (segIdx * 6) + 6, p.initialDiff, p.team));
+                    });
+                }
+                return results;
+            },
+
+            calcSeg: function (idx) {
+                // Compatibility wrapper for old calls that expect a single result
+                return this.calcSegResults(idx)[0];
+            },
+
+            initiatePress: function (team) {
+                let rh = this.getRelHole(this.d.h);
+                let m = Math.floor((rh - 1) / 6);
+                const r = this.calcMatch(m, (m * 6) + 1, rh, 0, null);
+                const diff = (team === 1) ? (r.w1 - r.w2) : (r.w2 - r.w1);
+
+                if (diff >= 0) {
+                    alert("Team must be trailing to press!");
+                    return;
+                }
+
+                const startH = rh + 1;
+                if (startH > (m + 1) * 6) {
+                    alert("No holes remaining in segment!");
+                    return;
+                }
+
+                if (!confirm(`Initiate PRESS starting on next hole (Hole ${this.getAbsHole(startH)})?`)) return;
+
+                if (!this.d.press[m]) this.d.press[m] = [];
+                this.d.press[m].push({ team, startH, initialDiff: diff });
+                this.save();
+                this.uDash();
             },
 
             checkPressModal: function () {
@@ -2417,7 +2440,9 @@
             },
 
             uDash: function () {
-                const c = CS[this.d.crs], par = c.p[this.d.h - 1];
+                const c = CS[this.d.crs];
+                if (!c) return;
+                const par = c.p[this.d.h - 1];
                 document.getElementById('d-h-num').innerText = "HOLE " + this.d.h;
                 document.getElementById('d-par').innerText = par;
                 const dists = c.y[this.d.tee] || [];
@@ -2429,66 +2454,70 @@
                 document.getElementById('d-tee-ind').style.color = (tT.includes('GOLD') ? '#F59E0B' : 'white');
 
                 // RELATIVE HOLE LOGIC
-                let rh = this.d.h;
-                if (this.d.start === 10) {
-                    if (this.d.h >= 10) rh = this.d.h - 9;
-                    else rh = this.d.h + 9;
-                }
-
-                let m = 0; if (rh > 6) m = 1; if (rh > 12) m = 2;
-                let r = this.calcSeg(m);
-                let t1 = r.seg.t1, t2 = r.seg.t2;
+                let rh = this.getRelHole(this.d.h);
+                let m = Math.floor((rh - 1) / 6);
+                const results = this.calcSegResults(m);
+                const main = results[0];
+                const t1 = main.seg.t1, t2 = main.seg.t2;
 
                 let fmt; if (m === 0) fmt = "CARTS (1-6)"; else if (m === 1) fmt = "OPPOSITES (7-12)"; else fmt = "DRIVERS (13-18)";
                 document.getElementById('d-fmt').innerText = fmt;
 
-                // PRESS BUTTON LOGIC
-                let pBtn = '';
-                const isScramble = (this.d.gameType === 'scramble');
-                if (rh % 6 === 0 && !isScramble) {
-                    let diff = r.w1 - r.w2;
-                    if (diff !== 0) {
-                        let trailing = diff > 0 ? 2 : 1;
-                        let absD = Math.abs(diff);
-                        let type = absD === 1 ? 1 : 2;
-                        let isP = this.d.press && this.d.press[m];
-
-                        if (isP) {
-                            pBtn = `<button class="g-btn g-btn-sm" style="background:#F59E0B; color:black; margin-top:4px;" onclick="App.togglePress(${m}, ${type}, ${trailing})">PRESS ACTIVE (${isP.type === 1 ? 'WIN SEG' : 'PUSH'})</button>`;
-                        } else {
-                            const lbl = type === 1 ? "PRESS" : "PRESS (SAVE)";
-                            pBtn = `<button class="g-btn g-btn-sm" style="background:#334155; margin-top:4px; border:1px solid #F59E0B; color:#F59E0B;" onclick="App.togglePress(${m}, ${type}, ${trailing})">${lbl}</button>`;
-                        }
-                    }
-                }
-
+                // Status String (Main Match)
                 let stat = "ALL SQUARE";
-                if (isScramble) {
-                    stat = `PTS: ${r.w1} - ${r.w2}`;
+                if (this.d.gameType === 'scramble') {
+                    stat = `PTS: ${main.w1} - ${main.w2}`;
                 } else {
-                    let d = r.w1 - r.w2;
+                    let d = main.w1 - main.w2;
                     if (d > 0) stat = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)} <em style="color:#10B981">${d} UP</em>`;
                     else if (d < 0) stat = `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
-                    else if (r.winner !== 0) {
-                        if (r.winner === 1) stat = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)} <em style="color:#10B981">WINS</em>`;
-                        else stat = `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)} <em style="color:#10B981">WINS</em>`;
+                }
+
+                // PRESS BUTTONS
+                let pressButtons = '';
+                if (this.d.gameType !== 'scramble' && rh % 6 !== 0) {
+                    const diff1 = main.w1 - main.w2;
+                    const diff2 = main.w2 - main.w1;
+                    if (diff1 < 0) {
+                        pressButtons += `<button class="g-btn g-btn-sm" style="background:#EF4444; width:auto; margin-top:8px; margin-right:4px;" onclick="App.initiatePress(1)">TEAM A PRESS</button>`;
+                    }
+                    if (diff2 < 0) {
+                        pressButtons += `<button class="g-btn g-btn-sm" style="background:#F59E0B; width:auto; margin-top:8px;" onclick="App.initiatePress(2)">TEAM B PRESS</button>`;
                     }
                 }
-                document.getElementById('d-status').innerHTML = stat + pBtn;
+                document.getElementById('d-status').innerHTML = stat + '<br>' + pressButtons;
+
+                // Total Exposure Calculation
+                const exposure = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                [0, 1, 2].forEach(segIdx => {
+                    const segRes = this.calcSegResults(segIdx);
+                    segRes.forEach(r => {
+                        if (r.winner === 1) {
+                            r.seg.t1.forEach(p => exposure[p] += r.amt);
+                            r.seg.t2.forEach(p => exposure[p] -= r.amt);
+                        } else if (r.winner === 2) {
+                            r.seg.t2.forEach(p => exposure[p] += r.amt);
+                            r.seg.t1.forEach(p => exposure[p] -= r.amt);
+                        }
+                    });
+                });
 
                 const map = (id, pid) => {
                     this.slotMap[id] = pid;
                     const pops = this.getPops(pid, this.d.h - 1);
                     const dots = " (H)".repeat(pops);
                     const nmEl = document.getElementById('nm-' + id);
-                    nmEl.innerText = this.d.ps[pid] + dots;
+                    const expVal = exposure[pid];
+                    const expTxt = (expVal >= 0 ? '+' : '') + expVal;
+                    const expCol = expVal >= 0 ? '#10B981' : '#F87171';
+                    const expBg = expVal >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(248, 113, 113, 0.1)';
+                    nmEl.innerHTML = `${this.d.ps[pid]}${dots} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
                     nmEl.style.color = pops > 0 ? '#F59E0B' : '#94A3B8';
 
                     document.getElementById('gh-' + id).innerText = "PAR " + par;
                     const sc = this.d.s[this.d.h] && this.d.s[this.d.h][pid];
                     const ec = document.getElementById('slot-' + id);
                     const es = document.getElementById('sc-' + id);
-                    // Net Score logic for color: sc - pops vs par
                     if (sc) {
                         ec.classList.add('has-score');
                         es.innerText = sc;
@@ -2745,9 +2774,8 @@
                 const isScramble = (this.d.gameType === 'scramble');
 
                 ["CARTS (1-6)", "OPPOSITES (7-12)", "DRIVERS (13-18)"].forEach((lbl, idx) => {
-                    let r = this.calcSeg(idx);
-
-                    if (isScramble) {
+                    const results = this.calcSegResults(idx);
+                    results.forEach((r, rIdx) => {
                         if (r.winner === 1) {
                             r.seg.t1.forEach(p => bets[p] += r.amt);
                             r.seg.t2.forEach(p => bets[p] -= r.amt);
@@ -2755,86 +2783,62 @@
                             r.seg.t2.forEach(p => bets[p] += r.amt);
                             r.seg.t1.forEach(p => bets[p] -= r.amt);
                         }
-                    } else {
-                        if (r.winner === 1) {
-                            r.seg.t1.forEach(p => bets[p] += r.amt);
-                            r.seg.t2.forEach(p => bets[p] -= r.amt);
-                        } else if (r.winner === 2) {
-                            r.seg.t2.forEach(p => bets[p] += r.amt);
-                            r.seg.t1.forEach(p => bets[p] -= r.amt);
-                        }
-                    }
 
-                    resHTML += `<div style="margin-bottom:16px;">`;
-                    let wTxt = "ALL SQUARE";
-                    let wCol = "white";
+                        resHTML += `<div style="margin-bottom:16px;">`;
+                        let wTxt = "ALL SQUARE";
+                        let wCol = "white";
 
-                    if (isScramble) {
-                        if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN BLOCK (${r.w1} pts)`; wCol = "#10B981"; }
-                        else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN BLOCK (${r.w2} pts)`; wCol = "#F59E0B"; }
-                        else { wTxt = `BLOCK TIED (${r.w1} pts each)`; }
-                    } else {
-                        if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN $${r.amt}`; wCol = "#10B981"; }
-                        if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN $${r.amt}`; wCol = "#F59E0B"; }
-                    }
+                        const matchName = (rIdx === 0) ? lbl : `PRESS (H${this.getAbsHole(r.startRh)}-${this.getAbsHole(r.endRh)})`;
 
-                    // Press Badge (Only for COD)
-                    let pBadge = "";
-                    if (!isScramble && r.press) {
-                        if (r.winner === r.press.team) pBadge = ` <span style="color:#F472B6; font-size:11px;">🔥 PRESS WON</span>`;
-                        else if (r.winner === 0 && r.press.type === 2) pBadge = ` <span style="color:#94A3B8; font-size:11px;">🛡️ SAVED</span>`;
-                        else if (r.winner !== 0 && r.winner !== r.press.team) pBadge = ` <span style="color:#F87171; font-size:11px;">💀 PRESS LOST</span>`;
-                    }
-
-                    resHTML += `<div style="font-weight:900; color:#94A3B8; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${lbl}</div>`;
-                    resHTML += `<div style="font-size:14px; font-weight:900; color:${wCol}; margin-bottom:8px; border-bottom:1px solid #334155; padding-bottom:4px;">${wTxt}${pBadge}</div>`;
-
-
-                    // Hole Badges
-                    resHTML += `<div style="display:flex; flex-wrap:wrap; gap:6px;">`;
-                    // Regenerate Holes Array for this segment
-                    const sRH = (idx * 6) + 1;
-                    const hArr = [];
-                    for (let k = 0; k < 6; k++) {
-                        let rh = sRH + k; let absH = rh;
-                        if (this.d.start === 10) { if (rh <= 9) absH = rh + 9; else absH = rh - 9; }
-                        hArr.push(absH);
-                    }
-
-                    hArr.forEach(h => {
-                        const s = this.d.s[h];
-                        if (!s || Object.keys(s).length < 4) return;
-
-                        const p1a = r.seg.t1[0], p1b = r.seg.t1[1];
-                        const p2a = r.seg.t2[0], p2b = r.seg.t2[1];
-
-                        const n1a = s[p1a] - this.getPops(p1a, h - 1);
-                        const n1b = s[p1b] - this.getPops(p1b, h - 1);
-                        const n2a = s[p2a] - this.getPops(p2a, h - 1);
-                        const n2b = s[p2b] - this.getPops(p2b, h - 1);
-
-                        const best1 = Math.min(n1a, n1b);
-                        const best2 = Math.min(n2a, n2b);
-
-                        let bStyle = "background:#334155; color:#94A3B8;";
-                        let bTxt = `H${h}`;
-                        if (best1 < best2) {
-                            bStyle = "background:#10B981; color:#064E3B;"; // Green
-                            let pName = (n1a === best1) ? this.d.ps[p1a] : this.d.ps[p1b];
-                            if (n1a === best1 && n1b === best1) pName = "Team";
-                            bTxt = `H${h}: ${pName.substring(0, 3)} (${best1})`;
-                        } else if (best2 < best1) {
-                            bStyle = "background:#F59E0B; color:#78350F;"; // Amber
-                            let pName = (n2a === best2) ? this.d.ps[p2a] : this.d.ps[p2b];
-                            if (n2a === best2 && n2b === best2) pName = "Team";
-                            bTxt = `H${h}: ${pName.substring(0, 3)} (${best2})`;
+                        if (isScramble) {
+                            if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN BLOCK (${r.w1} pts)`; wCol = "#10B981"; }
+                            else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN BLOCK (${r.w2} pts)`; wCol = "#F59E0B"; }
+                            else { wTxt = `BLOCK TIED (${r.w1} pts each)`; }
                         } else {
-                            // Tie
-                            bTxt = `H${h}: - (${best1})`;
+                            if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN $${r.amt}`; wCol = "#10B981"; }
+                            else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN $${r.amt}`; wCol = "#F59E0B"; }
+                            else if (r.amt === 2.5) {
+                                // This case is actually winner 1 or 2 with amt 2.5, but let's be safe
+                            }
                         }
-                        resHTML += `<div style="${bStyle} padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">${bTxt}</div>`;
+
+                        resHTML += `<div style="font-weight:900; color:#94A3B8; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${matchName}</div>`;
+                        resHTML += `<div style="font-size:14px; font-weight:900; color:${wCol}; margin-bottom:8px; border-bottom:1px solid #334155; padding-bottom:4px;">${wTxt}</div>`;
+
+                        // Hole Badges
+                        resHTML += `<div style="display:flex; flex-wrap:wrap; gap:6px;">`;
+                        const start = rIdx === 0 ? (idx * 6) + 1 : r.startRh;
+                        const end = (idx * 6) + 6;
+                        for (let hRel = start; hRel <= end; hRel++) {
+                            const h = this.getAbsHole(hRel);
+                            const s = this.d.s[h];
+                            if (!s || Object.keys(s).length < 4) continue;
+
+                            const p1a = r.seg.t1[0], p1b = r.seg.t1[1];
+                            const p2a = r.seg.t2[0], p2b = r.seg.t2[1];
+
+                            const n1a = s[p1a] - this.getPops(p1a, h - 1);
+                            const n1b = s[p1b] - this.getPops(p1b, h - 1);
+                            const n2a = s[p2a] - this.getPops(p2a, h - 1);
+                            const n2b = s[p2b] - this.getPops(p2b, h - 1);
+                            const best1 = Math.min(n1a, n1b);
+                            const best2 = Math.min(n2a, n2b);
+
+                            let bStyle = "background:#334155; color:#94A3B8;";
+                            let bTxt = `H${h}`;
+                            if (best1 < best2) {
+                                bStyle = "background:#10B981; color:#064E3B;";
+                                bTxt = `H${h}: ${best1}`;
+                            } else if (best2 < best1) {
+                                bStyle = "background:#F59E0B; color:#78350F;";
+                                bTxt = `H${h}: ${best2}`;
+                            } else {
+                                bTxt = `H${h}: -`;
+                            }
+                            resHTML += `<div style="${bStyle} padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">${bTxt}</div>`;
+                        }
+                        resHTML += `</div></div>`;
                     });
-                    resHTML += `</div></div>`;
                 });
 
                 if (isScramble) {
@@ -2891,60 +2895,44 @@
                     const segRes = [];
 
                     [0, 1, 2].forEach(idx => {
-                        let r = this.calcSeg(idx);
-                        let wStr = "";
-                        let col = "white"; // Default text color
+                        const results = this.calcSegResults(idx);
+                        results.forEach((r, rIdx) => {
+                            let wStr = "";
+                            let col = "white";
 
-                        if (isScramble) {
-                            if (r.winner === 1) {
-                                wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won (+${r.w1} pts)`;
-                                r.seg.t1.forEach(p => bets[p] += r.amt);
-                                r.seg.t2.forEach(p => bets[p] -= r.amt);
-                                col = "#10B981";
-                            } else if (r.winner === 2) {
-                                wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won (+${r.w2} pts)`;
-                                r.seg.t2.forEach(p => bets[p] += r.amt);
-                                r.seg.t1.forEach(p => bets[p] -= r.amt);
-                                col = "#F59E0B";
+                            if (isScramble) {
+                                if (r.winner === 1) {
+                                    wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won (+${r.w1} pts)`;
+                                    r.seg.t1.forEach(p => bets[p] += r.amt);
+                                    r.seg.t2.forEach(p => bets[p] -= r.amt);
+                                    col = "#10B981";
+                                } else if (r.winner === 2) {
+                                    wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won (+${r.w2} pts)`;
+                                    r.seg.t2.forEach(p => bets[p] += r.amt);
+                                    r.seg.t1.forEach(p => bets[p] -= r.amt);
+                                    col = "#F59E0B";
+                                } else {
+                                    wStr = `Tie (${r.w1} pts each)`;
+                                }
+                                segRes.push({ name: (rIdx === 0 ? ["BLOCK 1", "BLOCK 2", "BLOCK 3"][idx] : "PRESS"), val: wStr, color: col });
                             } else {
-                                wStr = `Tie (${r.w1} pts each)`;
+                                if (r.winner === 1) {
+                                    wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won $${r.amt}`;
+                                    r.seg.t1.forEach(p => bets[p] += r.amt);
+                                    r.seg.t2.forEach(p => bets[p] -= r.amt);
+                                    col = "#10B981";
+                                } else if (r.winner === 2) {
+                                    wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won $${r.amt}`;
+                                    r.seg.t2.forEach(p => bets[p] += r.amt);
+                                    r.seg.t1.forEach(p => bets[p] -= r.amt);
+                                    col = "#F59E0B";
+                                } else {
+                                    wStr = "Tie (Push)";
+                                }
+                                const matchName = (rIdx === 0) ? ["CARTS", "OPPOSITES", "DRIVERS"][idx] : `PRESS (H${this.getAbsHole(r.startRh)})`;
+                                segRes.push({ name: matchName, val: wStr, color: col });
                             }
-
-                            segRes.push({
-                                name: ["BLOCK 1", "BLOCK 2", "BLOCK 3"][idx],
-                                val: wStr,
-                                color: col
-                            });
-                        } else {
-                            // COD Logic
-                            if (r.winner === 1) {
-                                wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won $${r.amt}`;
-                                r.seg.t1.forEach(p => bets[p] += r.amt);
-                                r.seg.t2.forEach(p => bets[p] -= r.amt);
-                                col = "#10B981";
-                            } else if (r.winner === 2) {
-                                wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won $${r.amt}`;
-                                r.seg.t2.forEach(p => bets[p] += r.amt);
-                                r.seg.t1.forEach(p => bets[p] -= r.amt);
-                                col = "#F59E0B";
-                            } else {
-                                wStr = "Tie (No Blood)";
-                            }
-
-                            // Press Details
-                            let pStatus = "";
-                            if (r.press) {
-                                if (r.winner === r.press.team) pStatus = " • Press Won!";
-                                else if (r.winner === 0 && r.press.type === 2) pStatus = " • Press Saved";
-                                else if (r.winner !== 0 && r.winner !== r.press.team) pStatus = " • Press Lost";
-                            }
-
-                            segRes.push({
-                                name: ["CARTS", "OPPOSITES", "DRIVERS"][idx],
-                                val: wStr + pStatus,
-                                color: col
-                            });
-                        }
+                        });
                     });
 
                     // 2. Calculate Recap (Injected)
@@ -3153,7 +3141,7 @@
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v263.0</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v264.0</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -3209,23 +3197,25 @@
                 let sett = "";
 
                 [0, 1, 2].forEach(idx => {
-                    let r = this.calcSeg(idx);
-                    if (r.winner === 1) {
-                        r.seg.t1.forEach(p => bets[p] += r.amt);
-                        r.seg.t2.forEach(p => bets[p] -= r.amt);
-                    } else if (r.winner === 2) {
-                        r.seg.t2.forEach(p => bets[p] += r.amt);
-                        r.seg.t1.forEach(p => bets[p] -= r.amt);
-                    }
+                    const results = this.calcSegResults(idx);
+                    results.forEach((r, rIdx) => {
+                        if (r.winner === 1) {
+                            r.seg.t1.forEach(p => bets[p] += r.amt);
+                            r.seg.t2.forEach(p => bets[p] -= r.amt);
+                        } else if (r.winner === 2) {
+                            r.seg.t2.forEach(p => bets[p] += r.amt);
+                            r.seg.t1.forEach(p => bets[p] -= r.amt);
+                        }
 
-                    // Add Segment Text
-                    let segLbl = (idx === 0) ? "HOLES 1-6" : (idx === 1 ? "HOLES 7-12" : "HOLES 13-18");
-                    let wTxt = "ALL SQUARE";
-                    if (r.winner === 1) wTxt = `${this.d.ps[r.seg.t1[0]]} / ${this.d.ps[r.seg.t1[1]]} (WIN)`;
-                    else if (r.winner === 2) wTxt = `${this.d.ps[r.seg.t2[0]]} / ${this.d.ps[r.seg.t2[1]]} (WIN)`;
-                    sett += `\n${segLbl}: ${wTxt}`;
+                        let matchName = (rIdx === 0) ? (["HOLES 1-6", "HOLES 7-12", "HOLES 13-18"][idx]) : `PRESS (H${this.getAbsHole(r.startRh)})`;
+                        let wTxt = "ALL SQUARE";
+                        if (r.winner === 1) wTxt = `${this.d.ps[r.seg.t1[0]]} / ${this.d.ps[r.seg.t1[1]]} (WIN $${r.amt})`;
+                        else if (r.winner === 2) wTxt = `${this.d.ps[r.seg.t2[0]]} / ${this.d.ps[r.seg.t2[1]]} (WIN $${r.amt})`;
+                        sett += `\n${matchName}: ${wTxt}`;
+                    });
                 });
 
+                // 1b. Add Junk Payouts to Total
                 // 1b. Add Junk Payouts to Total
                 const jRes = this.calcJunkRes();
                 if (jRes && jRes.net) {
@@ -3237,7 +3227,7 @@
                             const wNames = r.winners.map(idx => this.d.ps[idx]).join(', ');
                             jText += `\n${r.name} (Junk): ${wNames} ($${r.pot})`;
                         } else {
-                            anyJunk = true; // Still want to show PUSH
+                            anyJunk = true; // Still want to show the line
                             jText += `\n${r.name} (Junk): PUSH`;
                         }
                     });
