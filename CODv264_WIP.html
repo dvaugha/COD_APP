@@ -2851,7 +2851,7 @@
                                 } else {
                                     wStr = `Tie (${r.w1} pts each)`;
                                 }
-                                segRes.push({ name: (rIdx === 0 ? ["BLOCK 1", "BLOCK 2", "BLOCK 3"][idx] : "PRESS"), val: wStr, color: col });
+                                segRes.push({ name: (rIdx === 0 ? ["BLOCK 1", "BLOCK 2", "BLOCK 3"][idx] : `<span style="color:#F59E0B">PRESS</span>`), val: wStr, color: col });
                             } else {
                                 if (r.winner === 1) {
                                     wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won $${r.amt}`;
@@ -2866,7 +2866,7 @@
                                 } else {
                                     wStr = "Tie (Push)";
                                 }
-                                const matchName = (rIdx === 0) ? ["CARTS", "OPPOSITES", "DRIVERS"][idx] : `PRESS (H${this.getAbsHole(r.startRh)})`;
+                                const matchName = (rIdx === 0) ? ["CARTS", "OPPOSITES", "DRIVERS"][idx] : `<span style="color:#F59E0B">PRESS</span> (H${this.getAbsHole(r.startRh)})`;
                                 segRes.push({ name: matchName, val: wStr, color: col });
                             }
                         });
