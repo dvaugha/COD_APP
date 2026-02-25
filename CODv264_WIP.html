@@ -2215,13 +2215,8 @@
                     return;
                 }
 
-                const startH = rh + 1; // Starts on the NEXT hole
-                if (startH > (m + 1) * 6) {
-                    alert("No holes remaining in this segment!");
-                    return;
-                }
-
-                if (!confirm(`Initiate PRESS starting on NEXT hole (Hole ${this.getAbsHole(startH)})?`)) return;
+                const startH = rh; // Starts immediately on the current hole
+                if (!confirm(`Initiate PRESS starting on current hole (Hole ${this.getAbsHole(startH)})?\n\nThis will track score for Hole ${this.getAbsHole(startH)} through Hole ${this.getAbsHole((m + 1) * 6)}.`)) return;
 
                 if (!this.d.press[m]) this.d.press[m] = [];
                 this.d.press[m].push({ team, startH, initialDiff: diff });
@@ -2538,9 +2533,9 @@
                     } else { ec.classList.remove('has-score'); }
                 };
                 map(0, t1[0]); map(1, t1[1]);
-                document.getElementById('lbl-t1').innerText = `TEAM A (${this.d.ps[t1[0]].substring(0, 3)} & ${this.d.ps[t1[1]].substring(0, 3)})`;
+                document.getElementById('lbl-t1').innerText = `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`;
                 map(2, t2[0]); map(3, t2[1]);
-                document.getElementById('lbl-t2').innerText = `TEAM B (${this.d.ps[t2[0]].substring(0, 3)} & ${this.d.ps[t2[1]].substring(0, 3)})`;
+                document.getElementById('lbl-t2').innerText = `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`;
             },
 
             tJ: function (idx, type) {
