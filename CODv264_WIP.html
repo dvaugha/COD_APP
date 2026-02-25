@@ -1639,69 +1639,7 @@
                 this.uDash();
                 this.updateJunkUI();
             },
-            uDash: function () {
-                const h = this.d.h;
-                const c = CS[this.d.crs] || CS['cc'];
-                if (!c || !c.p) {
-                    // console.error("uDash: Course data missing or not built.");
-                    this.nav('v-setup');
-                    return;
-                }
-                const par = c.p[h - 1];
-                const hcp = c.hcp[h - 1];
-                let dist = 0;
-                if (c.y[this.d.tee] && c.y[this.d.tee][h - 1]) dist = c.y[this.d.tee][h - 1];
 
-                document.getElementById('d-h-num').innerText = "HOLE " + h;
-                document.getElementById('d-par').innerText = par;
-                document.getElementById('d-tee-ind').innerText = this.d.tee.toUpperCase() + " TEE";
-                document.getElementById('d-tee-ind').style.color = (this.d.tee === 'gold' ? '#F59E0B' : 'white');
-                document.getElementById('d-dist').innerText = dist;
-                document.getElementById('d-hcp').innerText = hcp;
-                let fmt = (this.d.gameType === 'scramble') ? 'SCRAMBLE' : 'COD MATCH';
-                if (this.d.scoringMode === 'cc') fmt += ' (CC)';
-                document.getElementById('d-fmt').innerText = fmt;
-
-                // Status
-                let segIdx = 0;
-                if (h > 6) segIdx = 1;
-                if (h > 12) segIdx = 2;
-                if (this.d.gameType === 'scramble') {
-                    // Scramble Status Logic Placeholder - Default to Segment Logic
-                    const r = this.calcSeg(segIdx);
-                    let st = "ALL SQUARE";
-                    const diff = r.w1 - r.w2;
-                    if (diff !== 0) st = (diff > 0 ? "TEAM 1" : "TEAM 2") + " UP " + Math.abs(diff);
-                    document.getElementById('d-status').innerText = st;
-                } else {
-                    const r = this.calcSeg(segIdx);
-                    let st = "ALL SQUARE";
-                    const diff = r.w1 - r.w2;
-                    if (diff !== 0) st = (diff > 0 ? "TEAM 1" : "TEAM 2") + " UP " + Math.abs(diff);
-                    document.getElementById('d-status').innerText = st;
-                }
-
-                // Players
-                [0, 1, 2, 3].forEach(i => {
-                    const pid = this.slotMap[i];
-                    if (this.d.chosen[i]) {
-                        document.getElementById('p-name-' + i).innerText = this.d.chosen[i];
-                        // Score
-                        const s = (this.d.s[h] && this.d.s[h][pid]) ? this.d.s[h][pid] : '-';
-                        const sEl = document.getElementById('sc-' + i);
-                        sEl.innerText = s;
-                        // Color (Based on Net)
-                        sEl.style.color = '#cbd5e1';
-                        if (s !== '-') {
-                            const pops = this.getPops(i, h - 1);
-                            const net = s - pops;
-                            if (net < par) sEl.style.color = '#10B981';
-                            else if (net > par) sEl.style.color = '#F87171';
-                            else sEl.style.color = 'white';
-                        }
-                    }
-                });
-            },
 
             mod: function (idx, delta) {
                 if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
@@ -2206,6 +2144,13 @@
             initiatePress: function (team) {
                 let rh = this.getRelHole(this.d.h);
                 let m = Math.floor((rh - 1) / 6);
+
+                // Prevent multiple presses on the same hole by the same team
+                if (this.d.press[m] && this.d.press[m].some(p => p.team === team && p.startH === (rh + 1))) {
+                    alert("A press is already active for the next hole!");
+                    return;
+                }
+
                 // Check trailing status based on holes completed up to current hole
                 const r = this.calcMatch(m, (m * 6) + 1, rh, 0, null);
                 const diff = (team === 1) ? (r.w1 - r.w2) : (r.w2 - r.w1);
@@ -2215,8 +2160,13 @@
                     return;
                 }
 
-                const startH = rh; // Starts immediately on the current hole
-                if (!confirm(`Initiate PRESS starting on current hole (Hole ${this.getAbsHole(startH)})?\n\nThis will track score for Hole ${this.getAbsHole(startH)} through Hole ${this.getAbsHole((m + 1) * 6)}.`)) return;
+                const startH = rh + 1; // Starts on the NEXT hole
+                if (startH > (m + 1) * 6) {
+                    alert("No holes remaining in this segment!");
+                    return;
+                }
+
+                if (!confirm(`Initiate PRESS starting on NEXT hole (Hole ${this.getAbsHole(startH)})?`)) return;
 
                 if (!this.d.press[m]) this.d.press[m] = [];
                 this.d.press[m].push({ team, startH, initialDiff: diff });
@@ -2224,30 +2174,7 @@
                 this.uDash();
             },
 
-            checkPressModal: function () {
-                let rh = this.d.h;
-                if (this.d.start === 10) { if (this.d.h >= 10) rh = this.d.h - 9; else rh = this.d.h + 9; }
-                if (rh % 6 !== 0) return;
-                let m = (rh / 6) - 1;
-                let r = this.calcSeg(m);
-                let diff = r.w1 - r.w2;
-                if (this.d.press && this.d.press[m]) return;
-                if (diff !== 0) {
-                    let trailing = diff > 0 ? 2 : 1;
-                    let absD = Math.abs(diff);
-                    let type = absD === 1 ? 1 : 2;
 
-                    const tIdx = trailing === 1 ? r.seg.t1 : r.seg.t2;
-                    const names = tIdx.map(i => this.d.ps[i]).join(" & ");
-
-                    let pType = type === 1 ? "WIN SEGMENT" : "PUSH";
-                    document.getElementById('pm-msg').innerHTML = `<div style="font-weight:900; color:${trailing === 1 ? '#10B981' : '#F59E0B'}; font-size:18px;">${names}</div><div style="font-size:14px; margin-top:4px;">Down by ${absD}. Press?</div>`;
-                    const btn = document.getElementById('pm-btn');
-                    btn.innerText = `YES (${pType})`;
-                    btn.onclick = () => { this.togglePress(m, type, trailing); this.closePress(); };
-                    document.getElementById('press-modal').classList.add('active');
-                }
-            },
             closePress: function () { document.getElementById('press-modal').classList.remove('active'); },
 
             uRecap: function () {
@@ -2473,9 +2400,11 @@
                     return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#94A3B8; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${s}</div>`;
                 };
 
-                let statHTML = getStatStr(main, "Match");
+                let statHTML = getStatStr(main, "Main Match");
                 results.slice(1).forEach((pR, pIdx) => {
-                    statHTML += getStatStr(pR, `Press ${pIdx + 1}`);
+                    const pData = this.d.press[m][pIdx];
+                    const pTeamNames = pData.team === 1 ? `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)}` : `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)}`;
+                    statHTML += getStatStr(pR, `${pTeamNames} Press (H${this.getAbsHole(pData.startH)})`);
                 });
 
                 // PRESS BUTTONS
