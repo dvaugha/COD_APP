@@ -909,6 +909,7 @@
             <select id="g-mode" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;">
                 <option value="cod">COD (Match Play)</option>
                 <option value="scramble">6-Hole Scramble (Points)</option>
+                <option value="stroke">Versus (Stroke Play)</option>
             </select>
 
             <div class="flex-r" style="justify-content:center; gap:10px; align-items:center; margin-bottom:16px;">
@@ -1033,6 +1034,7 @@
                     <select id="g-mode" class="g-inp">
                         <option value="cod">C.O.D. (6-6-6)</option>
                         <option value="scramble">2-Man Scramble</option>
+                        <option value="stroke">Versus (18-Hole Stroke)</option>
                     </select>
                 </div>
                 <div style="flex:1;">
@@ -1859,7 +1861,15 @@
             },
             startRound: function () {
                 const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
-                if (p.some(x => !x)) { alert("Seats!"); return; }
+                const gt = document.getElementById('g-mode').value;
+                const count = p.filter(x => x).length;
+
+                if (gt === 'stroke') {
+                    if (count < 2) { alert("Need at least 2 players for Stroke Play!"); return; }
+                } else {
+                    if (count < 4) { alert("COD and Scramble require 4 players (2 vs 2 / Rotating)!"); return; }
+                }
+
                 this.d.ps = p;
                 this.d.crs = document.getElementById('s-course').value;
                 this.d.tee = document.getElementById('s-tee').value;
@@ -2400,6 +2410,8 @@
                     const t1 = res.seg.t1, t2 = res.seg.t2;
                     if (this.d.gameType === 'scramble') {
                         s = `PTS: ${res.w1} - ${res.w2}`;
+                    } else if (this.d.gameType === 'stroke') {
+                        return label;
                     } else {
                         let d = res.w1 - res.w2;
                         if (d > 0) s = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)} <em style="color:#10B981">${d} UP</em>`;
@@ -2408,16 +2420,59 @@
                     return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#94A3B8; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${s}</div>`;
                 };
 
-                let statHTML = getStatStr(main, "Main Match");
-                results.slice(1).forEach((pR, pIdx) => {
-                    const pData = this.d.press[m][pIdx];
-                    const pTeamNames = pData.team === 1 ? `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)}` : `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)}`;
-                    statHTML += getStatStr(pR, `${pTeamNames} Press (H${this.getAbsHole(pData.startH)})`);
-                });
+                let statHTML = "";
+
+                if (this.d.gameType === 'stroke') {
+                    const totals = [];
+                    const c = CS[this.d.crs] || CS['cc'];
+                    [0, 1, 2, 3].forEach(pIdx => {
+                        if (!this.d.ps[pIdx]) return;
+                        let netScore = 0;
+                        let played = 0;
+                        for (let h = 1; h <= 18; h++) {
+                            const sc = (this.d.s[h] && this.d.s[h][pIdx]);
+                            if (sc) {
+                                const par = c.p[h - 1];
+                                const pops = this.getPops(pIdx, h - 1);
+                                netScore += (sc - pops - par);
+                                played++;
+                            }
+                        }
+                        totals.push({ name: this.d.ps[pIdx].substring(0, 3), score: netScore, played });
+                    });
+                    totals.sort((a, b) => a.score - b.score);
+                    statHTML = `<div style="font-size:11px; font-weight:900; color:#10B981; margin-bottom:4px;">LEADERBOARD (NET)</div>`;
+                    totals.forEach((t, i) => {
+                        let sStr = t.score === 0 ? 'E' : (t.score > 0 ? '+' + t.score : t.score);
+                        if (t.played === 0) sStr = "-";
+                        statHTML += `<div style="font-size:12px; display:flex; justify-content:space-between; margin-bottom:2px;">
+                            <span>${i + 1}. ${t.name}</span>
+                            <span style="color:${t.score < 0 ? '#10B981' : (t.score > 0 ? '#F87171' : 'white')}">${sStr}</span>
+                         </div>`;
+                    });
+
+                    // Team Combined Score if 4 players
+                    if (this.d.ps.filter(x => x).length === 4) {
+                        const t1Score = (totals.find(t => t.name === this.d.ps[0].substring(0, 3)).score || 0) + (totals.find(t => t.name === this.d.ps[1].substring(0, 3)).score || 0);
+                        const t2Score = (totals.find(t => t.name === this.d.ps[2].substring(0, 3)).score || 0) + (totals.find(t => t.name === this.d.ps[3].substring(0, 3)).score || 0);
+                        statHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px; font-size:10px; font-weight:900; color:#F59E0B;">TEAM TOTALS (NET)</div>`;
+                        statHTML += `<div style="font-size:11px; display:flex; justify-content:space-between;">
+                            <span>TEAM A (P1+P2): ${t1Score === 0 ? 'E' : (t1Score > 0 ? '+' + t1Score : t1Score)}</span>
+                            <span>TEAM B (P3+P4): ${t2Score === 0 ? 'E' : (t2Score > 0 ? '+' + t2Score : t2Score)}</span>
+                        </div>`;
+                    }
+                } else {
+                    statHTML = getStatStr(main, "Main Match");
+                    results.slice(1).forEach((pR, pIdx) => {
+                        const pData = this.d.press[m][pIdx];
+                        const pTeamNames = pData.team === 1 ? `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)}` : `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)}`;
+                        statHTML += getStatStr(pR, `${pTeamNames} Press (H${this.getAbsHole(pData.startH)})`);
+                    });
+                }
 
                 // PRESS BUTTONS
                 let pressButtons = '';
-                if (this.d.gameType !== 'scramble' && (rh % 6 !== 0)) {
+                if (this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && (rh % 6 !== 0)) {
                     const diff1 = main.w1 - main.w2;
                     const diff2 = main.w2 - main.w1;
 
@@ -2453,6 +2508,16 @@
 
                 const map = (id, pid) => {
                     this.slotMap[id] = pid;
+                    const ec = document.getElementById('slot-' + id);
+                    const jRow = ec.nextElementSibling;
+                    if (!this.d.ps[pid]) {
+                        ec.style.display = 'none';
+                        jRow.style.display = 'none';
+                        return;
+                    }
+                    ec.style.display = 'flex';
+                    jRow.style.display = 'flex';
+
                     const pops = this.getPops(pid, this.d.h - 1);
                     const dots = " (H)".repeat(pops);
                     const nmEl = document.getElementById('nm-' + id);
@@ -2465,7 +2530,6 @@
 
                     document.getElementById('gh-' + id).innerText = "PAR " + par;
                     const sc = this.d.s[this.d.h] && this.d.s[this.d.h][pid];
-                    const ec = document.getElementById('slot-' + id);
                     const es = document.getElementById('sc-' + id);
                     if (sc) {
                         ec.classList.add('has-score');
@@ -2475,9 +2539,12 @@
                     } else { ec.classList.remove('has-score'); }
                 };
                 map(0, t1[0]); map(1, t1[1]);
-                document.getElementById('lbl-t1').innerText = `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`;
+                document.getElementById('lbl-t1').innerText = (this.d.gameType === 'stroke') ? "GROSS TOTALS" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`;
+                document.getElementById('lbl-t1').style.display = (this.d.ps[t1[0]] || this.d.ps[t1[1]]) ? 'block' : 'none';
+
                 map(2, t2[0]); map(3, t2[1]);
-                document.getElementById('lbl-t2').innerText = `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`;
+                document.getElementById('lbl-t2').innerText = (this.d.gameType === 'stroke') ? " " : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`;
+                document.getElementById('lbl-t2').style.display = (this.d.ps[t2[0]] || this.d.ps[t2[1]]) ? 'block' : 'none';
             },
 
             tJ: function (idx, type) {
@@ -2666,6 +2733,7 @@
 
                     let pRows = '';
                     [0, 1, 2, 3].forEach(pIdx => {
+                        if (!this.d.ps[pIdx]) return;
                         let r = `<tr><td>${this.d.ps[pIdx].substring(0, 8)}</td>`;
                         let tot = 0;
                         for (let i = startH; i < startH + 9; i++) {
@@ -2710,6 +2778,7 @@
                 // GROSS TOTALS SECTION
                 let totHTML = '<div style="margin-top:20px; padding:12px; background:#1E293B; border:1px solid #334155; border-radius:12px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:8px; text-transform:uppercase;">Gross Totals</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">';
                 this.d.ps.forEach((p, i) => {
+                    if (!p) return;
                     let t = 0;
                     for (let h = 1; h <= 18; h++) if (this.d.s[h] && this.d.s[h][i]) t += this.d.s[h][i];
                     totHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#94A3B8; text-transform:uppercase;">${p.substring(0, 8)}</span><span style="font-size:15px; font-weight:900; color:white;">${t || '-'}</span></div>`;
@@ -2718,85 +2787,94 @@
                 cardCon.innerHTML += totHTML;
 
                 const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
-                const pts = { 0: 0, 1: 0, 2: 0, 3: 0 }; // Scramble Points
                 let resHTML = "";
                 const isScramble = (this.d.gameType === 'scramble');
+                const isStroke = (this.d.gameType === 'stroke');
 
-                ["CARTS (1-6)", "OPPOSITES (7-12)", "DRIVERS (13-18)"].forEach((lbl, idx) => {
-                    const results = this.calcSegResults(idx);
-                    results.forEach((r, rIdx) => {
-                        if (r.winner === 1) {
-                            r.seg.t1.forEach(p => bets[p] += r.amt);
-                            r.seg.t2.forEach(p => bets[p] -= r.amt);
-                        } else if (r.winner === 2) {
-                            r.seg.t2.forEach(p => bets[p] += r.amt);
-                            r.seg.t1.forEach(p => bets[p] -= r.amt);
+                if (isStroke) {
+                    const totals = [];
+                    const c = CS[this.d.crs] || CS['cc'];
+                    this.d.ps.forEach((p, pIdx) => {
+                        if (!p) return;
+                        let netScore = 0;
+                        for (let h = 1; h <= 18; h++) {
+                            const sc = (this.d.s[h] && this.d.s[h][pIdx]);
+                            if (sc) netScore += (sc - this.getPops(pIdx, h - 1) - c.p[h - 1]);
                         }
-
-                        resHTML += `<div style="margin-bottom:16px;">`;
-                        let wTxt = "ALL SQUARE";
-                        let wCol = "white";
-
-                        const matchName = (rIdx === 0) ? lbl : `PRESS (H${this.getAbsHole(r.startRh)}-${this.getAbsHole(r.endRh)})`;
-
-                        if (isScramble) {
-                            if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN BLOCK (${r.w1} pts)`; wCol = "#10B981"; }
-                            else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN BLOCK (${r.w2} pts)`; wCol = "#F59E0B"; }
-                            else { wTxt = `BLOCK TIED (${r.w1} pts each)`; }
-                        } else {
-                            if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN $${r.amt}`; wCol = "#10B981"; }
-                            else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN $${r.amt}`; wCol = "#F59E0B"; }
-                            else if (r.amt === 2.5) {
-                                // This case is actually winner 1 or 2 with amt 2.5, but let's be safe
-                            }
-                        }
-
-                        resHTML += `<div style="font-weight:900; color:#94A3B8; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${matchName}</div>`;
-                        resHTML += `<div style="font-size:14px; font-weight:900; color:${wCol}; margin-bottom:8px; border-bottom:1px solid #334155; padding-bottom:4px;">${wTxt}</div>`;
-
-                        // Hole Badges
-                        resHTML += `<div style="display:flex; flex-wrap:wrap; gap:6px;">`;
-                        const start = rIdx === 0 ? (idx * 6) + 1 : r.startRh;
-                        const end = (idx * 6) + 6;
-                        for (let hRel = start; hRel <= end; hRel++) {
-                            const h = this.getAbsHole(hRel);
-                            const s = this.d.s[h];
-                            if (!s || Object.keys(s).length < 4) continue;
-
-                            const p1a = r.seg.t1[0], p1b = r.seg.t1[1];
-                            const p2a = r.seg.t2[0], p2b = r.seg.t2[1];
-
-                            const n1a = s[p1a] - this.getPops(p1a, h - 1);
-                            const n1b = s[p1b] - this.getPops(p1b, h - 1);
-                            const n2a = s[p2a] - this.getPops(p2a, h - 1);
-                            const n2b = s[p2b] - this.getPops(p2b, h - 1);
-                            const best1 = Math.min(n1a, n1b);
-                            const best2 = Math.min(n2a, n2b);
-
-                            let bStyle = "background:#334155; color:#94A3B8;";
-                            let bTxt = `H${h}`;
-                            if (best1 < best2) {
-                                bStyle = "background:#10B981; color:#064E3B;";
-                                bTxt = `H${h}: ${best1}`;
-                            } else if (best2 < best1) {
-                                bStyle = "background:#F59E0B; color:#78350F;";
-                                bTxt = `H${h}: ${best2}`;
-                            } else {
-                                bTxt = `H${h}: -`;
-                            }
-                            resHTML += `<div style="${bStyle} padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">${bTxt}</div>`;
-                        }
-                        resHTML += `</div></div>`;
+                        totals.push({ idx: pIdx, name: p, score: netScore });
                     });
-                });
+                    totals.sort((a, b) => a.score - b.score);
+                    const winner = totals[0];
+                    const pot = this.d.pot || 0;
+                    if (winner) {
+                        resHTML = `<div style="text-align:center; padding:10px; background:rgba(16, 185, 129, 0.1); border-radius:8px;">
+                            <div style="font-size:14px; font-weight:900; color:#10B981;">🏆 WINNER: ${winner.name}</div>
+                            <div style="font-size:12px; color:white;">SCORE: ${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET</div>
+                            ${pot > 0 ? `<div style="font-size:18px; font-weight:900; color:#F59E0B; margin-top:5px;">PAYOUT: $${pot}</div>` : ''}
+                        </div><br>`;
+                        if (pot > 0) bets[winner.idx] += pot;
+                    }
+                    if (this.d.ps.filter(x => x).length === 4) {
+                        const t1Score = totals.find(t => t.idx === 0).score + totals.find(t => t.idx === 1).score;
+                        const t2Score = totals.find(t => t.idx === 2).score + totals.find(t => t.idx === 3).score;
+                        let teamWinner = t1Score < t2Score ? "TEAM A (P1+P2)" : (t2Score < t1Score ? "TEAM B (P3+P4)" : "PUSH");
+                        resHTML += `<div style="font-size:12px; font-weight:700; color:#F59E0B;">TEAM MATCH RESULTS:</div>`;
+                        resHTML += `<div style="font-size:13px; color:white;">${teamWinner} ${teamWinner === 'PUSH' ? '' : 'WON'}</div><br>`;
+                    }
+                } else {
+                    ["CARTS (1-6)", "OPPOSITES (7-12)", "DRIVERS (13-18)"].forEach((lbl, idx) => {
+                        const results = this.calcSegResults(idx);
+                        results.forEach((r, rIdx) => {
+                            if (r.winner === 1) {
+                                r.seg.t1.forEach(p => bets[p] += r.amt);
+                                r.seg.t2.forEach(p => bets[p] -= r.amt);
+                            } else if (r.winner === 2) {
+                                r.seg.t2.forEach(p => bets[p] += r.amt);
+                                r.seg.t1.forEach(p => bets[p] -= r.amt);
+                            }
 
-                if (isScramble) {
-                    resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:8px;"><div style="font-size:11px; font-weight:900; color:white; margin-bottom:4px;">SCRAMBLE TOTALS (NET)</div>`;
-                    [0, 1, 2, 3].forEach(i => { resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${bets[i] >= 0 ? '#10B981' : '#F87171'}">${bets[i] >= 0 ? '+' : ''}$${bets[i]}</span></div>` });
+                            const matchName = (rIdx === 0) ? lbl : `PRESS (H${this.getAbsHole(r.startRh)}-${this.getAbsHole(r.endRh)})`;
+                            let wTxt = "ALL SQUARE", wCol = "white";
+                            if (isScramble) {
+                                if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN BLOCK (${r.w1} pts)`; wCol = "#10B981"; }
+                                else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN BLOCK (${r.w2} pts)`; wCol = "#F59E0B"; }
+                                else { wTxt = `BLOCK TIED (${r.w1} pts each)`; }
+                            } else {
+                                if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} WIN $${r.amt}`; wCol = "#10B981"; }
+                                else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} WIN $${r.amt}`; wCol = "#F59E0B"; }
+                            }
+
+                            resHTML += `<div style="margin-bottom:16px;">
+                                <div style="font-weight:900; color:#94A3B8; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${matchName}</div>
+                                <div style="font-size:14px; font-weight:900; color:${wCol}; margin-bottom:8px; border-bottom:1px solid #334155; padding-bottom:4px;">${wTxt}</div>
+                                <div style="display:flex; flex-wrap:wrap; gap:6px;">`;
+
+                            const start = rIdx === 0 ? (idx * 6) + 1 : r.startRh;
+                            const end = (idx * 6) + 6;
+                            for (let hRel = start; hRel <= end; hRel++) {
+                                const h = this.getAbsHole(hRel);
+                                const s = this.d.s[h];
+                                if (!s || Object.keys(s).length < 4) continue;
+                                const best1 = Math.min(s[r.seg.t1[0]] - this.getPops(r.seg.t1[0], h - 1), s[r.seg.t1[1]] - this.getPops(r.seg.t1[1], h - 1));
+                                const best2 = Math.min(s[r.seg.t2[0]] - this.getPops(r.seg.t2[0], h - 1), s[r.seg.t2[1]] - this.getPops(r.seg.t2[1], h - 1));
+                                let bStyle = "background:#334155; color:#94A3B8;", bTxt = `H${h}`;
+                                if (best1 < best2) { bStyle = "background:#10B981; color:#064E3B;"; bTxt = `H${h}: ${best1}`; }
+                                else if (best2 < best1) { bStyle = "background:#F59E0B; color:#78350F;"; bTxt = `H${h}: ${best2}`; }
+                                else { bTxt = `H${h}: -`; }
+                                resHTML += `<div style="${bStyle} padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">${bTxt}</div>`;
+                            }
+                            resHTML += `</div></div>`;
+                        });
+                    });
+                }
+
+                if (isStroke || isScramble) {
+                    resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:8px;"><div style="font-size:11px; font-weight:900; color:white; margin-bottom:4px;">${isStroke ? 'PAYOUTS' : 'SCRAMBLE TOTALS'}</div>`;
+                    [0, 1, 2, 3].forEach(i => { if (this.d.ps[i]) resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${bets[i] >= 0 ? '#10B981' : '#F87171'}">${bets[i] >= 0 ? '+' : ''}$${bets[i]}</span></div>` });
                     resHTML += `</div>`;
                 } else {
                     resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:8px;"><div style="font-size:11px; font-weight:900; color:white; margin-bottom:4px;">NET TOTALS</div>`;
-                    [0, 1, 2, 3].forEach(i => { resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${bets[i] >= 0 ? '#10B981' : '#F87171'}">${bets[i] >= 0 ? '+' : ''}$${bets[i]}</span></div>` });
+                    [0, 1, 2, 3].forEach(i => { if (this.d.ps[i]) resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${bets[i] >= 0 ? '#10B981' : '#F87171'}">${bets[i] >= 0 ? '+' : ''}$${bets[i]}</span></div>` });
                     resHTML += `</div>`;
                 }
 
