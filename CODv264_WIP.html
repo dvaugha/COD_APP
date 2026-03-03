@@ -986,6 +986,7 @@
                         <option value="belle">Belle Glade</option>
                         <option value="bonifay">Bonifay</option>
                         <option value="lopez">Nancy Lopez</option>
+                        <option value="re">Rivers Edge</option>
                     </select>
                 </div>
                 <div style="width:80px;">
@@ -1456,10 +1457,21 @@
                     'erinn': { n: 'Erinn Glenn', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
                     'torri': { n: 'Torri Pines', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
                 }
+            },
+            're': {
+                n: 'Rivers Edge',
+                p: [4, 4, 5, 4, 3, 4, 4, 3, 5, 4, 5, 3, 4, 4, 3, 4, 5, 4],
+                y: {
+                    white: [343, 319, 467, 332, 115, 397, 370, 162, 494, 316, 455, 142, 339, 255, 155, 359, 420, 319],
+                    gold: [409, 397, 538, 374, 135, 443, 432, 190, 554, 363, 510, 174, 399, 294, 195, 392, 465, 371],
+                    combo: []
+                },
+                hcp: [9, 11, 7, 13, 17, 3, 5, 15, 1, 8, 2, 14, 6, 18, 10, 4, 16, 12],
+                cmb: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             }
         };
 
-        ['jones', 'maples', 'byrd', 'so', 'wl'].forEach(k => {
+        ['jones', 'maples', 'byrd', 'so', 'wl', 're'].forEach(k => {
             const c = CS[k];
             if (c.y.combo.length === 0 && c.y.white.length > 0) {
                 for (let i = 0; i < 18; i++) {
@@ -1471,7 +1483,7 @@
 
         // Initialize Regions
         const regions = {
-            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC',
+            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC', 're': 'NC',
             'wl': 'FL', 'so': 'FL', 'sc': 'FL', 'havana': 'FL', 'palmer': 'FL', 'belle': 'FL', 'bonifay': 'FL', 'lopez': 'FL'
         };
         Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
