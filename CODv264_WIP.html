@@ -2921,59 +2921,103 @@
                     const pts = { 0: 0, 1: 0, 2: 0, 3: 0 };
                     const segRes = [];
 
-                    [0, 1, 2].forEach(idx => {
-                        const results = this.calcSegResults(idx);
-                        results.forEach((r, rIdx) => {
-                            let wStr = "";
-                            let col = "white";
-
-                            if (isScramble) {
-                                if (r.winner === 1) {
-                                    wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won (+${r.w1} pts)`;
-                                    r.seg.t1.forEach(p => bets[p] += r.amt);
-                                    r.seg.t2.forEach(p => bets[p] -= r.amt);
-                                    col = "#10B981";
-                                } else if (r.winner === 2) {
-                                    wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won (+${r.w2} pts)`;
-                                    r.seg.t2.forEach(p => bets[p] += r.amt);
-                                    r.seg.t1.forEach(p => bets[p] -= r.amt);
-                                    col = "#F59E0B";
-                                } else {
-                                    wStr = `Tie (${r.w1} pts each)`;
-                                }
-                                segRes.push({ name: (rIdx === 0 ? ["BLOCK 1", "BLOCK 2", "BLOCK 3"][idx] : `<span style="color:#22D3EE">PRESS</span>`), val: wStr, color: col });
-                            } else {
-                                if (r.winner === 1) {
-                                    wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won $${r.amt}`;
-                                    r.seg.t1.forEach(p => bets[p] += r.amt);
-                                    r.seg.t2.forEach(p => bets[p] -= r.amt);
-                                    col = "#10B981";
-                                } else if (r.winner === 2) {
-                                    wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won $${r.amt}`;
-                                    r.seg.t2.forEach(p => bets[p] += r.amt);
-                                    r.seg.t1.forEach(p => bets[p] -= r.amt);
-                                    col = "#F59E0B";
-                                } else {
-                                    wStr = "Tie (Push)";
-                                }
-                                const matchName = (rIdx === 0) ? ["CARTS", "OPPOSITES", "DRIVERS"][idx] : `<span style="color:#22D3EE">PRESS</span> (H${this.getAbsHole(r.startRh)})`;
-                                segRes.push({ name: matchName, val: wStr, color: col });
+                    if (this.d.gameType === 'stroke') {
+                        const totals = [];
+                        this.d.ps.forEach((p, pIdx) => {
+                            if (!p) return;
+                            let netScore = 0;
+                            for (let h = 1; h <= 18; h++) {
+                                const sc = (this.d.s[h] && this.d.s[h][pIdx]);
+                                if (sc) netScore += (sc - this.getPops(pIdx, h - 1) - c.p[h - 1]);
                             }
+                            totals.push({ idx: pIdx, name: p, score: netScore });
                         });
-                    });
+                        totals.sort((a, b) => a.score - b.score);
+                        const winner = totals[0];
+                        const pot = this.d.pot || 0;
+                        if (winner) {
+                            segRes.push({ name: "🏆 WINNER", val: `${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET)`, color: "#10B981" });
+                            if (pot > 0) {
+                                segRes.push({ name: "💰 PAYOUT", val: `$${pot}`, color: "#F59E0B" });
+                                bets[winner.idx] += pot;
+                            }
+                        }
+                        if (this.d.ps.filter(x => x).length === 4) {
+                            const t1Score = totals.find(t => t.idx === 0).score + totals.find(t => t.idx === 1).score;
+                            const t2Score = totals.find(t => t.idx === 2).score + totals.find(t => t.idx === 3).score;
+                            let teamWinner = t1Score < t2Score ? "TEAM A" : (t2Score < t1Score ? "TEAM B" : "PUSH");
+                            segRes.push({ name: "👥 TEAM WIN", val: teamWinner, color: "#22D3EE" });
+                        }
+                    } else {
+                        [0, 1, 2].forEach(idx => {
+                            const results = this.calcSegResults(idx);
+                            results.forEach((r, rIdx) => {
+                                let wStr = "";
+                                let col = "white";
+
+                                if (isScramble) {
+                                    if (r.winner === 1) {
+                                        wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won (+${r.w1} pts)`;
+                                        r.seg.t1.forEach(p => bets[p] += r.amt);
+                                        r.seg.t2.forEach(p => bets[p] -= r.amt);
+                                        col = "#10B981";
+                                    } else if (r.winner === 2) {
+                                        wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won (+${r.w2} pts)`;
+                                        r.seg.t2.forEach(p => bets[p] += r.amt);
+                                        r.seg.t1.forEach(p => bets[p] -= r.amt);
+                                        col = "#F59E0B";
+                                    } else {
+                                        wStr = `Tie (${r.w1} pts each)`;
+                                    }
+                                    segRes.push({ name: (rIdx === 0 ? ["BLOCK 1", "BLOCK 2", "BLOCK 3"][idx] : `<span style="color:#22D3EE">PRESS</span>`), val: wStr, color: col });
+                                } else {
+                                    if (r.winner === 1) {
+                                        wStr = `${ps[r.seg.t1[0]]} & ${ps[r.seg.t1[1]]} won $${r.amt}`;
+                                        r.seg.t1.forEach(p => bets[p] += r.amt);
+                                        r.seg.t2.forEach(p => bets[p] -= r.amt);
+                                        col = "#10B981";
+                                    } else if (r.winner === 2) {
+                                        wStr = `${ps[r.seg.t2[0]]} & ${ps[r.seg.t2[1]]} won $${r.amt}`;
+                                        r.seg.t2.forEach(p => bets[p] += r.amt);
+                                        r.seg.t1.forEach(p => bets[p] -= r.amt);
+                                        col = "#F59E0B";
+                                    } else {
+                                        wStr = "Tie (Push)";
+                                    }
+                                    const matchName = (rIdx === 0) ? ["CARTS", "OPPOSITES", "DRIVERS"][idx] : `<span style="color:#22D3EE">PRESS</span> (H${this.getAbsHole(r.startRh)})`;
+                                    segRes.push({ name: matchName, val: wStr, color: col });
+                                }
+                            });
+                        });
+                    }
 
                     // 2. Calculate Recap (Injected)
-                    const pRecap = [0, 1, 2, 3].map(i => ({
-                        id: i, name: ps[i],
-                        dist: { bird: 0, par: 0, bog: 0, dbl: 0 },
-                        totalStrokes: 0, netToPar: 0, birds: 0, dbls: 0
-                    }));
+                    const pRecap = [];
+                    [0, 1, 2, 3].forEach(i => {
+                        if (!ps[i]) return;
+                        pRecap[i] = {
+                            id: i, name: ps[i],
+                            dist: { bird: 0, par: 0, bog: 0, dbl: 0 },
+                            totalStrokes: 0, netToPar: 0, birds: 0, dbls: 0
+                        };
+                    });
                     for (let x = 1; x <= 18; x++) {
                         const par = c.p[x - 1];
                         let any = false;
                         [0, 1, 2, 3].forEach(i => {
+                            if (!ps[i]) return;
                             const s = (this.d.s[x] && this.d.s[x][i]);
-                            if (typeof s === 'number') { any = true; pRecap[i].totalStrokes += s; const d = s - par; if (d <= -1) { pRecap[i].dist.bird++; pRecap[i].birds++; } else if (d === 0) pRecap[i].dist.par++; else if (d === 1) pRecap[i].dist.bog++; else { pRecap[i].dist.dbl++; pRecap[i].dbls++; } const pops = this.getPops(i, x - 1); pRecap[i].netToPar += (s - pops) - par; }
+                            if (typeof s === 'number') {
+                                any = true;
+                                pRecap[i].totalStrokes += s;
+                                const d = s - par;
+                                if (d <= -1) { pRecap[i].dist.bird++; pRecap[i].birds++; }
+                                else if (d === 0) pRecap[i].dist.par++;
+                                else if (d === 1) pRecap[i].dist.bog++;
+                                else { pRecap[i].dist.dbl++; pRecap[i].dbls++; }
+                                const pops = this.getPops(i, x - 1);
+                                pRecap[i].netToPar += (s - pops) - par;
+                            }
                         });
                     }
                     let recapHTML = '';
@@ -2986,16 +3030,8 @@
                         const par = c.p[h - 1];
                         const bMakers = [];
                         [0, 1, 2, 3].forEach(i => {
-                            const s = (this.d.s[h] && this.d.s[h][i]); // Note: In Share, 'i' maps directly? 
-                            // Wait. In share(), pRecap used loop [0,1,2,3].
-                            // this.d.s[x][i] was accessed directly (line 2469).
-                            // Is d.s keyed by Seat Index (0-3) or Player ID?
-                            // Line 1517: this.d.s[this.d.h][pid] = s; (PID is from slotMap).
-                            // If SlotMap is 0->0, then PID is 0.
-                            // In old code, we verified pid is int.
-                            // Assuming share() logic at 2469 `this.d.s[x][i]` is correct (using 'i' as key), then we use 'i' here.
-
-                            if (typeof s === 'number' && s < par) bMakers.push(ps[i]);
+                            const s = (this.d.s[h] && this.d.s[h][i]);
+                            if (ps[i] && typeof s === 'number' && s < par) bMakers.push(ps[i]);
                         });
                         if (bMakers.length > 0) fbHoles.push({ h: h, ps: bMakers });
                     }
@@ -3223,24 +3259,57 @@
                 const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
                 let sett = "";
 
-                [0, 1, 2].forEach(idx => {
-                    const results = this.calcSegResults(idx);
-                    results.forEach((r, rIdx) => {
-                        if (r.winner === 1) {
-                            r.seg.t1.forEach(p => bets[p] += r.amt);
-                            r.seg.t2.forEach(p => bets[p] -= r.amt);
-                        } else if (r.winner === 2) {
-                            r.seg.t2.forEach(p => bets[p] += r.amt);
-                            r.seg.t1.forEach(p => bets[p] -= r.amt);
+                if (this.d.gameType === 'stroke') {
+                    const totals = [];
+                    const c = CS[this.d.crs] || CS['cc'];
+                    this.d.ps.forEach((p, pIdx) => {
+                        if (!p) return;
+                        let netScore = 0;
+                        for (let h = 1; h <= 18; h++) {
+                            const sc = (this.d.s[h] && this.d.s[h][pIdx]);
+                            if (sc) netScore += (sc - this.getPops(pIdx, h - 1) - c.p[h - 1]);
                         }
-
-                        let matchName = (rIdx === 0) ? (["HOLES 1-6", "HOLES 7-12", "HOLES 13-18"][idx]) : `PRESS (H${this.getAbsHole(r.startRh)})`;
-                        let wTxt = "ALL SQUARE";
-                        if (r.winner === 1) wTxt = `${this.d.ps[r.seg.t1[0]]} / ${this.d.ps[r.seg.t1[1]]} (WIN $${r.amt})`;
-                        else if (r.winner === 2) wTxt = `${this.d.ps[r.seg.t2[0]]} / ${this.d.ps[r.seg.t2[1]]} (WIN $${r.amt})`;
-                        sett += `\n${matchName}: ${wTxt}`;
+                        totals.push({ idx: pIdx, name: p, score: netScore });
                     });
-                });
+                    totals.sort((a, b) => a.score - b.score);
+                    const winner = totals[0];
+                    const pot = this.d.pot || 0;
+                    const activeCount = this.d.ps.filter(x => x).length;
+                    const buyIn = activeCount > 0 ? (pot / activeCount) : 0;
+
+                    if (winner) {
+                        sett += `\nTROPHY: ${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET)`;
+                        if (pot > 0) {
+                            this.d.ps.forEach((p, i) => { if (p) bets[i] -= buyIn; });
+                            bets[winner.idx] += pot;
+                        }
+                    }
+                    if (activeCount === 4) {
+                        const t1Score = totals.find(t => t.idx === 0).score + totals.find(t => t.idx === 1).score;
+                        const t2Score = totals.find(t => t.idx === 2).score + totals.find(t => t.idx === 3).score;
+                        let teamWinner = t1Score < t2Score ? "TEAM A" : (t2Score < t1Score ? "TEAM B" : "PUSH");
+                        sett += `\nTEAM WIN: ${teamWinner}`;
+                    }
+                } else {
+                    [0, 1, 2].forEach(idx => {
+                        const results = this.calcSegResults(idx);
+                        results.forEach((r, rIdx) => {
+                            if (r.winner === 1) {
+                                r.seg.t1.forEach(p => bets[p] += r.amt);
+                                r.seg.t2.forEach(p => bets[p] -= r.amt);
+                            } else if (r.winner === 2) {
+                                r.seg.t2.forEach(p => bets[p] += r.amt);
+                                r.seg.t1.forEach(p => bets[p] -= r.amt);
+                            }
+
+                            let matchName = (rIdx === 0) ? (["HOLES 1-6", "HOLES 7-12", "HOLES 13-18"][idx]) : `PRESS (H${this.getAbsHole(r.startRh)})`;
+                            let wTxt = "ALL SQUARE";
+                            if (r.winner === 1) wTxt = `${this.d.ps[r.seg.t1[0]]} / ${this.d.ps[r.seg.t1[1]]} (WIN $${r.amt})`;
+                            else if (r.winner === 2) wTxt = `${this.d.ps[r.seg.t2[0]]} / ${this.d.ps[r.seg.t2[1]]} (WIN $${r.amt})`;
+                            sett += `\n${matchName}: ${wTxt}`;
+                        });
+                    });
+                }
 
                 // 1b. Add Junk Payouts to Total
                 // 1b. Add Junk Payouts to Total
@@ -3263,7 +3332,7 @@
                         sett += `\n${jText}`;
                         // Now add to bets for final payout calculation
                         [0, 1, 2, 3].forEach(i => {
-                            if (jRes.net[i]) bets[i] += jRes.net[i];
+                            if (this.d.ps[i] && jRes.net[i]) bets[i] += jRes.net[i];
                         });
                     }
                 }
@@ -3271,6 +3340,7 @@
                 // 2. Who Pays Who
                 let debtors = [], creditors = [];
                 [0, 1, 2, 3].forEach(i => {
+                    if (!this.d.ps[i]) return;
                     if (bets[i] < 0) debtors.push({ id: i, val: Math.abs(bets[i]) });
                     if (bets[i] > 0) creditors.push({ id: i, val: bets[i] });
                 });
@@ -3298,6 +3368,7 @@
                 const birdCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
                 if (isNet) {
                     [0, 1, 2, 3].forEach(i => {
+                        if (!this.d.ps[i]) return;
                         let gTot = 0;
                         let valid = false;
                         for (let h = 1; h <= 18; h++) {
@@ -3305,7 +3376,6 @@
                             if (typeof s === 'number') {
                                 gTot += s;
                                 valid = true;
-                                // Birdie Check
                                 const c = CS[this.d.crs] || CS['cc'];
                                 if (c && c.p[h - 1] && s < c.p[h - 1]) birdCounts[i]++;
                             }
@@ -3322,7 +3392,7 @@
                 // 1. Find the lowest NET value (biggest loss)
                 // Note: minVal stays at 0 if no one is negative (no losers)
                 [0, 1, 2, 3].forEach(i => {
-                    if (bets[i] < minVal) minVal = bets[i];
+                    if (this.d.ps[i] && bets[i] < minVal) minVal = bets[i];
                 });
 
                 // 2. Who has that value?
@@ -3339,10 +3409,10 @@
                 if (losers.length === 0) {
                     isLoser = false;
                     [0, 1, 2, 3].forEach(i => {
-                        if (bets[i] > maxVal) maxVal = bets[i];
+                        if (this.d.ps[i] && bets[i] > maxVal) maxVal = bets[i];
                     });
                     [0, 1, 2, 3].forEach(i => {
-                        if (bets[i] === maxVal) winners.push(this.d.ps[i]);
+                        if (this.d.ps[i] && bets[i] === maxVal) winners.push(this.d.ps[i]);
                     });
                 }
 
@@ -3382,6 +3452,7 @@
                 const fireballers = [];
                 let totalBirdies = 0;
                 [0, 1, 2, 3].forEach(i => {
+                    if (!this.d.ps[i]) return;
                     totalBirdies += birdCounts[i];
                     if (birdCounts[i] > 2) fireballers.push({ name: this.d.ps[i], count: birdCounts[i] });
                 });
