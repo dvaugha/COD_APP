@@ -2660,7 +2660,8 @@
             calcJunkRes: function () {
                 const freq = parseInt(this.d.junkFreq || 6);
                 const bet = (this.d.junkBet !== undefined) ? this.d.junkBet : 1;
-                const players = (!this.d.junkPlayers || this.d.junkPlayers.length == 0) ? [0, 1, 2, 3] : this.d.junkPlayers;
+                let players = (!this.d.junkPlayers || this.d.junkPlayers.length == 0) ? [0, 1, 2, 3] : this.d.junkPlayers;
+                players = players.filter(idx => this.d.ps[idx]);
                 const pot = bet * players.length;
                 if (pot === 0) return null;
 
@@ -2806,13 +2807,19 @@
                     totals.sort((a, b) => a.score - b.score);
                     const winner = totals[0];
                     const pot = this.d.pot || 0;
+                    const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
+                    const buyIn = activeSeats.length > 0 ? (pot / activeSeats.length) : 0;
+
                     if (winner) {
                         resHTML = `<div style="text-align:center; padding:10px; background:rgba(16, 185, 129, 0.1); border-radius:8px;">
                             <div style="font-size:14px; font-weight:900; color:#10B981;">🏆 WINNER: ${winner.name}</div>
                             <div style="font-size:12px; color:white;">SCORE: ${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET</div>
                             ${pot > 0 ? `<div style="font-size:18px; font-weight:900; color:#F59E0B; margin-top:5px;">PAYOUT: $${pot}</div>` : ''}
                         </div><br>`;
-                        if (pot > 0) bets[winner.idx] += pot;
+                        if (pot > 0) {
+                            activeSeats.forEach(i => bets[i] -= buyIn);
+                            bets[winner.idx] += pot;
+                        }
                     }
                     if (this.d.ps.filter(x => x).length === 4) {
                         const t1Score = totals.find(t => t.idx === 0).score + totals.find(t => t.idx === 1).score;
@@ -2935,10 +2942,14 @@
                         totals.sort((a, b) => a.score - b.score);
                         const winner = totals[0];
                         const pot = this.d.pot || 0;
+                        const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
+                        const buyIn = activeSeats.length > 0 ? (pot / activeSeats.length) : 0;
+
                         if (winner) {
                             segRes.push({ name: "🏆 WINNER", val: `${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET)`, color: "#10B981" });
                             if (pot > 0) {
                                 segRes.push({ name: "💰 PAYOUT", val: `$${pot}`, color: "#F59E0B" });
+                                activeSeats.forEach(i => bets[i] -= buyIn);
                                 bets[winner.idx] += pot;
                             }
                         }
