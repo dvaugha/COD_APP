@@ -2138,7 +2138,7 @@
                     else {
                         if (teamPressed && Math.abs(initialDiff) >= 3 && completedHoles > 0) {
                             winner = (teamPressed === 1 ? 2 : 1);
-                            amt = 2.5;
+                            amt = 3; // Rounded from 2.5 to avoid decimals
                         } else {
                             winner = 0;
                             amt = 0;
@@ -2524,7 +2524,7 @@
                     const pops = this.getPops(pid, this.d.h - 1);
                     const dots = " (H)".repeat(pops);
                     const nmEl = document.getElementById('nm-' + id);
-                    const expVal = exposure[pid];
+                    const expVal = Math.round(exposure[pid]);
                     const expTxt = (expVal >= 0 ? '+' : '') + expVal;
                     const expCol = expVal >= 0 ? '#10B981' : '#F87171';
                     const expBg = expVal >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(248, 113, 113, 0.1)';
@@ -2811,7 +2811,7 @@
                     const winner = totals[0];
                     const pot = this.d.pot || 0;
                     const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
-                    const buyIn = activeSeats.length > 0 ? (pot / activeSeats.length) : 0;
+                    const buyIn = activeSeats.length > 0 ? Math.round(pot / activeSeats.length) : 0;
 
                     if (winner) {
                         resHTML = `<div style="text-align:center; padding:10px; background:rgba(16, 185, 129, 0.1); border-radius:8px;">
@@ -2820,8 +2820,10 @@
                             ${pot > 0 ? `<div style="font-size:18px; font-weight:900; color:#F59E0B; margin-top:5px;">PAYOUT: $${pot}</div>` : ''}
                         </div><br>`;
                         if (pot > 0) {
-                            activeSeats.forEach(i => bets[i] -= buyIn);
-                            bets[winner.idx] += pot;
+                            activeSeats.forEach(i => {
+                                if (i !== winner.idx) bets[i] -= buyIn;
+                                else bets[i] += (buyIn * (activeSeats.length - 1));
+                            });
                         }
                     }
                     if (this.d.ps.filter(x => x).length === 4) {
@@ -2951,9 +2953,11 @@
                         if (winner) {
                             segRes.push({ name: "🏆 WINNER", val: `${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET)`, color: "#10B981" });
                             if (pot > 0) {
-                                segRes.push({ name: "💰 PAYOUT", val: `$${pot}`, color: "#F59E0B" });
-                                activeSeats.forEach(i => bets[i] -= buyIn);
-                                bets[winner.idx] += pot;
+                                segRes.push({ name: "💰 PAYOUT", val: `$${buyIn * (activeSeats.length - 1)}`, color: "#F59E0B" });
+                                activeSeats.forEach(i => {
+                                    if (i !== winner.idx) bets[i] -= buyIn;
+                                    else bets[i] += (buyIn * (activeSeats.length - 1));
+                                });
                             }
                         }
                         if (this.d.ps.filter(x => x).length === 4) {
@@ -3120,7 +3124,7 @@
 
                     [0, 1, 2, 3].forEach(i => {
                         if (!ps[i]) return;
-                        const v = bets[i];
+                        const v = Math.round(bets[i]);
                         finHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
                     });
 
@@ -3289,13 +3293,15 @@
                     const winner = totals[0];
                     const pot = this.d.pot || 0;
                     const activeCount = this.d.ps.filter(x => x).length;
-                    const buyIn = activeCount > 0 ? (pot / activeCount) : 0;
+                    const buyIn = activeCount > 0 ? Math.round(pot / activeCount) : 0;
 
                     if (winner) {
                         sett += `\nTROPHY: ${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET)`;
                         if (pot > 0) {
-                            this.d.ps.forEach((p, i) => { if (p) bets[i] -= buyIn; });
-                            bets[winner.idx] += pot;
+                            this.d.ps.forEach((p, i) => {
+                                if (p && i !== winner.idx) bets[i] -= buyIn;
+                                else if (p && i === winner.idx) bets[winner.idx] += (buyIn * (activeCount - 1));
+                            });
                         }
                     }
                     if (activeCount === 4) {
@@ -3355,8 +3361,8 @@
                 let debtors = [], creditors = [];
                 [0, 1, 2, 3].forEach(i => {
                     if (!this.d.ps[i]) return;
-                    if (bets[i] < 0) debtors.push({ id: i, val: Math.abs(bets[i]) });
-                    if (bets[i] > 0) creditors.push({ id: i, val: bets[i] });
+                    if (bets[i] < 0) debtors.push({ id: i, val: Math.round(Math.abs(bets[i])) });
+                    if (bets[i] > 0) creditors.push({ id: i, val: Math.round(bets[i]) });
                 });
 
                 if (debtors.length === 0) sett += "\nALL SQUARE";
@@ -3366,7 +3372,7 @@
                         while (d.val > 0 && creditors.length > 0) {
                             let c = creditors[0];
                             let amt = Math.min(d.val, c.val);
-                            sett += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${amt}\n`;
+                            sett += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${Math.round(amt)}\n`;
                             d.val -= amt;
                             c.val -= amt;
                             if (c.val === 0) creditors.shift();
