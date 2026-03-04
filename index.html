@@ -2513,6 +2513,7 @@
                     this.slotMap[id] = pid;
                     const ec = document.getElementById('slot-' + id);
                     const jRow = ec.nextElementSibling;
+
                     if (!this.d.ps[pid]) {
                         ec.style.display = 'none';
                         jRow.style.display = 'none';
@@ -2542,11 +2543,11 @@
                     } else { ec.classList.remove('has-score'); }
                 };
                 map(0, t1[0]); map(1, t1[1]);
-                document.getElementById('lbl-t1').innerText = (this.d.gameType === 'stroke') ? "GROSS TOTALS" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`;
+                document.getElementById('lbl-t1').innerText = (this.d.gameType === 'stroke') ? "PARTNERS A" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`;
                 document.getElementById('lbl-t1').style.display = (this.d.ps[t1[0]] || this.d.ps[t1[1]]) ? 'block' : 'none';
 
                 map(2, t2[0]); map(3, t2[1]);
-                document.getElementById('lbl-t2').innerText = (this.d.gameType === 'stroke') ? " " : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`;
+                document.getElementById('lbl-t2').innerText = (this.d.gameType === 'stroke') ? "PARTNERS B" : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`;
                 document.getElementById('lbl-t2').style.display = (this.d.ps[t2[0]] || this.d.ps[t2[1]]) ? 'block' : 'none';
             },
 
@@ -2737,7 +2738,6 @@
 
                     let pRows = '';
                     [0, 1, 2, 3].forEach(pIdx => {
-                        if (!this.d.ps[pIdx]) return;
                         let r = `<tr><td>${this.d.ps[pIdx].substring(0, 8)}</td>`;
                         let tot = 0;
                         for (let i = startH; i < startH + 9; i++) {
@@ -2782,7 +2782,6 @@
                 // GROSS TOTALS SECTION
                 let totHTML = '<div style="margin-top:20px; padding:12px; background:#1E293B; border:1px solid #334155; border-radius:12px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:8px; text-transform:uppercase;">Gross Totals</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">';
                 this.d.ps.forEach((p, i) => {
-                    if (!p) return;
                     let t = 0;
                     for (let h = 1; h <= 18; h++) if (this.d.s[h] && this.d.s[h][i]) t += this.d.s[h][i];
                     totHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#94A3B8; text-transform:uppercase;">${p.substring(0, 8)}</span><span style="font-size:15px; font-weight:900; color:white;">${t || '-'}</span></div>`;
@@ -2933,8 +2932,9 @@
                     const pts = { 0: 0, 1: 0, 2: 0, 3: 0 };
                     const segRes = [];
 
+                    let totals = []; // Defined properly here
                     if (this.d.gameType === 'stroke') {
-                        const totals = [];
+                        const c = CS[this.d.crs] || CS['cc'];
                         this.d.ps.forEach((p, pIdx) => {
                             if (!p) return;
                             let netScore = 0;
@@ -2948,7 +2948,7 @@
                         const winner = totals[0];
                         const pot = this.d.pot || 0;
                         const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
-                        const buyIn = activeSeats.length > 0 ? (pot / activeSeats.length) : 0;
+                        const buyIn = activeSeats.length > 0 ? Math.round(pot / activeSeats.length) : 0; // Rounded
 
                         if (winner) {
                             segRes.push({ name: "🏆 WINNER", val: `${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET)`, color: "#10B981" });
@@ -2966,7 +2966,7 @@
                             let teamWinner = t1Score < t2Score ? "TEAM A" : (t2Score < t1Score ? "TEAM B" : "PUSH");
                             segRes.push({ name: "👥 TEAM WIN", val: teamWinner, color: "#22D3EE" });
                         }
-                    } else {
+                    } else { // This else block now correctly handles non-stroke games
                         [0, 1, 2].forEach(idx => {
                             const results = this.calcSegResults(idx);
                             results.forEach((r, rIdx) => {
@@ -3000,7 +3000,7 @@
                                         r.seg.t1.forEach(p => bets[p] -= r.amt);
                                         col = "#F59E0B";
                                     } else {
-                                        wStr = "Tie (Push)";
+                                        wStr = "ALL SQUARE";
                                     }
                                     const matchName = (rIdx === 0) ? ["CARTS", "OPPOSITES", "DRIVERS"][idx] : `<span style="color:#22D3EE">PRESS</span> (H${this.getAbsHole(r.startRh)})`;
                                     segRes.push({ name: matchName, val: wStr, color: col });
@@ -3074,10 +3074,7 @@
                     recapHTML += `</div></div>`;
 
                     recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING BREAKDOWN</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div><div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div><div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div></div>`;
-                    pRecap.forEach(p => {
-                        if (!p || p.totalStrokes === 0) return;
-                        recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div><div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div><div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div><div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div></div>`;
-                    });
+                    pRecap.forEach(p => { if (p.totalStrokes === 0) return; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div><div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div><div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div><div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div></div>`; });
                     recapHTML += `</div>`;
 
                     // HANDICAP SUMMARY (Share)
@@ -3086,7 +3083,6 @@
                         const hcpAlloc = c.hcp[h - 1];
                         const getters = [];
                         [0, 1, 2, 3].forEach(i => {
-                            if (!ps[i]) return;
                             const pops = this.getPops(i, h - 1);
                             if (pops > 0) getters.push(`${ps[i]} (${pops})`);
                         });
@@ -3111,22 +3107,24 @@
                     // JUNK for Share
                     const junk = this.getJunkStats();
                     recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:12px;">🟢</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:12px;">🏖️</div><div style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; color:#8B5CF6; font-size:11px; font-weight:900;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v13" /><rect x="9" y="16" width="8" height="4" rx="1" /><ellipse cx="5" cy="18" rx="3" ry="1.5" /></svg> LP</div></div>`;
-                    pRecap.forEach(p => {
-                        if (!p) return;
-                        const j = junk[p.name];
-                        recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.G : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.S : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.P : 0}</div></div>`;
-                    });
+                    pRecap.forEach(p => { const j = junk[p.name]; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.G : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.S : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.P : 0}</div></div>`; });
                     recapHTML += `</div>`;
 
                     // 2. Build Capture HTML
                     const sn = document.getElementById('share-node');
                     let finHTML = '';
 
-                    [0, 1, 2, 3].forEach(i => {
-                        if (!ps[i]) return;
-                        const v = Math.round(bets[i]);
-                        finHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
-                    });
+                    if (isScramble) {
+                        [0, 1, 2, 3].forEach(i => {
+                            const v = Math.round(bets[i]);
+                            finHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
+                        });
+                    } else {
+                        [0, 1, 2, 3].forEach(i => {
+                            const v = Math.round(bets[i]);
+                            finHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
+                        });
+                    }
 
                     let segHTML = '';
                     segRes.forEach(s => {
@@ -3140,7 +3138,6 @@
                     if (jRes) {
                         segHTML += `<div style="margin-top:12px; border-top:1px dashed #475569; padding-top:6px; font-size:12px; color:#F59E0B; font-weight:900;">JUNK PAYOUTS</div>`;
                         jRes.players.forEach(i => {
-                            if (!ps[i]) return;
                             const raw = jRes.net[i];
                             const v = (raw >= 0) ? Math.round(raw) : -Math.round(Math.abs(raw));
                             segHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
@@ -3167,7 +3164,6 @@
 
                         // ROWS
                         [0, 1, 2, 3].forEach(pIdx => {
-                            if (!ps[pIdx]) return;
                             let pName = ps[pIdx].substring(0, 3).toUpperCase();
                             h += `<div class="sn-g-row body" style="border-color:${subC}; background:${bgBody};">`;
                             h += `<div class="sn-col nm" style="border-color:${subC};">${pName}</div>`;
@@ -3189,13 +3185,17 @@
                                     const par = c.p[i - 1];
                                     const d = val - par;
 
-                                    if (isNet && pops > 0) tCol = '#bef264';
+                                    // 1. Determine Text Color (Lime if Stroked in Net, else White)
+                                    if (isNet && pops > 0) tCol = '#bef264'; // LIME
+
+                                    // 2. Determine Border (Birdie/Bogey)
                                     if (d <= -1) {
-                                        const bCol = '#10B981';
+                                        const bCol = '#10B981'; // Green
                                         bStyle = `border:${d === -1 ? '1px solid' : '3px double'} ${bCol}; border-radius:50%;`;
+                                        // If Net card and stroke, keep Lime text. Else use Green.
                                         if (!isNet || pops === 0) tCol = bCol;
                                     } else if (d >= 1) {
-                                        const bCol = '#F87171';
+                                        const bCol = '#F87171'; // Red
                                         bStyle = `border:${d === 1 ? '1px solid' : '3px double'} ${bCol};`;
                                         if (!isNet || pops === 0) tCol = bCol;
                                     }
@@ -3343,7 +3343,7 @@
                             const wNames = r.winners.map(idx => this.d.ps[idx]).join(', ');
                             jText += `\n${r.name} (Junk): ${wNames} ($${r.pot})`;
                         } else {
-                            anyJunk = true;
+                            anyJunk = true; // Still want to show the line
                             jText += `\n${r.name} (Junk): PUSH`;
                         }
                     });
@@ -3359,23 +3359,43 @@
 
                 // 2. Who Pays Who
                 let debtors = [], creditors = [];
+                let initialBalances = [];
                 [0, 1, 2, 3].forEach(i => {
                     if (!this.d.ps[i]) return;
-                    if (bets[i] < 0) debtors.push({ id: i, val: Math.round(Math.abs(bets[i])) });
-                    if (bets[i] > 0) creditors.push({ id: i, val: Math.round(bets[i]) });
+                    let b = Math.round(bets[i]);
+                    if (b < 0) debtors.push({ id: i, val: Math.abs(b) });
+                    if (b > 0) creditors.push({ id: i, val: b });
+                    if (b !== 0) initialBalances.push(`${this.d.ps[i]}: ${b > 0 ? '+' : ''}$${b}`);
                 });
 
+                let mathLog = "";
                 if (debtors.length === 0) sett += "\nALL SQUARE";
                 else {
                     sett += "\n\nPAYOUTS:\n";
+                    mathLog = "\n\nHERE IS THE MATH:\nThe first person who owes money pays the first person who is owed money until one of them is \"clear.\" Then it moves to the next person in line.\n\nStarting Balances:\n" + initialBalances.join('\n') + "\n";
+                    let stepNum = 1;
                     debtors.forEach(d => {
+                        let dName = this.d.ps[d.id];
                         while (d.val > 0 && creditors.length > 0) {
                             let c = creditors[0];
+                            let cName = this.d.ps[c.id];
                             let amt = Math.min(d.val, c.val);
-                            sett += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${Math.round(amt)}\n`;
+                            sett += `${dName} pays ${cName} $${amt}\n`;
+
+                            let detail = `\nStep ${stepNum}: ${dName} owes $${d.val}. ${cName} is owed $${c.val}. `;
+                            detail += `${dName} pays ${cName} $${amt}. `;
+
                             d.val -= amt;
                             c.val -= amt;
-                            if (c.val === 0) creditors.shift();
+
+                            if (d.val === 0) detail += `${dName} is clear. `;
+                            else detail += `${dName} still owes $${d.val}. `;
+
+                            if (c.val === 0) { detail += `${cName} is clear.`; creditors.shift(); }
+                            else { detail += `${cName} still owed $${c.val}.`; }
+
+                            mathLog += detail;
+                            stepNum++;
                         }
                     });
                 }
@@ -3492,6 +3512,7 @@
                 }
 
                 if (summary) sett += summary;
+                if (mathLog) sett += mathLog;
 
                 const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
                 const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';

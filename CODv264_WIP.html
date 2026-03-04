@@ -3359,23 +3359,43 @@
 
                 // 2. Who Pays Who
                 let debtors = [], creditors = [];
+                let initialBalances = [];
                 [0, 1, 2, 3].forEach(i => {
                     if (!this.d.ps[i]) return;
-                    if (bets[i] < 0) debtors.push({ id: i, val: Math.round(Math.abs(bets[i])) });
-                    if (bets[i] > 0) creditors.push({ id: i, val: Math.round(bets[i]) });
+                    let b = Math.round(bets[i]);
+                    if (b < 0) debtors.push({ id: i, val: Math.abs(b) });
+                    if (b > 0) creditors.push({ id: i, val: b });
+                    if (b !== 0) initialBalances.push(`${this.d.ps[i]}: ${b > 0 ? '+' : ''}$${b}`);
                 });
 
+                let mathLog = "";
                 if (debtors.length === 0) sett += "\nALL SQUARE";
                 else {
                     sett += "\n\nPAYOUTS:\n";
+                    mathLog = "\n\nHERE IS THE MATH:\nThe first person who owes money pays the first person who is owed money until one of them is \"clear.\" Then it moves to the next person in line.\n\nStarting Balances:\n" + initialBalances.join('\n') + "\n";
+                    let stepNum = 1;
                     debtors.forEach(d => {
+                        let dName = this.d.ps[d.id];
                         while (d.val > 0 && creditors.length > 0) {
                             let c = creditors[0];
+                            let cName = this.d.ps[c.id];
                             let amt = Math.min(d.val, c.val);
-                            sett += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${Math.round(amt)}\n`;
+                            sett += `${dName} pays ${cName} $${amt}\n`;
+
+                            let detail = `\nStep ${stepNum}: ${dName} owes $${d.val}. ${cName} is owed $${c.val}. `;
+                            detail += `${dName} pays ${cName} $${amt}. `;
+
                             d.val -= amt;
                             c.val -= amt;
-                            if (c.val === 0) creditors.shift();
+
+                            if (d.val === 0) detail += `${dName} is clear. `;
+                            else detail += `${dName} still owes $${d.val}. `;
+
+                            if (c.val === 0) { detail += `${cName} is clear.`; creditors.shift(); }
+                            else { detail += `${cName} still owed $${c.val}.`; }
+
+                            mathLog += detail;
+                            stepNum++;
                         }
                     });
                 }
@@ -3492,6 +3512,7 @@
                 }
 
                 if (summary) sett += summary;
+                if (mathLog) sett += mathLog;
 
                 const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
                 const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';
