@@ -1695,7 +1695,8 @@
             },
             checkAuto: function () {
                 const s = this.d.s[this.d.h];
-                if (s && Object.keys(s).length === 4 && Object.values(s).every(v => v > 0)) {
+                const activeCount = this.d.ps.filter(x => x).length;
+                if (s && Object.keys(s).length === activeCount && Object.values(s).every(v => v > 0)) {
                     document.getElementById('auto-adv-banner').classList.add('show');
                     if (this.tmr) clearTimeout(this.tmr);
                     this.tmr = setTimeout(() => { this.navH(1); }, 3000);
@@ -2103,7 +2104,9 @@
                 for (let rh = startRh; rh <= endRh; rh++) {
                     const h = this.getAbsHole(rh);
                     const s = this.d.s[h];
-                    if (s && Object.keys(s).length === 4) {
+                    const activeCount = this.d.ps.filter(x => x).length;
+
+                    if (s && Object.keys(s).length === activeCount) {
                         completedHoles++;
                         const par = c.p[h - 1];
                         if (gt === 'scramble') {
@@ -2411,8 +2414,7 @@
                     if (this.d.gameType === 'scramble') {
                         s = `PTS: ${res.w1} - ${res.w2}`;
                     } else if (this.d.gameType === 'stroke') {
-                        // Leaderboard logic handled externally or simple string
-                        return label;
+                        return "";
                     } else {
                         let d = res.w1 - res.w2;
                         if (d > 0) s = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)} <em style="color:#10B981">${d} UP</em>`;
