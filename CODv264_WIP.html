@@ -3275,6 +3275,7 @@
             doShareParams: async function (type) {
                 if (!this.shareBlob) return;
                 const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                const playerMath = { 0: [], 1: [], 2: [], 3: [] };
                 let sett = "";
 
                 if (this.d.gameType === 'stroke') {
@@ -3299,8 +3300,14 @@
                         sett += `\nTROPHY: ${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET)`;
                         if (pot > 0) {
                             this.d.ps.forEach((p, i) => {
-                                if (p && i !== winner.idx) bets[i] -= buyIn;
-                                else if (p && i === winner.idx) bets[winner.idx] += (buyIn * (activeCount - 1));
+                                if (p && i !== winner.idx) {
+                                    bets[i] -= buyIn;
+                                    playerMath[i].push(`Stroke Buy-in: -$${buyIn}`);
+                                } else if (p && i === winner.idx) {
+                                    let winAmt = (buyIn * (activeCount - 1));
+                                    bets[winner.idx] += winAmt;
+                                    playerMath[winner.idx].push(`Stroke Win: +$${winAmt}`);
+                                }
                             });
                         }
                     }
@@ -3314,15 +3321,15 @@
                     [0, 1, 2].forEach(idx => {
                         const results = this.calcSegResults(idx);
                         results.forEach((r, rIdx) => {
+                            let matchName = (rIdx === 0) ? (["HOLES 1-6", "HOLES 7-12", "HOLES 13-18"][idx]) : `PRESS (H${this.getAbsHole(r.startRh)})`;
                             if (r.winner === 1) {
-                                r.seg.t1.forEach(p => bets[p] += r.amt);
-                                r.seg.t2.forEach(p => bets[p] -= r.amt);
+                                r.seg.t1.forEach(p => { bets[p] += r.amt; playerMath[p].push(`${matchName}: +$${r.amt}`); });
+                                r.seg.t2.forEach(p => { bets[p] -= r.amt; playerMath[p].push(`${matchName}: -$${r.amt}`); });
                             } else if (r.winner === 2) {
-                                r.seg.t2.forEach(p => bets[p] += r.amt);
-                                r.seg.t1.forEach(p => bets[p] -= r.amt);
+                                r.seg.t2.forEach(p => { bets[p] += r.amt; playerMath[p].push(`${matchName}: +$${r.amt}`); });
+                                r.seg.t1.forEach(p => { bets[p] -= r.amt; playerMath[p].push(`${matchName}: -$${r.amt}`); });
                             }
 
-                            let matchName = (rIdx === 0) ? (["HOLES 1-6", "HOLES 7-12", "HOLES 13-18"][idx]) : `PRESS (H${this.getAbsHole(r.startRh)})`;
                             let wTxt = "ALL SQUARE";
                             if (r.winner === 1) wTxt = `${this.d.ps[r.seg.t1[0]]} / ${this.d.ps[r.seg.t1[1]]} (WIN $${r.amt})`;
                             else if (r.winner === 2) wTxt = `${this.d.ps[r.seg.t2[0]]} / ${this.d.ps[r.seg.t2[1]]} (WIN $${r.amt})`;
@@ -3352,7 +3359,11 @@
                         sett += `\n${jText}`;
                         // Now add to bets for final payout calculation
                         [0, 1, 2, 3].forEach(i => {
-                            if (this.d.ps[i] && jRes.net[i]) bets[i] += jRes.net[i];
+                            if (this.d.ps[i] && jRes.net[i]) {
+                                let b = jRes.net[i];
+                                bets[i] += b;
+                                playerMath[i].push(`Junk Total: ${b >= 0 ? '+' : ''}$${Math.round(b)}`);
+                            }
                         });
                     }
                 }
@@ -3399,6 +3410,18 @@
                         }
                     });
                 }
+
+                // derivation per player breakdown
+                let derivationLog = "\n\nBALANCE CALCULATIONS:";
+                [0, 1, 2, 3].forEach(i => {
+                    if (!this.d.ps[i]) return;
+                    let logs = playerMath[i];
+                    if (logs.length === 0) derivationLog += `\n${this.d.ps[i]}: No entries. ($0)`;
+                    else {
+                        derivationLog += `\n${this.d.ps[i]} derivation: ${logs.join(', ')} = Total: $${Math.round(bets[i])}`;
+                    }
+                });
+                mathLog += derivationLog;
 
                 // 3. Generate Fun Summary
                 const isNet = (this.d.gameType !== 'scramble'); // Scramble usually doesn't track individual gross
