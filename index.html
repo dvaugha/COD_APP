@@ -1625,6 +1625,9 @@
                     document.querySelectorAll('#s-pot').forEach(i => i.value = 0);
                     this.d.junkBet = 0;
                     if (document.getElementById('j-bet')) document.getElementById('j-bet').value = 0;
+                } else {
+                    document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
+                    document.querySelectorAll('#s-pot').forEach(i => { if (i.value == 0) i.value = 20; });
                 }
             },
 
