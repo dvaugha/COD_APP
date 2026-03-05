@@ -906,10 +906,12 @@
 
         <div class="box" style="text-align:center; padding:16px;">
             <div class="tx-sm" style="color:#10B981; margin-bottom:6px;">GAME MODE</div>
-            <select id="g-mode" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;">
+            <select id="g-mode-top" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;"
+                onchange="App.onGameModeChange(this)">
                 <option value="cod">COD (Match Play)</option>
                 <option value="scramble">6-Hole Scramble (Points)</option>
                 <option value="stroke">Versus (Stroke Play)</option>
+                <option value="single">SINGLE PLAYER</option>
             </select>
 
             <div class="flex-r" style="justify-content:center; gap:10px; align-items:center; margin-bottom:16px;">
@@ -1031,10 +1033,11 @@
             <div class="flex-r" style="gap:10px; margin-top:10px;">
                 <div style="flex:1;">
                     <div class="tx-sm">GAME MODE</div>
-                    <select id="g-mode" class="g-inp">
+                    <select id="g-mode" class="g-inp" onchange="App.onGameModeChange(this)">
                         <option value="cod">C.O.D. (6-6-6)</option>
                         <option value="scramble">2-Man Scramble</option>
                         <option value="stroke">Versus (18-Hole Stroke)</option>
+                        <option value="single">SINGLE PLAYER</option>
                     </select>
                 </div>
                 <div style="flex:1;">
@@ -1612,6 +1615,19 @@
                 this.filterCrs("ALL"); // This rebuilds options
             },
 
+            onGameModeChange: function (el) {
+                // Sync the two dropdowns if they exist
+                const other = (el.id === 'g-mode-top') ? document.getElementById('g-mode') : document.getElementById('g-mode-top');
+                if (other) other.value = el.value;
+
+                if (el.value === 'single') {
+                    document.querySelectorAll('#s-bet').forEach(i => i.value = 0);
+                    document.querySelectorAll('#s-pot').forEach(i => i.value = 0);
+                    this.d.junkBet = 0;
+                    if (document.getElementById('j-bet')) document.getElementById('j-bet').value = 0;
+                }
+            },
+
             nav: function (id) {
                 document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
@@ -1867,6 +1883,8 @@
 
                 if (gt === 'stroke') {
                     if (count < 2) { alert("Need at least 2 players for Stroke Play!"); return; }
+                } else if (gt === 'single') {
+                    if (count < 1) { alert("Need at least 1 player for Single Player!"); return; }
                 } else {
                     if (count < 4) { alert("COD and Scramble require 4 players (2 vs 2 / Rotating)!"); return; }
                 }
@@ -1880,6 +1898,11 @@
                 this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
                 this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
                 if (!this.d.scoringMode) this.d.scoringMode = 'std';
+                if (this.d.gameType === 'single') {
+                    this.d.bet = 0;
+                    this.d.pot = 0;
+                    this.d.junkBet = 0;
+                }
                 this.d.s = {};
                 this.d.junk = {};
                 this.d.press = { 0: [], 1: [], 2: [] };
@@ -2966,6 +2989,25 @@
                             let teamWinner = t1Score < t2Score ? "TEAM A" : (t2Score < t1Score ? "TEAM B" : "PUSH");
                             segRes.push({ name: "👥 TEAM WIN", val: teamWinner, color: "#22D3EE" });
                         }
+                    } else if (this.d.gameType === 'single') {
+                        this.d.ps.forEach((p, pIdx) => {
+                            if (!p) return;
+                            let grossScore = 0;
+                            let netScore = 0;
+                            for (let h = 1; h <= 18; h++) {
+                                const sc = (this.d.s[h] && this.d.s[h][pIdx]);
+                                if (sc) {
+                                    grossScore += sc;
+                                    netScore += (sc - this.getPops(pIdx, h - 1, true));
+                                }
+                            }
+                            const parTotal = c.p.slice(0, 18).reduce((a, b) => a + b, 0);
+                            const relNet = netScore - parTotal;
+                            const sign = relNet > 0 ? '+' : '';
+                            const relStr = relNet === 0 ? 'E' : `${sign}${relNet}`;
+                            segRes.push({ name: p, val: `${grossScore} (${relStr} NET)`, color: "#10B981" });
+                            bets[pIdx] = 0; // No financial in single player
+                        });
                     } else { // This else block now correctly handles non-stroke games
                         [0, 1, 2].forEach(idx => {
                             const results = this.calcSegResults(idx);
@@ -3105,10 +3147,12 @@
                     recapHTML += `</div></div>`;
 
                     // JUNK for Share
-                    const junk = this.getJunkStats();
-                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:12px;">🟢</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:12px;">🏖️</div><div style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; color:#8B5CF6; font-size:11px; font-weight:900;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v13" /><rect x="9" y="16" width="8" height="4" rx="1" /><ellipse cx="5" cy="18" rx="3" ry="1.5" /></svg> LP</div></div>`;
-                    pRecap.forEach(p => { const j = junk[p.name]; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.G : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.S : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.P : 0}</div></div>`; });
-                    recapHTML += `</div>`;
+                    if (this.d.gameType !== 'single') {
+                        const junk = this.getJunkStats();
+                        recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:12px;">🟢</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:12px;">🏖️</div><div style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; color:#8B5CF6; font-size:11px; font-weight:900;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v13" /><rect x="9" y="16" width="8" height="4" rx="1" /><ellipse cx="5" cy="18" rx="3" ry="1.5" /></svg> LP</div></div>`;
+                        pRecap.forEach(p => { const j = junk[p.name]; if (p.totalStrokes > 0) recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.G : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.S : 0}</div><div style="flex:1; text-align:center; color:white; font-weight:700;">${j ? j.P : 0}</div></div>`; });
+                        recapHTML += `</div>`;
+                    }
 
                     // 2. Build Capture HTML
                     const sn = document.getElementById('share-node');
@@ -3319,6 +3363,24 @@
                         let teamWinner = t1Score < t2Score ? "TEAM A" : (t2Score < t1Score ? "TEAM B" : "PUSH");
                         sett += `\nTEAM WIN: ${teamWinner}`;
                     }
+                } else if (this.d.gameType === 'single') {
+                    this.d.ps.forEach((p, pIdx) => {
+                        if (!p) return;
+                        let grossScore = 0;
+                        let netScore = 0;
+                        for (let h = 1; h <= 18; h++) {
+                            const sc = (this.d.s[h] && this.d.s[h][pIdx]);
+                            if (sc) {
+                                grossScore += sc;
+                                netScore += (sc - this.getPops(pIdx, h - 1, true));
+                            }
+                        }
+                        const parTotal = c.p.slice(0, 18).reduce((a, b) => a + b, 0);
+                        const relNet = netScore - parTotal;
+                        const sign = relNet > 0 ? '+' : '';
+                        const relStr = relNet === 0 ? 'E' : `${sign}${relNet}`;
+                        sett += `\n${p}: ${grossScore} (${relStr} NET)`;
+                    });
                 } else {
                     [0, 1, 2].forEach(idx => {
                         const results = this.calcSegResults(idx);
