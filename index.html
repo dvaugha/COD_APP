@@ -2431,7 +2431,11 @@
                 const main = results[0];
                 const t1 = main.seg.t1, t2 = main.seg.t2;
 
-                let fmt; if (m === 0) fmt = "CARTS (1-6)"; else if (m === 1) fmt = "OPPOSITES (7-12)"; else fmt = "DRIVERS (13-18)";
+                let fmt;
+                if (this.d.gameType === 'single') fmt = "INDIVIDUAL PLAY";
+                else if (m === 0) fmt = "CARTS (1-6)";
+                else if (m === 1) fmt = "OPPOSITES (7-12)";
+                else fmt = "DRIVERS (13-18)";
                 document.getElementById('d-fmt').innerText = fmt;
 
                 // Status String (Main Match & Presses)
@@ -2452,26 +2456,25 @@
 
                 let statHTML = "";
 
-                if (this.d.gameType === 'stroke') {
+                if (this.d.gameType === 'stroke' || this.d.gameType === 'single') {
                     const totals = [];
                     const c = CS[this.d.crs] || CS['cc'];
                     [0, 1, 2, 3].forEach(pIdx => {
                         if (!this.d.ps[pIdx]) return;
-                        let netScore = 0;
+                        let relScore = 0;
                         let played = 0;
                         for (let h = 1; h <= 18; h++) {
                             const sc = (this.d.s[h] && this.d.s[h][pIdx]);
                             if (sc) {
                                 const par = c.p[h - 1];
-                                const pops = this.getPops(pIdx, h - 1);
-                                netScore += (sc - pops - par);
+                                relScore += (sc - par);
                                 played++;
                             }
                         }
-                        totals.push({ name: this.d.ps[pIdx].substring(0, 3), score: netScore, played });
+                        totals.push({ name: this.d.ps[pIdx].substring(0, 8), score: relScore, played });
                     });
                     totals.sort((a, b) => a.score - b.score);
-                    statHTML = `<div style="font-size:11px; font-weight:900; color:#10B981; margin-bottom:4px;">LEADERBOARD (NET)</div>`;
+                    statHTML = `<div style="font-size:11px; font-weight:900; color:#10B981; margin-bottom:4px;">${this.d.gameType === 'single' ? 'SCORING SUMMARY' : 'LEADERBOARD (NET)'}</div>`;
                     totals.forEach((t, i) => {
                         let sStr = t.score === 0 ? 'E' : (t.score > 0 ? '+' + t.score : t.score);
                         if (t.played === 0) sStr = "-";
@@ -2481,10 +2484,10 @@
                          </div>`;
                     });
 
-                    // Team Combined Score if 4 players
-                    if (this.d.ps.filter(x => x).length === 4) {
-                        const t1Score = (totals.find(t => t.name === this.d.ps[0].substring(0, 3)).score || 0) + (totals.find(t => t.name === this.d.ps[1].substring(0, 3)).score || 0);
-                        const t2Score = (totals.find(t => t.name === this.d.ps[2].substring(0, 3)).score || 0) + (totals.find(t => t.name === this.d.ps[3].substring(0, 3)).score || 0);
+                    // Team Combined Score if 4 players and in stroke mode
+                    if (this.d.gameType === 'stroke' && this.d.ps.filter(x => x).length === 4) {
+                        const t1Score = (totals.find(t => t.name.substring(0, 3) === this.d.ps[0].substring(0, 3)).score || 0) + (totals.find(t => t.name.substring(0, 3) === this.d.ps[1].substring(0, 3)).score || 0);
+                        const t2Score = (totals.find(t => t.name.substring(0, 3) === this.d.ps[2].substring(0, 3)).score || 0) + (totals.find(t => t.name.substring(0, 3) === this.d.ps[3].substring(0, 3)).score || 0);
                         statHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px; font-size:10px; font-weight:900; color:#F59E0B;">TEAM TOTALS (NET)</div>`;
                         statHTML += `<div style="font-size:11px; display:flex; justify-content:space-between;">
                             <span>TEAM A (P1+P2): ${t1Score === 0 ? 'E' : (t1Score > 0 ? '+' + t1Score : t1Score)}</span>
@@ -2551,13 +2554,22 @@
 
                     const pops = this.getPops(pid, this.d.h - 1);
                     const dots = " (H)".repeat(pops);
-                    const nmEl = document.getElementById('nm-' + id);
-                    const expVal = Math.round(exposure[pid]);
-                    const expTxt = (expVal >= 0 ? '+' : '') + expVal;
-                    const expCol = expVal >= 0 ? '#10B981' : '#F87171';
-                    const expBg = expVal >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(248, 113, 113, 0.1)';
-                    nmEl.innerHTML = `${this.d.ps[pid]}${dots} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
-                    nmEl.style.color = pops > 0 ? '#F59E0B' : '#94A3B8';
+                    if (this.d.gameType === 'single') {
+                        let relScore = 0;
+                        for (let h = 1; h <= 18; h++) {
+                            const sc = (this.d.s[h] && this.d.s[h][pid]);
+                            if (sc) relScore += (sc - c.p[h - 1]);
+                        }
+                        const sStr = relScore === 0 ? 'E' : (relScore > 0 ? '+' + relScore : relScore);
+                        nmEl.innerHTML = `${this.d.ps[pid]} <span style="color:#10B981; font-weight:900; margin-left:8px; font-size:16px;">${sStr}</span>`;
+                    } else {
+                        const expVal = Math.round(exposure[pid]);
+                        const expTxt = (expVal >= 0 ? '+' : '') + expVal;
+                        const expCol = expVal >= 0 ? '#10B981' : '#F87171';
+                        const expBg = expVal >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(248, 113, 113, 0.1)';
+                        nmEl.innerHTML = `${this.d.ps[pid]}${dots} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
+                    }
+                    nmEl.style.color = (pops > 0 && this.d.gameType !== 'single') ? '#F59E0B' : '#94A3B8';
 
                     document.getElementById('gh-' + id).innerText = "PAR " + par;
                     const sc = this.d.s[this.d.h] && this.d.s[this.d.h][pid];
@@ -2570,11 +2582,12 @@
                     } else { ec.classList.remove('has-score'); }
                 };
                 map(0, t1[0]); map(1, t1[1]);
-                document.getElementById('lbl-t1').innerText = (this.d.gameType === 'stroke') ? "PARTNERS A" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`;
+                const isSingle = (this.d.gameType === 'single');
+                document.getElementById('lbl-t1').innerText = isSingle ? "PLAYER 1 & 2" : ((this.d.gameType === 'stroke') ? "PARTNERS A" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`);
                 document.getElementById('lbl-t1').style.display = (this.d.ps[t1[0]] || this.d.ps[t1[1]]) ? 'block' : 'none';
 
                 map(2, t2[0]); map(3, t2[1]);
-                document.getElementById('lbl-t2').innerText = (this.d.gameType === 'stroke') ? "PARTNERS B" : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`;
+                document.getElementById('lbl-t2').innerText = isSingle ? "PLAYER 3 & 4" : ((this.d.gameType === 'stroke') ? "PARTNERS B" : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`);
                 document.getElementById('lbl-t2').style.display = (this.d.ps[t2[0]] || this.d.ps[t2[1]]) ? 'block' : 'none';
             },
 
