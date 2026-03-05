@@ -3117,13 +3117,13 @@
                     if (isScramble) {
                         [0, 1, 2, 3].forEach(i => {
                             const v = Math.round(bets[i]);
-                            const formatted = v < 0 ? `($$-${Math.abs(v)})` : `$${v}`;
+                            const formatted = v < 0 ? `($-${Math.abs(v)})` : `$${v}`;
                             finHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}${formatted}</span></div>`;
                         });
                     } else {
                         [0, 1, 2, 3].forEach(i => {
                             const v = Math.round(bets[i]);
-                            const formatted = v < 0 ? `($$-${Math.abs(v)})` : `$${v}`;
+                            const formatted = v < 0 ? `($-${Math.abs(v)})` : `$${v}`;
                             finHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}${formatted}</span></div>`;
                         });
                     }
@@ -3211,7 +3211,7 @@
                                 for (let x = 1; x <= 18; x++) {
                                     const rs = this.d.s[x] && this.d.s[x][pIdx];
                                     if (typeof rs === 'number') {
-                                        grand += (isNet ? (rs - this.getPops(pIdx, x - 1)) : rs);
+                                        grand += (isNet ? (rs - this.getPops(pIdx, x - 1, true)) : rs);
                                     }
                                 }
                                 h += `<div class="sn-col rnd" style="border-color:${subC}; color:${theme};">${grand}</div>`;
@@ -3304,7 +3304,7 @@
                             this.d.ps.forEach((p, i) => {
                                 if (p && i !== winner.idx) {
                                     bets[i] -= buyIn;
-                                    playerMath[i].push(`Stroke Buy-in: ($$-${buyIn})`);
+                                    playerMath[i].push(`Stroke Buy-in: ($-${buyIn})`);
                                 } else if (p && i === winner.idx) {
                                     let winAmt = (buyIn * (activeCount - 1));
                                     bets[winner.idx] += winAmt;
@@ -3326,10 +3326,10 @@
                             let matchName = (rIdx === 0) ? (["HOLES 1-6", "HOLES 7-12", "HOLES 13-18"][idx]) : `PRESS (H${this.getAbsHole(r.startRh)})`;
                             if (r.winner === 1) {
                                 r.seg.t1.forEach(p => { bets[p] += r.amt; playerMath[p].push(`${matchName}: +$${r.amt}`); });
-                                r.seg.t2.forEach(p => { bets[p] -= r.amt; playerMath[p].push(`${matchName}: ($$-${r.amt})`); });
+                                r.seg.t2.forEach(p => { bets[p] -= r.amt; playerMath[p].push(`${matchName}: ($-${r.amt})`); });
                             } else if (r.winner === 2) {
                                 r.seg.t2.forEach(p => { bets[p] += r.amt; playerMath[p].push(`${matchName}: +$${r.amt}`); });
-                                r.seg.t1.forEach(p => { bets[p] -= r.amt; playerMath[p].push(`${matchName}: ($$-${r.amt})`); });
+                                r.seg.t1.forEach(p => { bets[p] -= r.amt; playerMath[p].push(`${matchName}: ($-${r.amt})`); });
                             }
 
                             let wTxt = "ALL SQUARE";
@@ -3365,7 +3365,7 @@
                                 let b = jRes.net[i];
                                 bets[i] += b;
                                 const val = Math.round(b);
-                                const fmt = val < 0 ? `($$-${Math.abs(val)})` : `$${val}`;
+                                const fmt = val < 0 ? `($-${Math.abs(val)})` : `$${val}`;
                                 playerMath[i].push(`Junk Total: ${val >= 0 ? '+' : ''}${fmt}`);
                             }
                         });
@@ -3381,7 +3381,7 @@
                     if (b < 0) debtors.push({ id: i, val: Math.abs(b) });
                     if (b > 0) creditors.push({ id: i, val: b });
                     if (b !== 0) {
-                        const fmt = b < 0 ? `($$-${Math.abs(b)})` : `$${b}`;
+                        const fmt = b < 0 ? `($-${Math.abs(b)})` : `$${b}`;
                         initialBalances.push(`${this.d.ps[i]}: ${b > 0 ? '+' : ''}${fmt}`);
                     }
                 });
@@ -3426,7 +3426,7 @@
                     if (logs.length === 0) derivationLog += `\n${this.d.ps[i]}: No entries. ($0)`;
                     else {
                         const total = Math.round(bets[i]);
-                        const totalFmt = total < 0 ? `($$-${Math.abs(total)})` : `$${total}`;
+                        const totalFmt = total < 0 ? `($-${Math.abs(total)})` : `$${total}`;
                         derivationLog += `\n${this.d.ps[i]} derivation: ${logs.join(', ')} = Total: ${totalFmt}`;
                     }
                 });
