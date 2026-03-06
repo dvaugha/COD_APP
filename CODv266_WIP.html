@@ -1043,7 +1043,7 @@
                 </div>
                 <div style="flex:1;">
                     <div class="tx-sm">HCP MODE</div>
-                    <select id="s-hcp-mode" class="g-inp">
+                    <select id="s-hcp-mode" class="g-inp" onchange="App.onHcpModeChange(this)">
                         <option value="standard">Standard</option>
                         <option value="spread">COD Balanced (Spread)</option>
                     </select>
@@ -1632,6 +1632,21 @@
                 }
             },
 
+            onHcpModeChange: function (el) {
+                if (el.value === 'spread' && document.getElementById('g-mode').value === 'cod') {
+                    const activeNames = [0, 1, 2, 3].map(i => this.d.chosen[i]).filter(n => n);
+                    if (confirm(`Would you like to spread - ${activeNames.join(' & ')} - to allow more strokes so that it is even for each segment?`)) {
+                        this.d.hcpEqualize = true;
+                    } else {
+                        this.d.hcpEqualize = false;
+                    }
+                } else {
+                    this.d.hcpEqualize = false;
+                }
+                this.d.hcpMode = el.value;
+                this.save();
+            },
+
             nav: function (id) {
                 document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
@@ -2068,17 +2083,17 @@
 
                 if (mode === 'spread') {
                     // Spread: Distribute diff evenly across 3 segments (6 holes each)
-                    const basePerSeg = Math.floor(diff / 3);
-                    const rem = diff % 3;
-
-                    // Determine which segment this hole is in (relative to 1-18 logic, not start hole)
-                    // HIdx is 0-17. Holes 1-6=Seg0, 7-12=Seg1, 13-18=Seg2
                     const segIdx = Math.floor(hIdx / 6);
-                    let strokesForSeg = basePerSeg;
+                    let strokesForSeg;
 
-                    // Distribute remainder to segments with hardest holes?
-                    // Simple logic: Seg 0 gets 1st rem, Seg 1 gets 2nd.
-                    if (segIdx < rem) strokesForSeg++;
+                    if (this.d.hcpEqualize) {
+                        strokesForSeg = Math.ceil(diff / 3);
+                    } else {
+                        const basePerSeg = Math.floor(diff / 3);
+                        const rem = diff % 3;
+                        strokesForSeg = basePerSeg;
+                        if (segIdx < rem) strokesForSeg++;
+                    }
 
                     if (strokesForSeg === 0) return 0;
 
