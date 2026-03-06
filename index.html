@@ -2789,12 +2789,19 @@
                 const build9 = (startH, label) => {
                     let hH = `<tr><th>#</th>`;
                     for (let i = startH; i < startH + 9; i++) hH += `<th>${i}</th>`;
-                    hH += '<th>TOT</th></tr>';
+                    hH += `<th>${startH === 1 ? 'OUT' : 'IN'}</th>`;
+                    if (startH === 10) hH += '<th>TOT</th>';
+                    hH += '</tr>';
 
                     let hP = '<tr class="par-row"><td>PAR</td>';
                     let totP = 0;
                     for (let i = startH; i < startH + 9; i++) { hP += `<td>${c.p[i - 1]}</td>`; totP += c.p[i - 1]; }
-                    hP += `<td>${totP}</td></tr>`;
+                    hP += `<td>${totP}</td>`;
+                    if (startH === 10) {
+                        let grandP = c.p.slice(0, 18).reduce((a, b) => a + b, 0);
+                        hP += `<td>${grandP}</td>`;
+                    }
+                    hP += '</tr>';
 
                     let pRows = '';
                     [0, 1, 2, 3].forEach(pIdx => {
@@ -2825,7 +2832,15 @@
 
                             r += `<td style="position:relative;">${valHTML}</td>`;
                         }
-                        r += `<td>${tot}</td></tr>`;
+                        r += `<td>${tot}</td>`;
+                        if (startH === 10) {
+                            let grand = 0;
+                            for (let x = 1; x <= 18; x++) {
+                                if (this.d.s[x] && typeof this.d.s[x][pIdx] === 'number') grand += this.d.s[x][pIdx];
+                            }
+                            r += `<td>${grand === 0 ? '-' : grand}</td>`;
+                        }
+                        r += '</tr>';
                         pRows += r;
                     });
 
@@ -3241,8 +3256,8 @@
                         h += `<div class="sn-g-row head" style="background:${bgHead}; border-color:${subC};">`;
                         h += `<div class="sn-col nm" style="border-color:${subC};">PLY</div>`;
                         for (let i = start; i < start + 9; i++) h += `<div class="sn-col h" style="border-color:${subC};">${i}</div>`;
-                        h += `<div class="sn-col tot" style="border-color:${subC}; color:${theme};">TOT</div>`;
-                        if (start === 10) h += `<div class="sn-col rnd" style="border-color:${subC}; color:${theme};">RND</div>`;
+                        h += `<div class="sn-col tot" style="border-color:${subC}; color:${theme};">${start === 1 ? 'OUT' : 'IN'}</div>`;
+                        if (start === 10) h += `<div class="sn-col rnd" style="border-color:${subC}; color:${theme};">TOT</div>`;
                         h += `</div>`;
 
                         // ROWS
