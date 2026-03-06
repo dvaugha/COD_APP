@@ -1537,10 +1537,7 @@
                     if (!this.d.permHcps) this.d.permHcps = {};
                 } catch (e) { }
                 this.renderRoster(); this.renderHistory(); this.refreshDrop(); this.restoreSet();
-                try {
-                    const vEl = Array.from(document.querySelectorAll('.tx-xl')).find(e => e.innerText.includes('v265'));
-                    if (vEl) vEl.innerText += " [R:" + this.d.roster.length + " " + this.d.roster[0] + "]";
-                } catch (e) { }
+
                 if (Object.keys(this.d.s).length > 0 && this.d.ps[0]) {
                     if (this.d.crs && CS[this.d.crs] && CS[this.d.crs].nines && this.d.nines) {
                         this.buildComposite(this.d.crs, this.d.nines[0], this.d.nines[1]);
@@ -1592,6 +1589,7 @@
                 this.d.h = this.d.start;
                 this.d.ps = ['', '', '', ''];
                 this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
+                delete this.d.hcpEqualize;
                 delete this.d.gameId;
                 this.save();
                 this.renderRoster();
@@ -1916,6 +1914,12 @@
                 this.d.gameType = document.getElementById('g-mode').value;
                 this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
                 this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
+
+                if (this.d.gameType === 'cod' && this.d.hcpMode === 'spread' && this.d.hcpEqualize === undefined) {
+                    const activeNames = [0, 1, 2, 3].map(i => this.d.chosen[i]).filter(n => n);
+                    this.d.hcpEqualize = confirm(`Would you like to spread - ${activeNames.join(' & ')} - to allow more strokes so that it is even for each segment?`);
+                }
+
                 if (!this.d.scoringMode) this.d.scoringMode = 'std';
                 if (this.d.gameType === 'single') {
                     this.d.bet = 0;
