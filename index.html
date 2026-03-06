@@ -1474,10 +1474,21 @@
                 },
                 hcp: [9, 11, 7, 13, 17, 3, 5, 15, 1, 8, 2, 14, 6, 18, 10, 4, 16, 12],
                 cmb: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            'lp': {
+                n: 'Lonnie Poole',
+                p: [5, 3, 5, 4, 4, 3, 5, 3, 4, 4, 5, 4, 4, 3, 5, 4, 3, 4],
+                y: {
+                    white: [507, 181, 501, 350, 419, 143, 554, 138, 395, 369, 582, 391, 375, 159, 504, 379, 110, 441],
+                    gold: [542, 207, 526, 373, 459, 151, 554, 163, 439, 369, 631, 424, 410, 159, 549, 379, 118, 463],
+                    combo: []
+                },
+                hcp: [11, 9, 1, 13, 5, 17, 7, 15, 3, 16, 2, 8, 10, 14, 6, 12, 18, 4],
+                cmb: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             }
         };
 
-        ['jones', 'maples', 'byrd', 'so', 'wl', 're'].forEach(k => {
+        ['jones', 'maples', 'byrd', 'so', 'wl', 're', 'lp'].forEach(k => {
             const c = CS[k];
             if (c.y.combo.length === 0 && c.y.white.length > 0) {
                 for (let i = 0; i < 18; i++) {
@@ -1489,7 +1500,7 @@
 
         // Initialize Regions
         const regions = {
-            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC', 're': 'NC',
+            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC', 're': 'NC', 'lp': 'NC',
             'wl': 'FL', 'so': 'FL', 'sc': 'FL', 'havana': 'FL', 'palmer': 'FL', 'belle': 'FL', 'bonifay': 'FL', 'lopez': 'FL'
         };
         Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
