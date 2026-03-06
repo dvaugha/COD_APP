@@ -2459,7 +2459,14 @@
                 const c = CS[this.d.crs];
                 if (!c) return;
                 const par = c.p[this.d.h - 1];
-                document.getElementById('d-h-num').innerText = "HOLE " + this.d.h;
+
+                const rh = this.getRelHole(this.d.h);
+                let hNumStr = "HOLE " + this.d.h;
+                if (this.d.gameType === 'cod') {
+                    const sh = ((rh - 1) % 6) + 1;
+                    hNumStr += ` (SEG: #${sh})`;
+                }
+                document.getElementById('d-h-num').innerText = hNumStr;
                 document.getElementById('d-par').innerText = par;
                 const dists = c.y[this.d.tee] || [];
                 document.getElementById('d-dist').innerText = dists[this.d.h - 1] || '-';
@@ -2470,7 +2477,6 @@
                 document.getElementById('d-tee-ind').style.color = (tT.includes('GOLD') ? '#F59E0B' : 'white');
 
                 // RELATIVE HOLE LOGIC
-                let rh = this.getRelHole(this.d.h);
                 let m = Math.floor((rh - 1) / 6);
                 const results = this.calcSegResults(m);
                 const main = results[0];
