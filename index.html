@@ -2552,6 +2552,7 @@
                     ec.style.display = 'flex';
                     jRow.style.display = 'flex';
 
+                    const nmEl = document.getElementById('nm-' + id);
                     const pops = this.getPops(pid, this.d.h - 1);
                     const dots = " (H)".repeat(pops);
                     if (this.d.gameType === 'single') {
