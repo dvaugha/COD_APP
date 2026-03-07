@@ -2230,9 +2230,17 @@
                     if (w1 > w2) winner = 1;
                     else if (w2 > w1) winner = 2;
                     else {
-                        if (teamPressed && Math.abs(initialDiff) >= 3 && completedHoles > 0) {
-                            winner = (teamPressed === 1 ? 2 : 1);
-                            amt = 3; // Rounded from 2.5 to avoid decimals
+                        // TIE LOGIC for Presses vs Main Matches
+                        if (teamPressed) {
+                            // If it's a press and it's tied:
+                            // The team that was CHALLENGED (non-pressing) wins $3 if they were up by 3+ initially
+                            if (Math.abs(initialDiff) >= 3 && completedHoles > 0) {
+                                winner = (teamPressed === 1 ? 2 : 1);
+                                amt = 3;
+                            } else {
+                                winner = 0;
+                                amt = 0;
+                            }
                         } else {
                             winner = 0;
                             amt = 0;
@@ -2485,8 +2493,8 @@
                 const rh = this.getRelHole(this.d.h);
                 let hNumStr = "HOLE " + this.d.h;
                 if (this.d.gameType === 'cod') {
-                    const sh = ((rh - 1) % 6) + 1;
-                    hNumStr += ` (SEG: #${sh})`;
+                    const rhp = ((rh - 1) % 6) + 1;
+                    hNumStr += ` (SEG: #${rhp})`;
                 }
                 document.getElementById('d-h-num').innerText = hNumStr;
                 document.getElementById('d-par').innerText = par;
