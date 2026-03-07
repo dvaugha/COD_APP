@@ -2678,14 +2678,14 @@
                 if (this.d.gameType === 'cod') {
                     const m = Math.floor((h - 1) / 6);
                     const holesLeft = (m + 1) * 6 - h + 1;
-                    const res = this.calcMatch();
-                    const main = res.results[m];
+                    const results = this.calcSegResults(m);
+                    const main = results[0];
 
                     if (main) {
                         const d = main.w1 - main.w2;
                         if (d !== 0) {
                             const teamDown = d < 0 ? 1 : 2;
-                            const tIdx = teamDown === 1 ? res.t1 : res.t2;
+                            const tIdx = teamDown === 1 ? main.seg.t1 : main.seg.t2;
                             const teamName = `${this.d.ps[tIdx[0]]}/${this.d.ps[tIdx[1]]}`;
                             const diff = Math.abs(d);
 
