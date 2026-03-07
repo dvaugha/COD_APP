@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v267.0</title>
+    <title>COD Golf v268.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -902,7 +902,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v267.0 (WIP)</div>
+            <div class="tx-xl">COD GOLF v268.0 (WIP)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1069,6 +1069,18 @@
                     Enter individual scores for each player.
                 </div>
             </div>
+            <!-- VOICE ALERTS -->
+            <div
+                style="margin-top:16px; border-top:1px solid #334155; padding-top:12px; display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">VOICE ALERTS 🔊</div>
+                    <div style="font-size:10px; color:#94A3B8;">Announces partner swaps in COD</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-voice" onchange="App.toggleVoice(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
         <button class="g-btn" style="margin-bottom:20px;" onclick="App.startRound()">CONTINUE ROUND</button>
@@ -1092,7 +1104,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v267.0</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v268.0</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1522,7 +1534,7 @@
         Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
 
         const App = {
-            d: { roster: ['Doug', 'Dan', 'Phil', 'Steve'], ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, history: [], gameId: null },
+            d: { roster: ['Doug', 'Dan', 'Phil', 'Steve'], ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, history: [], gameId: null, voiceEnabled: false },
             slotMap: {}, tmr: null, corr: false, delMode: false, histEdit: false,
             selIds: [],
             wakeLock: null,
@@ -1562,6 +1574,7 @@
                     if (!this.d.pot) this.d.pot = 20;
                     if (!this.d.hcpMode) this.d.hcpMode = 'standard';
                     if (!this.d.permHcps) this.d.permHcps = {};
+                    if (this.d.voiceEnabled === undefined) this.d.voiceEnabled = false;
                 } catch (e) { }
                 this.renderRoster(); this.renderHistory(); this.refreshDrop(); this.restoreSet();
 
@@ -1685,6 +1698,21 @@
                 if (id === 'v-recap') this.uRecap();
             },
 
+            toggleVoice: function (val) {
+                this.d.voiceEnabled = val;
+                this.save();
+                if (val) this.speak("Voice alerts enabled");
+            },
+
+            speak: function (text) {
+                if (!this.d.voiceEnabled || !window.speechSynthesis) return;
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.rate = 0.9;
+                u.pitch = 1.0;
+                window.speechSynthesis.speak(u);
+            },
+
             navH: function (d) {
                 if (this.tmr) clearTimeout(this.tmr);
                 document.getElementById('auto-adv-banner').classList.remove('show');
@@ -1716,6 +1744,17 @@
                 this.save();
                 this.uDash();
                 this.updateJunkUI();
+
+                // VOICE ANNOUNCEMENT FOR COD SEGMENTS
+                if (this.d.gameType === 'cod' && !this.corr) {
+                    const ps = this.d.ps;
+                    if (this.d.h === 7) {
+                        this.speak(`Attention! Segment Two: Opposites. ${ps[0]} and ${ps[3]} are now partners, versus ${ps[1]} and ${ps[2]}.`);
+                    } else if (this.d.h === 13) {
+                        this.speak(`Attention! Final Segment: Drivers. ${ps[0]} and ${ps[2]} are now partners, versus ${ps[1]} and ${ps[3]}.`);
+                    }
+                }
+                this.corr = false;
             },
 
 
@@ -1921,6 +1960,7 @@
                     const prop = k.replace('s-', '').replace('g-mode', 'gameType').replace('hcp-mode', 'hcpMode');
                     if (el && this.d[prop] !== undefined) el.value = this.d[prop];
                 });
+                if (document.getElementById('s-voice')) document.getElementById('s-voice').checked = !!this.d.voiceEnabled;
                 this.updateScoringModeUI();
                 this.checkCourseOptions();
             },
@@ -1976,6 +2016,16 @@
                 this.save();
                 this.nav('v-dash');
                 this.keepAwake();
+
+                // WELCOME SPEECH
+                if (this.d.voiceEnabled) {
+                    if (this.d.gameType === 'cod') {
+                        const ps = this.d.ps;
+                        this.speak(`Welcome to today's round. First segment: Carts. ${ps[0]} and ${ps[1]} versus ${ps[2]} and ${ps[3]}. Good luck!`);
+                    } else {
+                        this.speak(`Welcome to today's round. Good luck!`);
+                    }
+                }
             },
 
             filterCrs: function (reg) {
@@ -3457,7 +3507,7 @@
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v267.0</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v268.0</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
