@@ -2117,21 +2117,21 @@
                     const t1H = getH(seg.t1[0]) + getH(seg.t1[1]);
                     const t2H = getH(seg.t2[0]) + getH(seg.t2[1]);
 
-                    // The "Lower" team gets zero, "Higher" team gets the difference split among them
                     const isT1 = seg.t1.includes(pIdx);
                     const netTeamDiff = isT1 ? (t1H - t2H) : (t2H - t1H);
 
                     if (netTeamDiff <= 0) return 0;
 
-                    // We treat netTeamDiff as the "diff" to be spread over 6 holes
-                    // Since it's a team difference, we divide by 6 for individual hole pops
-                    // (Actually, we treat the higher-hcp team as a single unit getting strokes)
                     const strokesForSeg = this.d.hcpEqualize ? Math.ceil(netTeamDiff / 3) : Math.round(netTeamDiff / 3);
                     const baseStrokes = Math.floor(strokesForSeg / 6);
                     const remStrokes = strokesForSeg % 6;
 
-                    const sStart = segIdx * 6;
-                    const segHcpVals = course.hcp.slice(sStart, sEnd = sStart + 6);
+                    // Get actual HCP values for the 6 holes in this segment
+                    const segHcpVals = [];
+                    for (let i = 1; i <= 6; i++) {
+                        const ah = this.getAbsHole((segIdx * 6) + i);
+                        segHcpVals.push(course.hcp[ah - 1]);
+                    }
                     const sorted = [...segHcpVals].sort((a, b) => a - b);
                     const myRank = sorted.indexOf(holeAlloc);
 
@@ -2153,8 +2153,12 @@
                     const baseStrokes = Math.floor(strokesForSeg / 6);
                     const remStrokes = strokesForSeg % 6;
 
-                    const sStart = segIdx * 6;
-                    const segHcpVals = course.hcp.slice(sStart, sEnd = sStart + 6);
+                    // Get actual HCP values for the 6 holes in this segment
+                    const segHcpVals = [];
+                    for (let i = 1; i <= 6; i++) {
+                        const ah = this.getAbsHole((segIdx * 6) + i);
+                        segHcpVals.push(course.hcp[ah - 1]);
+                    }
                     const sorted = [...segHcpVals].sort((a, b) => a - b);
                     const myRank = sorted.indexOf(holeAlloc);
 
@@ -2706,8 +2710,9 @@
 
                 // 2. COD Segment Context
                 if (this.d.gameType === 'cod') {
-                    const m = Math.floor((h - 1) / 6);
-                    const holesLeft = (m + 1) * 6 - h + 1;
+                    const rh = this.getRelHole(h);
+                    const m = Math.floor((rh - 1) / 6);
+                    const holesLeft = (m + 1) * 6 - rh + 1;
                     const results = this.calcSegResults(m);
                     const main = results[0];
 
@@ -2719,7 +2724,7 @@
                             const teamName = `${this.d.ps[tIdx[0]]}/${this.d.ps[tIdx[1]]}`;
                             const diff = Math.abs(d);
 
-                            if (holesLeft <= 2) {
+                            if (holesLeft <= 2 && holesLeft > 0) {
                                 msgs.push(`⚠️ Segment Alert: **${teamName}** is down ${diff} with ${holesLeft} left—Win needed!`);
                             } else if (diff >= 2) {
                                 msgs.push(`📈 Momentum: **${teamName}** needs a strong finish to stabilize this segment.`);
