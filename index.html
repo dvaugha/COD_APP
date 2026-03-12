@@ -1074,7 +1074,7 @@
                 style="margin-top:16px; border-top:1px solid #334155; padding-top:12px; display:flex; align-items:center; justify-content:space-between;">
                 <div>
                     <div class="tx-sm" style="margin-bottom:0;">VOICE ALERTS 🔊</div>
-                    <div style="font-size:10px; color:#94A3B8;">Announces partner swaps in COD</div>
+                    <div style="font-size:10px; color:#94A3B8;">Announces partner swaps in COD <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px;" onclick="App.testVoice()">[ TEST BRITISH VOICE ]</span></div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="s-voice" onchange="App.toggleVoice(this.checked)">
@@ -1710,6 +1710,34 @@
                 const u = new SpeechSynthesisUtterance(text);
                 u.rate = 0.9;
                 u.pitch = 1.0;
+
+                // Find British Female Voice if possible
+                const voices = window.speechSynthesis.getVoices();
+                const gbVoice = voices.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && 
+                                            (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman') || v.name.toLowerCase().includes('hazel') || v.name.toLowerCase().includes('google'))) ||
+                                voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB');
+                if (gbVoice) u.voice = gbVoice;
+
+                window.speechSynthesis.speak(u);
+            },
+
+            testVoice: function () {
+                if (!window.speechSynthesis) {
+                    alert("Speech synthesis not supported in this browser.");
+                    return;
+                }
+                const voices = window.speechSynthesis.getVoices();
+                const gbVoice = voices.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && 
+                                            (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman') || v.name.toLowerCase().includes('hazel') || v.name.toLowerCase().includes('google'))) ||
+                                voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB');
+                
+                const u = new SpeechSynthesisUtterance("Hello! This is a test of the British female voice for your COD alerts. How does it sound?");
+                if (gbVoice) u.voice = gbVoice;
+                else alert("Could not find a British voice on this device. Using default.");
+
+                u.rate = 0.9;
+                u.pitch = 1.0;
+                window.speechSynthesis.cancel();
                 window.speechSynthesis.speak(u);
             },
 
