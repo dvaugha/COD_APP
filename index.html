@@ -1772,7 +1772,8 @@
                     u.voice = gbVoice;
                     console.log("Using Voice:", gbVoice.name);
                 } else {
-                    alert("No British voice found. Available voices: " + voices.length);
+                    const enVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en')).map(v => v.name).slice(0, 10).join(', ');
+                    alert("No British voice found. Available voices: " + voices.length + "\n\nFirst 10 English voices: " + enVoices);
                 }
 
                 u.rate = 0.9;
