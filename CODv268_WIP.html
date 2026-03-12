@@ -1711,11 +1711,6 @@
                 u.rate = 0.9;
                 u.pitch = 1.0;
 
-                // Find British Female Voice if possible
-                const voices = window.speechSynthesis.getVoices();
-                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google'];
-                const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver'];
-
                 let gbVoice = voices.find(v => 
                     (v.lang.toLowerCase().includes('gb')) && 
                     femaleKeywords.some(kw => v.name.toLowerCase().includes(kw))

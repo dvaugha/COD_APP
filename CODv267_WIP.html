@@ -1069,6 +1069,19 @@
                     Enter individual scores for each player.
                 </div>
             </div>
+
+            <!-- VOICE ALERTS -->
+            <div
+                style="margin-top:16px; border-top:1px solid #334155; padding-top:12px; display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">VOICE ALERTS 🔊 <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px; font-size:10px;" onclick="App.testVoice()">[ TEST BRITISH ]</span></div>
+                    <div style="font-size:10px; color:#94A3B8;">Announces partner swaps in COD</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-voice" onchange="App.toggleVoice(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
         <button class="g-btn" style="margin-bottom:20px;" onclick="App.startRound()">CONTINUE ROUND</button>
@@ -1683,6 +1696,76 @@
                 if (id === 'v-dash') { this.uDash(); this.updateJunkUI(); }
                 if (id === 'v-card') this.uCard();
                 if (id === 'v-recap') this.uRecap();
+            },
+
+            toggleVoice: function (val) {
+                this.d.voiceEnabled = val;
+                this.save();
+                if (val) this.speak("Voice alerts enabled");
+            },
+
+            speak: function (text) {
+                if (!this.d.voiceEnabled || !window.speechSynthesis) return;
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.rate = 0.9;
+                u.pitch = 1.0;
+
+                const findVoice = () => {
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length === 0) return null;
+                    const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google'];
+                    const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark'];
+
+                    let gb = voices.find(v => (v.lang.toLowerCase().includes('gb')) && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+                    if (!gb) gb = voices.find(v => (v.lang.toLowerCase().includes('gb')) && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+                    return gb;
+                };
+
+                const gbVoice = findVoice();
+                if (gbVoice) u.voice = gbVoice;
+
+                window.speechSynthesis.speak(u);
+            },
+
+            testVoice: function () {
+                if (!window.speechSynthesis) {
+                    alert("Speech synthesis not supported.");
+                    return;
+                }
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length === 0) {
+                    window.speechSynthesis.getVoices();
+                    setTimeout(() => this.testVoice(), 100);
+                    return;
+                }
+
+                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google'];
+                const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark'];
+
+                let gbVoice = voices.find(v => (v.lang.toLowerCase().includes('gb')) && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+                if (!gbVoice) gbVoice = voices.find(v => (v.lang.toLowerCase().includes('gb')) && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+
+                const u = new SpeechSynthesisUtterance("Hello! This is a test of the British female voice. How does it sound?");
+                if (gbVoice) {
+                    u.voice = gbVoice;
+                } else {
+                    alert("No British voice found. Available voices: " + voices.length);
+                }
+
+                u.rate = 0.9;
+                u.pitch = 1.1;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(u);
+
+                if (gbVoice) {
+                    const banner = document.getElementById('auto-adv-banner');
+                    if (banner) {
+                        banner.innerText = "Voice Found: " + gbVoice.name;
+                        banner.classList.add('show');
+                        setTimeout(() => banner.classList.remove('show'), 3000);
+                    }
+                }
             },
 
             navH: function (d) {

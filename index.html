@@ -1711,23 +1711,18 @@
                 u.rate = 0.9;
                 u.pitch = 1.0;
 
-                // Find British Female Voice if possible
-                const voices = window.speechSynthesis.getVoices();
-                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google'];
-                const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver'];
+                const findVoice = () => {
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length === 0) return null;
+                    const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google'];
+                    const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark'];
 
-                let gbVoice = voices.find(v => 
-                    (v.lang.toLowerCase().includes('gb')) && 
-                    femaleKeywords.some(kw => v.name.toLowerCase().includes(kw))
-                );
+                    let gb = voices.find(v => (v.lang.toLowerCase().includes('gb')) && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+                    if (!gb) gb = voices.find(v => (v.lang.toLowerCase().includes('gb')) && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+                    return gb;
+                };
 
-                if (!gbVoice) {
-                    gbVoice = voices.find(v => 
-                        (v.lang.toLowerCase().includes('gb')) && 
-                        !maleKeywords.some(kw => v.name.toLowerCase().includes(kw))
-                    );
-                }
-                
+                const gbVoice = findVoice();
                 if (gbVoice) u.voice = gbVoice;
 
                 window.speechSynthesis.speak(u);
@@ -1735,33 +1730,43 @@
 
             testVoice: function () {
                 if (!window.speechSynthesis) {
-                    alert("Speech synthesis not supported in this browser.");
+                    alert("Speech synthesis not supported.");
                     return;
                 }
                 const voices = window.speechSynthesis.getVoices();
-                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google'];
-                const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver'];
-
-                let gbVoice = voices.find(v => 
-                    (v.lang.toLowerCase().includes('gb')) && 
-                    femaleKeywords.some(kw => v.name.toLowerCase().includes(kw))
-                );
-
-                if (!gbVoice) {
-                    gbVoice = voices.find(v => 
-                        (v.lang.toLowerCase().includes('gb')) && 
-                        !maleKeywords.some(kw => v.name.toLowerCase().includes(kw))
-                    );
+                if (voices.length === 0) {
+                    // Force a load by calling it once, then wait a bit
+                    window.speechSynthesis.getVoices();
+                    setTimeout(() => this.testVoice(), 100);
+                    return;
                 }
-                
-                const u = new SpeechSynthesisUtterance("Hello! This is a test of the British female voice for your COD alerts. How does it sound now?");
-                if (gbVoice) u.voice = gbVoice;
-                else alert("Could not find a British female voice on this device. Using default.");
+
+                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google'];
+                const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark'];
+
+                let gbVoice = voices.find(v => (v.lang.toLowerCase().includes('gb')) && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+                if (!gbVoice) gbVoice = voices.find(v => (v.lang.toLowerCase().includes('gb')) && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+
+                const u = new SpeechSynthesisUtterance("Hello! This is a test of the British female voice. How does it sound?");
+                if (gbVoice) {
+                    u.voice = gbVoice;
+                    console.log("Using Voice:", gbVoice.name);
+                } else {
+                    alert("No British voice found. Available voices: " + voices.length);
+                }
 
                 u.rate = 0.9;
-                u.pitch = 1.1; // Slightly higher pitch for female voice
+                u.pitch = 1.1;
                 window.speechSynthesis.cancel();
                 window.speechSynthesis.speak(u);
+
+                if (gbVoice) {
+                    // Small toast or status info
+                    const banner = document.getElementById('auto-adv-banner');
+                    banner.innerText = "Voice Found: " + gbVoice.name;
+                    banner.classList.add('show');
+                    setTimeout(() => banner.classList.remove('show'), 3000);
+                }
             },
 
             navH: function (d) {
