@@ -1714,25 +1714,33 @@
                 const findVoice = () => {
                     const voices = window.speechSynthesis.getVoices();
                     if (voices.length === 0) return null;
-                    const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah', 'moira', 'tessa', 'karen', 'stephanie', 'samantha'];
+                    const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah', 'moira', 'tessa', 'karen', 'stephanie', 'samantha', 'siri'];
                     const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard', 'albert', 'fred', 'lesya', 'olena', 'taras'];
 
                     const search = (locales, genderKeywords) => {
                         return voices.find(v => {
                             const n = v.name.toLowerCase();
                             const l = v.lang.toLowerCase();
+                            // Look for British (GB/UK) in lang or name
                             const matchesLocale = locales.some(loc => l.includes(loc.toLowerCase()) || n.includes(loc.toLowerCase()));
                             if (!matchesLocale) return false;
-                            if (genderKeywords) return genderKeywords.some(kw => n.includes(kw));
+                            
+                            // If searching for female, check keywords
+                            if (genderKeywords) {
+                                // Explicitly match "Siri" + Female if possible
+                                if (n.includes('siri')) return true; 
+                                return genderKeywords.some(kw => n.includes(kw));
+                            }
+                            // Otherwise just ensure it's not a known male
                             return !maleKeywords.some(kw => n.includes(kw));
                         });
                     };
 
-                    // 1. British Female
+                    // 1. British Female (High Priority: Siri/Hazel/etc)
                     let v = search(['gb', 'british', 'united kingdom'], femaleKeywords);
                     // 2. British Any (Non-male)
                     if (!v) v = search(['gb', 'british', 'united kingdom'], null);
-                    // 3. Irish/Australian Fallback (Female)
+                    // 3. Fallback: Irish/Australian Female
                     if (!v) v = search(['ie', 'ireland', 'au', 'australia'], femaleKeywords);
                     
                     return v;
