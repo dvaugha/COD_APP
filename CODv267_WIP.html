@@ -1717,8 +1717,18 @@
                     const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah'];
                     const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard'];
 
-                    let gb = voices.find(v => (v.lang.toLowerCase().includes('gb')) && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
-                    if (!gb) gb = voices.find(v => (v.lang.toLowerCase().includes('gb')) && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+                    let gb = voices.find(v => {
+                        const name = v.name.toLowerCase();
+                        const lang = v.lang.toLowerCase();
+                        const isGB = lang.includes('gb') || lang.includes('en-uk') || name.includes('united kingdom') || name.includes('uk');
+                        return isGB && femaleKeywords.some(kw => name.includes(kw));
+                    });
+                    if (!gb) gb = voices.find(v => {
+                        const name = v.name.toLowerCase();
+                        const lang = v.lang.toLowerCase();
+                        const isGB = lang.includes('gb') || lang.includes('en-uk') || name.includes('united kingdom') || name.includes('uk');
+                        return isGB && !maleKeywords.some(kw => name.includes(kw));
+                    });
                     return gb;
                 };
 
@@ -1743,8 +1753,18 @@
                 const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah'];
                 const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard'];
 
-                let gbVoice = voices.find(v => (v.lang.toLowerCase().includes('gb')) && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
-                if (!gbVoice) gbVoice = voices.find(v => (v.lang.toLowerCase().includes('gb')) && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+                let gbVoice = voices.find(v => {
+                    const name = v.name.toLowerCase();
+                    const lang = v.lang.toLowerCase();
+                    const isGB = lang.includes('gb') || lang.includes('en-uk') || name.includes('united kingdom') || name.includes('uk');
+                    return isGB && femaleKeywords.some(kw => name.includes(kw));
+                });
+                if (!gbVoice) gbVoice = voices.find(v => {
+                    const name = v.name.toLowerCase();
+                    const lang = v.lang.toLowerCase();
+                    const isGB = lang.includes('gb') || lang.includes('en-uk') || name.includes('united kingdom') || name.includes('uk');
+                    return isGB && !maleKeywords.some(kw => name.includes(kw));
+                });
 
                 const u = new SpeechSynthesisUtterance("Hello! This is a test of the British female voice. How does it sound?");
                 if (gbVoice) {
