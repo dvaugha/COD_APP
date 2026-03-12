@@ -1715,21 +1715,22 @@
                     const voices = window.speechSynthesis.getVoices();
                     if (voices.length === 0) return null;
                     const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah', 'moira', 'tessa', 'karen', 'stephanie'];
-                    const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard', 'albert', 'fred'];
+                    const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard', 'albert', 'fred', 'lesya', 'olena', 'taras'];
 
                     // Strict search: GB/UK + Female
                     let gb = voices.find(v => {
                         const n = v.name.toLowerCase();
                         const l = v.lang.toLowerCase();
-                        const isGB = l.includes('gb') || l.includes('uk') || n.includes('kingdom') || n.includes('british') || n.includes('united kingdom');
+                        // Ensure it's English (en) and British (gb/uk), or explicitly British in name
+                        const isGB = (l.startsWith('en') && (l.includes('gb') || l.includes('uk'))) || n.includes('united kingdom') || n.includes('british');
                         return isGB && femaleKeywords.some(kw => n.includes(kw));
                     });
                     
-                    // Broader: Just GB/UK (excluding known males)
+                    // Broader: Just GB/UK (excluding known scary/male voices)
                     if (!gb) gb = voices.find(v => {
                         const n = v.name.toLowerCase();
                         const l = v.lang.toLowerCase();
-                        const isGB = l.includes('gb') || l.includes('uk') || n.includes('kingdom') || n.includes('british') || n.includes('united kingdom');
+                        const isGB = (l.startsWith('en') && (l.includes('gb') || l.includes('uk'))) || n.includes('united kingdom') || n.includes('british');
                         return isGB && !maleKeywords.some(kw => n.includes(kw));
                     });
                     return gb;
