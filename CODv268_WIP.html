@@ -1714,20 +1714,23 @@
                 const findVoice = () => {
                     const voices = window.speechSynthesis.getVoices();
                     if (voices.length === 0) return null;
-                    const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah'];
-                    const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard'];
+                    const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah', 'moira', 'tessa', 'karen', 'stephanie'];
+                    const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard', 'albert', 'fred'];
 
+                    // Strict search: GB/UK + Female
                     let gb = voices.find(v => {
-                        const name = v.name.toLowerCase();
-                        const lang = v.lang.toLowerCase();
-                        const isGB = lang.includes('gb') || lang.includes('en-uk') || name.includes('united kingdom') || name.includes('uk');
-                        return isGB && femaleKeywords.some(kw => name.includes(kw));
+                        const n = v.name.toLowerCase();
+                        const l = v.lang.toLowerCase();
+                        const isGB = l.includes('gb') || l.includes('uk') || n.includes('kingdom') || n.includes('british') || n.includes('united kingdom');
+                        return isGB && femaleKeywords.some(kw => n.includes(kw));
                     });
+                    
+                    // Broader: Just GB/UK (excluding known males)
                     if (!gb) gb = voices.find(v => {
-                        const name = v.name.toLowerCase();
-                        const lang = v.lang.toLowerCase();
-                        const isGB = lang.includes('gb') || lang.includes('en-uk') || name.includes('united kingdom') || name.includes('uk');
-                        return isGB && !maleKeywords.some(kw => name.includes(kw));
+                        const n = v.name.toLowerCase();
+                        const l = v.lang.toLowerCase();
+                        const isGB = l.includes('gb') || l.includes('uk') || n.includes('kingdom') || n.includes('british') || n.includes('united kingdom');
+                        return isGB && !maleKeywords.some(kw => n.includes(kw));
                     });
                     return gb;
                 };
@@ -1750,20 +1753,20 @@
                     return;
                 }
 
-                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah'];
-                const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard'];
+                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah', 'moira', 'tessa', 'karen', 'stephanie'];
+                const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard', 'albert', 'fred'];
 
                 let gbVoice = voices.find(v => {
-                    const name = v.name.toLowerCase();
-                    const lang = v.lang.toLowerCase();
-                    const isGB = lang.includes('gb') || lang.includes('en-uk') || name.includes('united kingdom') || name.includes('uk');
-                    return isGB && femaleKeywords.some(kw => name.includes(kw));
+                    const n = v.name.toLowerCase();
+                    const l = v.lang.toLowerCase();
+                    const isGB = l.includes('gb') || l.includes('uk') || n.includes('kingdom') || n.includes('british') || n.includes('united kingdom');
+                    return isGB && femaleKeywords.some(kw => n.includes(kw));
                 });
                 if (!gbVoice) gbVoice = voices.find(v => {
-                    const name = v.name.toLowerCase();
-                    const lang = v.lang.toLowerCase();
-                    const isGB = lang.includes('gb') || lang.includes('en-uk') || name.includes('united kingdom') || name.includes('uk');
-                    return isGB && !maleKeywords.some(kw => name.includes(kw));
+                    const n = v.name.toLowerCase();
+                    const l = v.lang.toLowerCase();
+                    const isGB = l.includes('gb') || l.includes('uk') || n.includes('kingdom') || n.includes('british') || n.includes('united kingdom');
+                    return isGB && !maleKeywords.some(kw => n.includes(kw));
                 });
 
                 const u = new SpeechSynthesisUtterance("Hello! This is a test of the British female voice. How does it sound now?");
@@ -1771,8 +1774,8 @@
                     u.voice = gbVoice;
                     console.log("Using Voice:", gbVoice.name);
                 } else {
-                    const enVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en')).map(v => v.name).slice(0, 10).join(', ');
-                    alert("No British voice found. Available voices: " + voices.length + "\n\nFirst 10 English voices: " + enVoices);
+                    const enVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en')).map(v => v.name).join(', ');
+                    alert("No British voice found. Available voices: " + voices.length + "\n\nAll English names: " + enVoices);
                 }
 
                 u.rate = 0.9;
