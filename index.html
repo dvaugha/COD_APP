@@ -1753,55 +1753,42 @@
             },
 
             testVoice: function () {
-                if (!window.speechSynthesis) {
-                    alert("Speech synthesis not supported.");
-                    return;
-                }
+                if (!window.speechSynthesis) return;
                 const voices = window.speechSynthesis.getVoices();
                 if (voices.length === 0) {
-                    // Force a load by calling it once, then wait a bit
                     window.speechSynthesis.getVoices();
                     setTimeout(() => this.testVoice(), 100);
                     return;
                 }
 
-                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah', 'moira', 'tessa', 'karen', 'stephanie'];
+                const femaleKeywords = ['female', 'woman', 'hazel', 'susan', 'serena', 'libby', 'victoria', 'amy', 'martha', 'sonia', 'alice', 'google', 'catherine', 'elizabeth', 'sarah', 'moira', 'tessa', 'karen', 'stephanie', 'samantha', 'siri'];
                 const maleKeywords = ['male', 'man', 'george', 'david', 'james', 'harry', 'thomas', 'oliver', 'mark', 'daniel', 'peter', 'richard', 'albert', 'fred', 'lesya', 'olena', 'taras'];
 
-                let gbVoice = voices.find(v => {
-                    const n = v.name.toLowerCase();
-                    const l = v.lang.toLowerCase();
-                    const isGB = (l.startsWith('en') && (l.includes('gb') || l.includes('uk'))) || n.includes('united kingdom') || n.includes('british');
-                    return isGB && femaleKeywords.some(kw => n.includes(kw));
-                });
-                if (!gbVoice) gbVoice = voices.find(v => {
-                    const n = v.name.toLowerCase();
-                    const l = v.lang.toLowerCase();
-                    const isGB = (l.startsWith('en') && (l.includes('gb') || l.includes('uk'))) || n.includes('united kingdom') || n.includes('british');
-                    return isGB && !maleKeywords.some(kw => n.includes(kw));
-                });
+                const search = (locales, genderKeywords) => {
+                    return voices.find(v => {
+                        const n = v.name.toLowerCase();
+                        const l = v.lang.toLowerCase();
+                        const matchesLocale = locales.some(loc => l.includes(loc.toLowerCase()) || n.includes(loc.toLowerCase()));
+                        if (!matchesLocale) return false;
+                        if (genderKeywords) {
+                            if (n.includes('siri')) return true;
+                            return genderKeywords.some(kw => n.includes(kw));
+                        }
+                        return !maleKeywords.some(kw => n.includes(kw));
+                    });
+                };
 
-                const u = new SpeechSynthesisUtterance("Hello! This is a test of the British female voice. How does it sound now?");
-                if (gbVoice) {
-                    u.voice = gbVoice;
-                    console.log("Using Voice:", gbVoice.name);
-                } else {
-                    const enVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en')).map(v => `${v.name} (${v.lang})`).join(', ');
-                    alert("No British voice found. Available voices: " + voices.length + "\n\nAll English names: " + enVoices);
-                }
+                let gbVoice = search(['gb', 'british', 'united kingdom'], femaleKeywords);
+                if (!gbVoice) gbVoice = search(['gb', 'british', 'united kingdom'], null);
+                if (!gbVoice) gbVoice = search(['ie', 'ireland', 'au', 'australia'], femaleKeywords);
+
+                const u = new SpeechSynthesisUtterance("Hello! This is a test of the British female voice. How does it sound?");
+                if (gbVoice) u.voice = gbVoice;
 
                 u.rate = 0.9;
                 u.pitch = 1.1;
                 window.speechSynthesis.cancel();
                 window.speechSynthesis.speak(u);
-
-                if (gbVoice) {
-                    // Small toast or status info
-                    const banner = document.getElementById('auto-adv-banner');
-                    banner.innerText = "Voice Found: " + gbVoice.name;
-                    banner.classList.add('show');
-                    setTimeout(() => banner.classList.remove('show'), 3000);
-                }
             },
 
             navH: function (d) {
