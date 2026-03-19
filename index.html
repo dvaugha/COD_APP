@@ -1406,6 +1406,29 @@
                     }
                 }
             },
+            'sandpiper': {
+                n: 'Sandpiper Bay',
+                nines: {
+                    'sand': {
+                        n: 'Sand',
+                        p: [5, 3, 4, 4, 5, 3, 4, 3, 4],
+                        y: { white: [536, 165, 354, 393, 549, 172, 342, 153, 412], gold: [494, 135, 312, 369, 510, 138, 310, 123, 385] },
+                        hcp: [3, 8, 5, 2, 4, 7, 6, 9, 1]
+                    },
+                    'piper': {
+                        n: 'Piper',
+                        p: [4, 5, 3, 5, 4, 3, 5, 3, 4],
+                        y: { white: [369, 563, 177, 496, 373, 162, 536, 178, 395], gold: [337, 523, 134, 468, 341, 123, 494, 159, 367] },
+                        hcp: [4, 3, 6, 9, 7, 8, 2, 5, 1]
+                    },
+                    'bay': {
+                        n: 'Bay',
+                        p: [5, 4, 3, 4, 3, 4, 4, 4, 5],
+                        y: { white: [524, 377, 193, 319, 190, 328, 330, 397, 518], gold: [482, 335, 164, 284, 147, 281, 301, 346, 458] },
+                        hcp: [6, 2, 5, 9, 7, 8, 3, 1, 4]
+                    }
+                }
+            },
             'palmer': {
                 n: 'Palmer Legends',
                 nines: {
@@ -1528,7 +1551,7 @@
 
         // Initialize Regions
         const regions = {
-            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC', 're': 'NC', 'lp': 'NC',
+            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC', 're': 'NC', 'lp': 'NC', 'sandpiper': 'NC',
             'wl': 'FL', 'so': 'FL', 'sc': 'FL', 'havana': 'FL', 'palmer': 'FL', 'belle': 'FL', 'bonifay': 'FL', 'lopez': 'FL'
         };
         Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
