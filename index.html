@@ -1535,6 +1535,12 @@
 
         const App = {
             d: { roster: ['Doug', 'Dan', 'Phil', 'Steve'], ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, history: [], gameId: null, voiceEnabled: false },
+
+            ghl: function (h) {
+                if (this.d.nines && h > 9) return `${h - 9}/${h}`;
+                return h;
+            },
+
             slotMap: {}, tmr: null, corr: false, delMode: false, histEdit: false,
             selIds: [],
             wakeLock: null,
@@ -2146,33 +2152,31 @@
                             n2.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`;
                         }
                     });
-                    // Restore selection if valid, else pick first available
+                    // Restore selection if valid, check saved round nines if not
                     const available = Array.from(n2.options).map(o => o.value);
+                    const saved2 = (this.d.nines && this.d.crs === val) ? this.d.nines[1] : null;
                     if (cur2 && available.includes(cur2)) n2.value = cur2;
+                    else if (saved2 && available.includes(saved2)) n2.value = saved2;
                     else n2.value = available[0];
                 };
 
-                // Remove previous listener to avoid stacking
-                el.onchange = () => this.checkCourseOptions();
-
                 if (c && c.nines) {
                     optEl.style.display = 'block';
-
-                    // Listen for N1 changes to filter N2
                     n1.onchange = () => populateN2(n1.value);
 
-                    // Initial population
-                    if (n1.options.length !== Object.keys(c.nines).length) {
-                        const cur1 = n1.value;
-                        const keys = Object.keys(c.nines);
-                        n1.innerHTML = '';
-                        keys.forEach(k => { n1.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`; });
-                        if (cur1 && c.nines[cur1]) n1.value = cur1; else n1.value = keys[0];
-                    }
+                    // Population: Always rebuild N1 to ensure it matches the current course
+                    const cur1 = n1.value;
+                    const saved1 = (this.d.nines && this.d.crs === val) ? this.d.nines[0] : null;
+                    const keys = Object.keys(c.nines);
+                    n1.innerHTML = '';
+                    keys.forEach(k => { n1.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`; });
+
+                    if (cur1 && c.nines[cur1]) n1.value = cur1;
+                    else if (saved1 && c.nines[saved1]) n1.value = saved1;
+                    else n1.value = keys[0];
 
                     // Always refresh N2 to be safe
                     populateN2(n1.value);
-
                 } else {
                     optEl.style.display = 'none';
                 }
@@ -2421,7 +2425,7 @@
 
                 const startH = rh; // Starts IMMEDIATELY on the CURRENT hole
 
-                if (!confirm(`Initiate PRESS starting on CURRENT hole (Hole ${this.getAbsHole(startH)})?`)) return;
+                if (!confirm(`Initiate PRESS starting on CURRENT hole (Hole ${this.ghl(this.getAbsHole(startH))})?`)) return;
 
                 if (!this.d.press[m]) this.d.press[m] = [];
                 this.d.press[m].push({ team, startH, initialDiff: diff });
@@ -2596,7 +2600,7 @@
                 if (fbHoles.length > 0) {
                     fbHoles.forEach(item => {
                         html += `<div style="background:#0F172A; padding:6px 12px; border-radius:8px; border:1px solid #F59E0B; display:flex; align-items:center; justify-content:space-between;">
-                            <span style="color:#F59E0B; font-weight:900; font-size:14px;">HOLE ${item.h}</span>
+                            <span style="color:#F59E0B; font-weight:900; font-size:14px;">HOLE ${this.ghl(item.h)}</span>
                             <span style="color:white; font-weight:700; font-size:13px; text-align:right;">${item.ps.join(', ')}</span>
                         </div>`;
                     });
@@ -2623,7 +2627,8 @@
                 const par = c.p[this.d.h - 1];
 
                 const rh = this.getRelHole(this.d.h);
-                let hNumStr = "HOLE " + this.d.h;
+                let lbl = (this.d.nines && this.d.h > 9) ? `#${this.d.h - 9} / ${this.d.h}` : this.d.h;
+                let hNumStr = "HOLE " + lbl;
                 if (this.d.gameType === 'cod') {
                     const rhp = ((rh - 1) % 6) + 1;
                     hNumStr += ` (SEG:  H # ${rhp})`;
@@ -3053,7 +3058,10 @@
 
                 const build9 = (startH, label) => {
                     let hH = `<tr><th>#</th>`;
-                    for (let i = startH; i < startH + 9; i++) hH += `<th>${i}</th>`;
+                    for (let i = startH; i < startH + 9; i++) {
+                        let l = (this.d.nines && i > 9) ? (i - 9) + '/' + i : i;
+                        hH += `<th style="font-size:${(l.toString().length > 2) ? '8px' : '11px'}">${l}</th>`;
+                    }
                     hH += `<th>${startH === 1 ? 'OUT' : 'IN'}</th>`;
                     if (startH === 10) hH += '<th>TOT</th>';
                     hH += '</tr>';
@@ -3423,7 +3431,7 @@
                     if (fbHoles.length > 0) {
                         fbHoles.forEach(item => {
                             recapHTML += `<div style="background:#0F172A; padding:4px 8px; border-radius:6px; border:1px solid #F59E0B; display:flex; align-items:center; justify-content:space-between;">
-                                <span style="color:#F59E0B; font-weight:900; font-size:11px;">HOLE ${item.h}</span>
+                                <span style="color:#F59E0B; font-weight:900; font-size:11px;">HOLE ${this.ghl(item.h)}</span>
                                 <span style="color:white; font-weight:700; font-size:11px; text-align:right;">${item.ps.join(', ')}</span>
                             </div>`;
                         });
@@ -3454,7 +3462,7 @@
                     if (sHoles.length > 0) {
                         sHoles.forEach(item => {
                             recapHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:4px 8px; border-radius:6px; border:1px solid #334155;">
-                                <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${item.h} <span style="color:#94A3B8; font-weight:400;">(HCP ${item.hcp})</span></span>
+                                <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${this.ghl(item.h)} <span style="color:#94A3B8; font-weight:400;">(HCP ${item.hcp})</span></span>
                                 <span style="color:#F59E0B; font-size:10px; font-weight:700; text-align:right;">${item.list.join(', ')}</span>
                             </div>`;
                         });
