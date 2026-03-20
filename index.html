@@ -890,11 +890,10 @@
             <img id="sp-img" style="width:100%; border-radius:8px; border:1px solid #334155; margin-bottom:16px;" />
             <div class="flex-r" style="gap:12px;">
                 <button class="g-btn g-btn-sec" style="flex:1;" onclick="App.closeSharePreview()">CLOSE</button>
-                <button class="g-btn" style="background:#10B981; flex:1;" onclick="App.doShareParams('image')">IMG
-                    🖼️</button>
-                <button class="g-btn" style="background:#0EA5E9; flex:1;" onclick="App.doShareParams('text')">TXT
-                    📝</button>
+                <button class="g-btn" style="background:#10B981; flex:1;" onclick="App.doShareParams('image')">IMG 🖼️</button>
+                <button class="g-btn" style="background:#0EA5E9; flex:1;" onclick="App.doShareParams('text')">TXT 📝</button>
             </div>
+            <button class="g-btn" style="background:#F59E0B; width:100%; margin-top:12px; font-weight:900;" onclick="App.ronnieSimple()">RONNIE SIMPLE 🔥</button>
         </div>
     </div>
 
@@ -3667,6 +3666,85 @@
 
             closeSharePreview: function () {
                 document.getElementById('share-preview-modal').classList.remove('active');
+            },
+
+            ronnieSimple: function () {
+                let bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                let txt = "⛳ ROUND SUMMARY\n\n";
+
+                // 1. Segments
+                if (this.d.gameType === 'cod') {
+                    [0, 1, 2].forEach(idx => {
+                        const results = this.calcSegResults(idx);
+                        results.forEach((r, rIdx) => {
+                            if (rIdx > 0) return; // Only main segments for Ronnie Simple
+                            const name = ["CARTS", "OPPOSITES", "DRIVERS"][idx];
+                            let wText = "PUSH";
+                            if (r.winner === 1) {
+                                wText = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})`;
+                                r.seg.t1.forEach(p => bets[p] += r.amt);
+                                r.seg.t2.forEach(p => bets[p] -= r.amt);
+                            } else if (r.winner === 2) {
+                                wText = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})`;
+                                r.seg.t2.forEach(p => bets[p] += r.amt);
+                                r.seg.t1.forEach(p => bets[p] -= r.amt);
+                            }
+                            txt += `${name}: ${wText}\n`;
+                        });
+                    });
+                }
+
+                // 2. Junk
+                const jRes = this.calcJunkRes();
+                if (jRes && jRes.net) {
+                    [0, 1, 2, 3].forEach(i => { if (this.d.ps[i]) bets[i] += (jRes.net[i] || 0); });
+                }
+
+                // 3. Payouts (Who pays who)
+                txt += "\n---\n";
+                let debtors = [], creditors = [];
+                [0, 1, 2, 3].forEach(i => {
+                    if (!this.d.ps[i]) return;
+                    const b = Math.round(bets[i]);
+                    if (b < 0) debtors.push({ id: i, val: Math.abs(b) });
+                    if (b > 0) creditors.push({ id: i, val: b });
+                });
+
+                if (debtors.length === 0) txt += "ALL SQUARE";
+                else {
+                    debtors.forEach(d => {
+                        let dName = this.d.ps[d.id];
+                        while (d.val > 0 && creditors.length > 0) {
+                            let c = creditors[0];
+                            let cName = this.d.ps[c.id];
+                            let amt = Math.min(d.val, c.val);
+                            txt += `${dName} owes ${cName} $${amt}\n`;
+                            d.val -= amt;
+                            c.val -= amt;
+                            if (c.val === 0) creditors.shift();
+                        }
+                    });
+                }
+                // 4. Share
+                if (navigator.share) {
+                    navigator.share({ text: txt }).catch(() => {
+                        this.copyToClipboard(txt);
+                    });
+                } else {
+                    this.copyToClipboard(txt);
+                }
+            },
+
+            copyToClipboard: function (txt) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(txt).then(() => {
+                        alert("Report copied to clipboard!");
+                    }).catch(err => {
+                        console.error('Copy failed', err);
+                    });
+                } else {
+                    alert("Clipboard access not available. Please manual copy.");
+                }
             },
 
             doShareParams: async function (type) {
