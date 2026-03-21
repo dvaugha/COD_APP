@@ -898,10 +898,9 @@
     </div>
 
     <!-- === SETUP SCREEN === -->
-    <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v268.0 (WIP)</div>
+            <div class="tx-xl">COD GOLF v270.0 (GOLD)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1302,161 +1301,6 @@
 
     <script>
         const CS = {
-            'cc': {
-                n: 'Crow Creek',
-                p: [4, 4, 5, 4, 4, 3, 5, 3, 4, 4, 4, 5, 3, 4, 4, 3, 4, 5],
-                y: {
-                    white: [339, 382, 480, 331, 362, 165, 534, 168, 359, 358, 319, 517, 142, 417, 367, 156, 361, 519],
-                    gold: [302, 308, 440, 291, 323, 132, 487, 141, 319, 302, 306, 470, 129, 351, 323, 130, 316, 458],
-                    combo: [339, 308, 480, 331, 362, 132, 487, 141, 359, 358, 319, 470, 129, 351, 367, 130, 361, 458]
-                },
-                hcp: [17, 1, 5, 7, 9, 13, 3, 15, 11, 12, 16, 2, 18, 4, 10, 14, 6, 8],
-                cmb: [0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1]
-            },
-            'jones': {
-                n: 'Sea Trail - Jones',
-                p: [4, 3, 4, 4, 3, 4, 4, 5, 5, 4, 4, 4, 3, 4, 5, 4, 3, 5],
-                y: {
-                    white: [405, 178, 350, 365, 155, 375, 385, 482, 510, 328, 395, 385, 127, 320, 535, 405, 144, 490],
-                    gold: [385, 160, 327, 300, 115, 330, 327, 458, 488, 305, 355, 347, 110, 298, 455, 367, 134, 455],
-                    combo: []
-                },
-                hcp: [5, 17, 15, 11, 13, 3, 1, 7, 9, 10, 8, 6, 18, 14, 4, 2, 16, 12],
-                cmb: [0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1]
-            },
-            'maples': {
-                n: 'Sea Trail - Maples',
-                p: [4, 4, 3, 5, 3, 5, 4, 4, 4, 4, 3, 5, 4, 4, 5, 4, 3, 4],
-                y: {
-                    white: [295, 335, 150, 525, 170, 535, 375, 380, 445, 385, 140, 475, 315, 325, 540, 330, 160, 315],
-                    gold: [275, 315, 120, 510, 160, 520, 365, 365, 420, 345, 105, 420, 225, 245, 485, 275, 110, 270],
-                    combo: []
-                },
-                hcp: [15, 5, 17, 9, 13, 1, 3, 11, 7, 2, 18, 12, 14, 6, 4, 16, 10, 8],
-                cmb: [0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0]
-            },
-            'byrd': {
-                n: 'Sea Trail - Byrd',
-                p: [4, 3, 5, 4, 4, 4, 3, 4, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5],
-                y: {
-                    white: [344, 165, 445, 384, 395, 360, 138, 367, 513, 383, 343, 154, 494, 356, 366, 160, 359, 417],
-                    gold: [304, 139, 424, 326, 374, 313, 121, 327, 460, 359, 273, 116, 456, 343, 337, 125, 311, 344],
-                    combo: []
-                },
-                hcp: [13, 15, 3, 1, 7, 11, 17, 9, 5, 4, 8, 16, 2, 6, 12, 18, 10, 14],
-                cmb: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-            },
-            'so': {
-                n: 'Southern Oaks',
-                p: [5, 3, 5, 3, 4, 3, 4, 4, 5, 5, 3, 4, 5, 3, 5, 4, 3, 4],
-                y: {
-                    white: [489, 139, 453, 130, 346, 110, 322, 349, 438, 457, 154, 341, 448, 137, 432, 295, 131, 373],
-                    gold: [458, 125, 369, 115, 301, 78, 253, 290, 381, 406, 118, 254, 418, 100, 410, 266, 94, 310],
-                    combo: []
-                },
-                hcp: [5, 11, 13, 9, 1, 15, 7, 3, 17, 14, 8, 2, 10, 6, 18, 16, 12, 4],
-                cmb: [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1]
-            },
-            'wl': {
-                n: 'Woodlands',
-                p: [4, 4, 5, 3, 4, 5, 3, 4, 4, 4, 5, 4, 4, 3, 4, 5, 3, 4],
-                y: {
-                    white: [344, 364, 475, 116, 295, 460, 157, 323, 314, 337, 447, 348, 325, 132, 318, 452, 125, 353],
-                    gold: [306, 308, 461, 78, 278, 448, 130, 265, 256, 327, 374, 323, 286, 102, 285, 415, 102, 310],
-                    combo: []
-                },
-                hcp: [3, 1, 7, 17, 15, 5, 9, 11, 13, 6, 12, 8, 2, 14, 10, 16, 18, 4],
-                cmb: [1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1]
-            },
-            'sc': {
-                n: 'Shallow Creek',
-                p: [5, 3, 4, 4, 3, 4, 5, 3, 4, 4, 3, 4, 5, 3, 4, 3, 4, 5],
-                y: {
-                    white: [455, 128, 350, 262, 119, 310, 473, 130, 352, 327, 123, 324, 462, 146, 339, 137, 322, 450],
-                    gold: [501, 160, 391, 385, 220, 423, 557, 157, 429, 381, 180, 388, 523, 210, 403, 163, 466, 531],
-                    combo: []
-                },
-                hcp: [13, 9, 5, 17, 15, 1, 7, 11, 3, 4, 16, 8, 14, 12, 2, 10, 6, 18],
-                cmb: []
-            },
-            'havana': {
-                n: 'Havana Country Club',
-                nines: {
-                    'ken': {
-                        n: 'Kenya',
-                        p: [4, 4, 4, 3, 5, 4, 3, 5, 4],
-                        y: { white: [286, 304, 326, 121, 499, 343, 128, 451, 259], gold: [352, 354, 401, 174, 539, 431, 176, 539, 324] },
-                        hcp: [5, 6, 3, 8, 2, 1, 4, 9, 7],
-                        cmb: [1, 0, 1, 0, 1, 1, 1, 0, 0]
-                    },
-                    'hem': {
-                        n: 'Hemingway',
-                        p: [4, 4, 3, 5, 3, 4, 4, 5, 4],
-                        y: { white: [304, 336, 131, 473, 171, 274, 355, 424, 328], gold: [369, 397, 183, 532, 210, 317, 434, 500, 389] },
-                        hcp: [2, 3, 6, 4, 5, 8, 1, 9, 7],
-                        cmb: [1, 1, 0, 1, 1, 0, 1, 0, 0]
-                    },
-                    'kil': {
-                        n: 'Kilimanjaro',
-                        p: [5, 4, 5, 4, 4, 3, 4, 4, 3],
-                        y: { white: [458, 327, 463, 312, 389, 105, 291, 303, 121], gold: [499, 385, 520, 383, 415, 172, 392, 343, 153] },
-                        hcp: [2, 6, 7, 3, 1, 8, 4, 5, 9],
-                        cmb: [1, 0, 0, 1, 1, 0, 1, 1, 0]
-                    }
-                }
-            },
-            'sandpiper': {
-                n: 'Sandpiper Bay',
-                nines: {
-                    'sand': {
-                        n: 'Sand',
-                        p: [5, 3, 4, 4, 5, 3, 4, 3, 4],
-                        y: { white: [536, 165, 354, 393, 549, 172, 342, 153, 412], gold: [494, 135, 312, 369, 510, 138, 310, 123, 385] },
-                        hcp: [3, 8, 5, 2, 4, 7, 6, 9, 1],
-                        cmb: [1, 0, 0, 1, 1, 1, 0, 0, 1]
-                    },
-                    'piper': {
-                        n: 'Piper',
-                        p: [4, 5, 3, 5, 4, 3, 5, 3, 4],
-                        y: { white: [369, 563, 177, 496, 373, 162, 536, 178, 395], gold: [337, 523, 134, 468, 341, 123, 494, 159, 367] },
-                        hcp: [4, 3, 6, 9, 7, 8, 2, 5, 1],
-                        cmb: [0, 1, 1, 0, 0, 1, 1, 1, 1]
-                    },
-                    'bay': {
-                        n: 'Bay',
-                        p: [5, 4, 3, 4, 3, 4, 4, 4, 5],
-                        y: { white: [524, 377, 193, 319, 190, 328, 330, 397, 518], gold: [482, 335, 164, 284, 147, 281, 301, 346, 458] },
-                        hcp: [6, 2, 5, 9, 7, 8, 3, 1, 4],
-                        cmb: [1, 0, 1, 0, 1, 0, 0, 1, 1]
-                    }
-                }
-            },
-            'palmer': {
-                n: 'Palmer Legends',
-                nines: {
-                    'cherry': {
-                        n: 'Cherry Hill',
-                        p: [5, 4, 4, 4, 3, 4, 4, 3, 5],
-                        y: { white: [392, 340, 318, 314, 113, 319, 275, 134, 458], gold: [508, 400, 379, 383, 146, 388, 331, 183, 519] },
-                        hcp: [4, 1, 2, 5, 8, 6, 7, 9, 3],
-                        cmb: [1, 1, 1, 1, 0, 0, 0, 0, 1]
-                    },
-                    'laurel': {
-                        n: 'Laurel Valley',
-                        p: [4, 5, 4, 5, 4, 3, 4, 3, 4],
-                        y: { white: [314, 463, 321, 429, 299, 103, 326, 128, 332], gold: [369, 565, 387, 550, 372, 145, 414, 177, 409] },
-                        hcp: [1, 3, 6, 5, 7, 8, 2, 9, 4],
-                        cmb: [1, 1, 0, 1, 0, 0, 1, 0, 1]
-                    },
-                    'riley': {
-                        n: 'Riley Grove',
-                        p: [4, 4, 4, 5, 4, 3, 4, 3, 5],
-                        y: { white: [285, 337, 268, 452, 321, 106, 311, 125, 467], gold: [371, 400, 366, 504, 389, 154, 380, 185, 531] },
-                        hcp: [6, 1, 7, 5, 3, 9, 4, 8, 2],
-                        cmb: [0, 1, 0, 1, 1, 0, 1, 0, 1]
-                    }
-                }
-            },
             'belle': {
                 n: 'Belle Glade',
                 nines: {
@@ -1467,19 +1311,19 @@
                         hcp: [2, 7, 8, 3, 6, 9, 5, 1, 4],
                         cmb: [1, 0, 0, 1, 0, 0, 1, 1, 1]
                     },
-                    'tequesta': {
-                        n: 'Tequesta',
-                        p: [5, 4, 4, 4, 5, 3, 4, 3, 4],
-                        y: { white: [428, 344, 336, 305, 452, 121, 317, 120, 341], gold: [532, 399, 381, 372, 488, 154, 363, 156, 400] },
-                        hcp: [2, 6, 7, 4, 3, 5, 9, 8, 1],
-                        cmb: [1, 0, 0, 1, 1, 1, 0, 0, 1]
-                    },
                     'seminole': {
                         n: 'Seminole',
                         p: [4, 4, 4, 4, 5, 4, 3, 5, 3],
                         y: { white: [338, 326, 329, 286, 441, 252, 127, 432, 125], gold: [372, 365, 367, 370, 488, 330, 149, 489, 182] },
                         hcp: [4, 6, 5, 3, 2, 7, 9, 1, 8],
                         cmb: [1, 0, 1, 1, 1, 0, 0, 1, 0]
+                    },
+                    'tequesta': {
+                        n: 'Tequesta',
+                        p: [5, 4, 4, 4, 5, 3, 4, 3, 4],
+                        y: { white: [428, 344, 336, 305, 452, 121, 317, 120, 341], gold: [532, 399, 381, 372, 488, 154, 363, 156, 400] },
+                        hcp: [2, 6, 7, 4, 3, 5, 9, 8, 1],
+                        cmb: [1, 0, 0, 1, 1, 1, 0, 0, 1]
                     }
                 }
             },
@@ -1509,12 +1353,119 @@
                     }
                 }
             },
+            'byrd': {
+                n: 'Sea Trail - Byrd',
+                p: [4, 3, 5, 4, 4, 4, 3, 4, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5],
+                y: {
+                    white: [344, 165, 445, 384, 395, 360, 138, 367, 513, 383, 343, 154, 494, 356, 366, 160, 359, 417],
+                    gold: [304, 139, 424, 326, 374, 313, 121, 327, 460, 359, 273, 116, 456, 343, 337, 125, 311, 344],
+                    combo: []
+                },
+                hcp: [13, 15, 3, 1, 7, 11, 17, 9, 5, 4, 8, 16, 2, 6, 12, 18, 10, 14],
+                cmb: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+            },
+            'cc': {
+                n: 'Crow Creek',
+                p: [4, 4, 5, 4, 4, 3, 5, 3, 4, 4, 4, 5, 3, 4, 4, 3, 4, 5],
+                y: {
+                    white: [339, 382, 480, 331, 362, 165, 534, 168, 359, 358, 319, 517, 142, 417, 367, 156, 361, 519],
+                    gold: [302, 308, 440, 291, 323, 132, 487, 141, 319, 302, 306, 470, 129, 351, 323, 130, 316, 458],
+                    combo: [339, 308, 480, 331, 362, 132, 487, 141, 359, 358, 319, 470, 129, 351, 367, 130, 361, 458]
+                },
+                hcp: [17, 1, 5, 7, 9, 13, 3, 15, 11, 12, 16, 2, 18, 4, 10, 14, 6, 8],
+                cmb: [0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1]
+            },
+            'havana': {
+                n: 'Havana',
+                nines: {
+                    'hemingway': {
+                        n: 'Hemingway',
+                        p: [4, 4, 3, 4, 5, 4, 3, 4, 5],
+                        y: { white: [362, 311, 146, 321, 466, 291, 153, 319, 452], gold: [427, 381, 172, 384, 521, 381, 188, 387, 519] },
+                        hcp: [2, 6, 9, 4, 3, 8, 7, 5, 1],
+                        cmb: [1, 1, 0, 1, 0, 1, 1, 1, 1]
+                    },
+                    'kenya': {
+                        n: 'Kenya',
+                        p: [4, 4, 3, 4, 4, 3, 4, 5, 4],
+                        y: { white: [323, 276, 115, 318, 291, 105, 345, 418, 357], gold: [385, 327, 142, 383, 361, 143, 382, 510, 399] },
+                        hcp: [4, 8, 9, 5, 7, 6, 3, 1, 2],
+                        cmb: [0, 0, 1, 1, 0, 0, 1, 1, 0]
+                    },
+                    'kilimanjaro': {
+                        n: 'Kilimanjaro',
+                        p: [4, 4, 5, 4, 3, 4, 4, 3, 5],
+                        y: { white: [333, 353, 442, 333, 127, 321, 296, 137, 467], gold: [372, 410, 528, 401, 169, 384, 348, 169, 520] },
+                        hcp: [4, 1, 2, 5, 8, 6, 7, 9, 3],
+                        cmb: [0, 1, 1, 0, 0, 1, 1, 0, 1]
+                    }
+                }
+            },
+            'jones': {
+                n: 'Sea Trail - Jones',
+                p: [4, 3, 4, 4, 3, 4, 4, 5, 5, 4, 4, 4, 3, 4, 5, 4, 3, 5],
+                y: {
+                    white: [405, 178, 350, 365, 155, 375, 385, 482, 510, 328, 395, 385, 127, 320, 535, 405, 144, 490],
+                    gold: [385, 160, 327, 300, 115, 330, 327, 458, 488, 305, 355, 347, 110, 298, 455, 367, 134, 455],
+                    combo: []
+                },
+                hcp: [5, 17, 15, 11, 13, 3, 1, 7, 9, 10, 8, 6, 18, 14, 4, 2, 16, 12],
+                cmb: [0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1]
+            },
             'lopez': {
                 n: 'Nancy Lopez',
                 nines: {
                     'ashley': { n: 'Ashley Meadows', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
                     'erinn': { n: 'Erinn Glenn', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
                     'torri': { n: 'Torri Pines', p: Array(9).fill(4), y: { white: Array(9).fill(0), gold: Array(9).fill(0) }, hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                }
+            },
+            'lp': {
+                n: 'Lonnie Poole',
+                p: [5, 3, 5, 4, 4, 3, 5, 3, 4, 4, 5, 4, 4, 3, 5, 4, 3, 4],
+                y: {
+                    white: [507, 181, 501, 350, 419, 143, 554, 138, 395, 369, 582, 391, 375, 159, 504, 379, 110, 441],
+                    gold: [507, 181, 468, 298, 385, 131, 493, 138, 358, 345, 553, 356, 337, 138, 468, 341, 110, 425],
+                    combo: []
+                },
+                hcp: [11, 9, 1, 13, 5, 17, 7, 15, 3, 16, 2, 8, 10, 14, 6, 12, 18, 4],
+                cmb: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            'maples': {
+                n: 'Sea Trail - Maples',
+                p: [4, 4, 3, 5, 3, 5, 4, 4, 4, 4, 3, 5, 4, 4, 5, 4, 3, 4],
+                y: {
+                    white: [295, 335, 150, 525, 170, 535, 375, 380, 445, 385, 140, 475, 315, 325, 540, 330, 160, 315],
+                    gold: [275, 315, 120, 510, 160, 520, 365, 365, 420, 345, 105, 420, 225, 245, 485, 275, 110, 270],
+                    combo: []
+                },
+                hcp: [15, 5, 17, 9, 13, 1, 3, 11, 7, 2, 18, 12, 14, 6, 4, 16, 10, 8],
+                cmb: [0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0]
+            },
+            'palmer': {
+                n: 'Palmer Legends',
+                nines: {
+                    'cherry': {
+                        n: 'Cherry Hill',
+                        p: [5, 4, 4, 4, 3, 4, 4, 3, 5],
+                        y: { white: [392, 340, 318, 314, 113, 319, 275, 134, 458], gold: [508, 400, 379, 383, 146, 388, 331, 183, 519] },
+                        hcp: [4, 1, 2, 5, 8, 6, 7, 9, 3],
+                        cmb: [0, 1, 1, 0, 0, 1, 1, 0, 1]
+                    },
+                    'laurel': {
+                        n: 'Laurel Manor',
+                        p: [4, 4, 5, 3, 4, 4, 3, 4, 5],
+                        y: { white: [320, 313, 442, 130, 309, 331, 131, 331, 461], gold: [378, 359, 517, 185, 378, 387, 169, 396, 513] },
+                        hcp: [1, 3, 2, 8, 7, 6, 9, 5, 4],
+                        cmb: [1, 0, 0, 1, 1, 0, 1, 1, 0]
+                    },
+                    'riley': {
+                        n: 'Riley Grove',
+                        p: [4, 5, 4, 3, 4, 5, 4, 3, 4],
+                        y: { white: [333, 442, 292, 135, 339, 443, 311, 130, 321], gold: [390, 521, 382, 172, 389, 508, 372, 167, 395] },
+                        hcp: [6, 2, 7, 9, 3, 1, 5, 8, 4],
+                        cmb: [0, 1, 1, 1, 0, 0, 1, 1, 0]
+                    }
                 }
             },
             're': {
@@ -1528,20 +1479,68 @@
                 hcp: [9, 11, 7, 13, 17, 3, 5, 15, 1, 8, 2, 14, 6, 18, 10, 4, 16, 12],
                 cmb: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             },
-            'lp': {
-                n: 'Lonnie Poole',
-                p: [5, 3, 5, 4, 4, 3, 5, 3, 4, 4, 5, 4, 4, 3, 5, 4, 3, 4],
+            'sandpiper': {
+                n: 'Sandpiper Bay',
+                nines: {
+                    'bay': {
+                        n: 'Bay',
+                        p: [5, 4, 3, 4, 3, 4, 4, 4, 5],
+                        y: { white: [524, 377, 193, 319, 190, 328, 330, 397, 518], gold: [482, 335, 164, 284, 147, 281, 301, 346, 458] },
+                        hcp: [6, 2, 5, 9, 7, 8, 3, 1, 4],
+                        cmb: [1, 0, 1, 0, 1, 0, 0, 1, 1]
+                    },
+                    'piper': {
+                        n: 'Piper',
+                        p: [4, 5, 3, 5, 4, 3, 5, 3, 4],
+                        y: { white: [369, 563, 177, 496, 373, 162, 536, 178, 395], gold: [337, 523, 134, 468, 341, 123, 494, 159, 367] },
+                        hcp: [4, 3, 6, 9, 7, 8, 2, 5, 1],
+                        cmb: [0, 1, 1, 0, 0, 1, 1, 1, 1]
+                    },
+                    'sand': {
+                        n: 'Sand',
+                        p: [5, 3, 4, 4, 5, 3, 4, 3, 4],
+                        y: { white: [536, 165, 354, 393, 549, 172, 342, 153, 412], gold: [494, 135, 312, 369, 510, 138, 310, 123, 385] },
+                        hcp: [3, 8, 5, 2, 4, 7, 6, 9, 1],
+                        cmb: [1, 0, 0, 1, 1, 1, 0, 0, 1]
+                    }
+                }
+            },
+            'sc': {
+                n: 'Shallow Creek',
+                p: [5, 3, 4, 4, 3, 4, 5, 3, 4, 4, 3, 4, 5, 3, 4, 3, 4, 5],
                 y: {
-                    white: [507, 181, 501, 350, 419, 143, 554, 138, 395, 369, 582, 391, 375, 159, 504, 379, 110, 441],
-                    gold: [507, 181, 468, 298, 385, 131, 493, 138, 358, 345, 553, 356, 337, 138, 468, 341, 110, 425],
+                    white: [455, 128, 350, 262, 119, 310, 473, 130, 352, 327, 123, 324, 462, 146, 339, 137, 322, 450],
+                    gold: [501, 160, 391, 385, 220, 423, 557, 157, 429, 381, 180, 388, 523, 210, 403, 163, 466, 531],
                     combo: []
                 },
-                hcp: [11, 9, 1, 13, 5, 17, 7, 15, 3, 16, 2, 8, 10, 14, 6, 12, 18, 4],
-                cmb: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                hcp: [13, 9, 5, 17, 15, 1, 7, 11, 3, 4, 16, 8, 14, 12, 2, 10, 6, 18],
+                cmb: []
+            },
+            'so': {
+                n: 'Southern Oaks',
+                p: [5, 3, 5, 3, 4, 3, 4, 4, 5, 5, 3, 4, 5, 3, 5, 4, 3, 4],
+                y: {
+                    white: [489, 139, 453, 130, 346, 110, 322, 349, 438, 457, 154, 341, 448, 137, 432, 295, 131, 373],
+                    gold: [458, 125, 369, 115, 301, 78, 253, 290, 381, 406, 118, 254, 418, 100, 410, 266, 94, 310],
+                    combo: []
+                },
+                hcp: [5, 11, 13, 9, 1, 15, 7, 3, 17, 14, 8, 2, 10, 6, 18, 16, 12, 4],
+                cmb: [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1]
+            },
+            'wl': {
+                n: 'Woodlands',
+                p: [4, 4, 5, 3, 4, 5, 3, 4, 4, 4, 5, 4, 4, 3, 4, 5, 3, 4],
+                y: {
+                    white: [344, 364, 475, 116, 295, 460, 157, 323, 314, 337, 447, 348, 325, 132, 318, 452, 125, 353],
+                    gold: [306, 308, 461, 78, 278, 448, 130, 265, 256, 327, 374, 323, 286, 102, 285, 415, 102, 310],
+                    combo: []
+                },
+                hcp: [3, 1, 7, 17, 15, 5, 9, 11, 13, 6, 12, 8, 2, 14, 10, 16, 18, 4],
+                cmb: [1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1]
             }
         };
 
-        ['jones', 'maples', 'byrd', 'so', 'wl', 're', 'lp'].forEach(k => {
+        ['byrd', 'cc', 'jones', 'lp', 'maples', 're', 'sc', 'so', 'wl'].forEach(k => {
             const c = CS[k];
             if (c.y.combo.length === 0 && c.y.white.length > 0) {
                 for (let i = 0; i < 18; i++) {
@@ -1553,8 +1552,7 @@
 
         // Initialize Regions
         const regions = {
-            'cc': 'NC', 'jones': 'NC', 'maples': 'NC', 'byrd': 'NC', 're': 'NC', 'lp': 'NC', 'sandpiper': 'NC',
-            'wl': 'FL', 'so': 'FL', 'sc': 'FL', 'havana': 'FL', 'palmer': 'FL', 'belle': 'FL', 'bonifay': 'FL', 'lopez': 'FL'
+            'belle': 'FL', 'bonifay': 'FL', 'byrd': 'NC', 'cc': 'NC', 'havana': 'FL', 'jones': 'NC', 'lopez': 'FL', 'lp': 'NC', 'maples': 'NC', 'palmer': 'FL', 're': 'NC', 'sandpiper': 'NC', 'sc': 'FL', 'so': 'FL', 'wl': 'FL'
         };
         Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
 
@@ -1566,7 +1564,7 @@
                 return h;
             },
 
-            slotMap: {}, tmr: null, corr: false, delMode: false, histEdit: false,
+            slotMap: {}, tmr: null, strokesTmr: null, corr: false, delMode: false, histEdit: false,
             selIds: [],
             wakeLock: null,
             keepAwake: async function () {
@@ -1824,6 +1822,7 @@
 
             navH: function (d) {
                 if (this.tmr) clearTimeout(this.tmr);
+                if (this.strokesTmr) clearTimeout(this.strokesTmr);
                 document.getElementById('auto-adv-banner').classList.remove('show');
 
                 let n;
@@ -1863,6 +1862,24 @@
                         this.speak(`Attention! Final Segment: Drivers. ${ps[0]} and ${ps[2]} are now partners, versus ${ps[1]} and ${ps[3]}.`);
                     }
                 }
+
+                // HDCP STROKES ALERT
+                if (d === 1 && !this.corr) {
+                    this.strokesTmr = setTimeout(() => {
+                        const hIdx = this.d.h - 1;
+                        let hasStrokes = false;
+                        for (let i = 0; i < 4; i++) {
+                            if (this.d.ps[i] && this.getPops(i, hIdx) > 0) {
+                                hasStrokes = true;
+                                break;
+                            }
+                        }
+                        if (hasStrokes) {
+                            this.speak("Handicap strokes coming on this next hole, tell everyone!");
+                        }
+                    }, 15000);
+                }
+
                 this.corr = false;
             },
 
@@ -3669,433 +3686,154 @@
             },
 
             ronnieSimple: function () {
-                let bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
-                let txt = "⛳ ROUND SUMMARY\n\n";
-
-                // 1. Segments
-                if (this.d.gameType === 'cod') {
-                    [0, 1, 2].forEach(idx => {
-                        const results = this.calcSegResults(idx);
-                        results.forEach((r, rIdx) => {
-                            if (rIdx > 0) return; // Only main segments for Ronnie Simple
-                            const name = ["CARTS", "OPPOSITES", "DRIVERS"][idx];
-                            let wText = "PUSH";
-                            if (r.winner === 1) {
-                                wText = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})`;
-                                r.seg.t1.forEach(p => bets[p] += r.amt);
-                                r.seg.t2.forEach(p => bets[p] -= r.amt);
-                            } else if (r.winner === 2) {
-                                wText = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})`;
-                                r.seg.t2.forEach(p => bets[p] += r.amt);
-                                r.seg.t1.forEach(p => bets[p] -= r.amt);
-                            }
-                            txt += `${name}: ${wText}\n`;
-                        });
-                    });
-                }
-
-                // 2. Junk
-                const jRes = this.calcJunkRes();
-                if (jRes && jRes.net) {
-                    [0, 1, 2, 3].forEach(i => { if (this.d.ps[i]) bets[i] += (jRes.net[i] || 0); });
-                }
-
-                // 3. Payouts (Who pays who)
-                txt += "\n---\n";
-                let debtors = [], creditors = [];
-                [0, 1, 2, 3].forEach(i => {
-                    if (!this.d.ps[i]) return;
-                    const b = Math.round(bets[i]);
-                    if (b < 0) debtors.push({ id: i, val: Math.abs(b) });
-                    if (b > 0) creditors.push({ id: i, val: b });
-                });
-
-                if (debtors.length === 0) txt += "ALL SQUARE";
-                else {
-                    debtors.forEach(d => {
-                        let dName = this.d.ps[d.id];
-                        while (d.val > 0 && creditors.length > 0) {
-                            let c = creditors[0];
-                            let cName = this.d.ps[c.id];
-                            let amt = Math.min(d.val, c.val);
-                            txt += `${dName} owes ${cName} $${amt}\n`;
-                            d.val -= amt;
-                            c.val -= amt;
-                            if (c.val === 0) creditors.shift();
-                        }
-                    });
-                }
-                // 4. Share
-                if (navigator.share) {
-                    navigator.share({ text: txt }).catch(() => {
-                        this.copyToClipboard(txt);
-                    });
-                } else {
-                    this.copyToClipboard(txt);
-                }
+                const { bets, summary } = this.calcBets();
+                let txt = "⛳ ROUND SUMMARY\n\n" + summary;
+                txt += "\n---\n" + this.getSettleStr(bets);
+                if (navigator.share) navigator.share({ text: txt }).catch(() => this.copyToClipboard(txt));
+                else this.copyToClipboard(txt);
             },
 
-            copyToClipboard: function (txt) {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(txt).then(() => {
-                        alert("Report copied to clipboard!");
-                    }).catch(err => {
-                        console.error('Copy failed', err);
-                    });
-                } else {
-                    alert("Clipboard access not available. Please manual copy.");
-                }
-            },
-
-            doShareParams: async function (type) {
-                if (!this.shareBlob) return;
-                const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
-                const playerMath = { 0: [], 1: [], 2: [], 3: [] };
-                let sett = "";
+            calcBets: function () {
+                const bets = { 0: 0, 1: 0, 2: 0, 3: 0 }, logs = { 0: [], 1: [], 2: [], 3: [] };
+                const birdCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                let summary = "", bestGross = 999, bestPlayerIdx = -1;
+                const c = CS[this.d.crs];
 
                 if (this.d.gameType === 'stroke') {
                     const totals = [];
-                    const c = CS[this.d.crs] || CS['cc'];
                     this.d.ps.forEach((p, pIdx) => {
                         if (!p) return;
-                        let netScore = 0;
+                        let net = 0, gross = 0;
                         for (let h = 1; h <= 18; h++) {
                             const sc = (this.d.s[h] && this.d.s[h][pIdx]);
-                            if (sc) netScore += (sc - this.getPops(pIdx, h - 1) - c.p[h - 1]);
+                            if (sc) {
+                                net += (sc - this.getPops(pIdx, h - 1) - c.p[h - 1]);
+                                gross += sc;
+                                if (sc < c.p[h - 1]) birdCounts[pIdx]++;
+                            }
                         }
-                        totals.push({ idx: pIdx, name: p, score: netScore });
+                        totals.push({ idx: pIdx, name: p, score: net });
+                        if (gross > 0 && gross < bestGross) { bestGross = gross; bestPlayerIdx = pIdx; }
                     });
                     totals.sort((a, b) => a.score - b.score);
-                    const winner = totals[0];
-                    const pot = this.d.pot || 0;
-                    const activeCount = this.d.ps.filter(x => x).length;
-                    const buyIn = activeCount > 0 ? Math.round(pot / activeCount) : 0;
-
+                    const winner = totals[0], pot = this.d.pot || 0, active = this.d.ps.filter(x => x).length;
+                    const buyIn = active > 0 ? Math.round(pot / active) : 0;
                     if (winner) {
-                        sett += `\nTROPHY: ${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' + winner.score : winner.score)} NET)`;
+                        summary += `TROPHY: ${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' : '') + winner.score} NET)\n`;
                         if (pot > 0) {
                             this.d.ps.forEach((p, i) => {
-                                if (p && i !== winner.idx) {
-                                    bets[i] -= buyIn;
-                                    playerMath[i].push(`Stroke Buy-in: ($-${buyIn})`);
-                                } else if (p && i === winner.idx) {
-                                    let winAmt = (buyIn * (activeCount - 1));
-                                    bets[winner.idx] += winAmt;
-                                    playerMath[winner.idx].push(`Stroke Win: +$${winAmt}`);
-                                }
+                                if (!p) return;
+                                if (i !== winner.idx) { bets[i] -= buyIn; logs[i].push(`Stroke Buy-in: ($-${buyIn})`); }
+                                else { let w = buyIn * (active - 1); bets[i] += w; logs[i].push(`Stroke Win: +$${w}`); }
                             });
                         }
-                    }
-                    if (activeCount === 4) {
-                        const t1Score = totals.find(t => t.idx === 0).score + totals.find(t => t.idx === 1).score;
-                        const t2Score = totals.find(t => t.idx === 2).score + totals.find(t => t.idx === 3).score;
-                        let teamWinner = t1Score < t2Score ? "TEAM A" : (t2Score < t1Score ? "TEAM B" : "PUSH");
-                        sett += `\nTEAM WIN: ${teamWinner}`;
                     }
                 } else if (this.d.gameType === 'single') {
                     this.d.ps.forEach((p, pIdx) => {
                         if (!p) return;
-                        let grossScore = 0;
-                        let netScore = 0;
+                        let gross = 0, net = 0;
                         for (let h = 1; h <= 18; h++) {
                             const sc = (this.d.s[h] && this.d.s[h][pIdx]);
                             if (sc) {
-                                grossScore += sc;
-                                netScore += (sc - this.getPops(pIdx, h - 1, true));
+                                gross += sc; net += (sc - this.getPops(pIdx, h - 1, true));
+                                if (sc < c.p[h - 1]) birdCounts[pIdx]++;
                             }
                         }
-                        const parTotal = c.p.slice(0, 18).reduce((a, b) => a + b, 0);
-                        const relNet = netScore - parTotal;
-                        const sign = relNet > 0 ? '+' : '';
-                        const relStr = relNet === 0 ? 'E' : `${sign}${relNet}`;
-                        sett += `\n${p}: ${grossScore} (${relStr} NET)`;
+                        if (gross > 0 && gross < bestGross) { bestGross = gross; bestPlayerIdx = pIdx; }
+                        const par = c.p.slice(0, 18).reduce((a, b) => a + b, 0), rel = net - par;
+                        summary += `${p}: ${gross} (${rel === 0 ? 'E' : (rel > 0 ? '+' : '') + rel} NET)\n`;
                     });
                 } else {
                     [0, 1, 2].forEach(idx => {
                         const results = this.calcSegResults(idx);
                         results.forEach((r, rIdx) => {
-                            let matchName = (rIdx === 0) ? (["HOLES 1-6", "HOLES 7-12", "HOLES 13-18"][idx]) : `PRESS (H${this.getAbsHole(r.startRh)})`;
+                            let mName = (rIdx === 0) ? (["1-6", "7-12", "13-18"][idx]) : `PRESS (H${this.getAbsHole(r.startRh)})`;
                             if (r.winner === 1) {
-                                r.seg.t1.forEach(p => { bets[p] += r.amt; playerMath[p].push(`${matchName}: +$${r.amt}`); });
-                                r.seg.t2.forEach(p => { bets[p] -= r.amt; playerMath[p].push(`${matchName}: ($-${r.amt})`); });
+                                r.seg.t1.forEach(p => { bets[p] += r.amt; logs[p].push(`${mName}: +$${r.amt}`); });
+                                r.seg.t2.forEach(p => { bets[p] -= r.amt; logs[p].push(`${mName}: ($-${r.amt})`); });
                             } else if (r.winner === 2) {
-                                r.seg.t2.forEach(p => { bets[p] += r.amt; playerMath[p].push(`${matchName}: +$${r.amt}`); });
-                                r.seg.t1.forEach(p => { bets[p] -= r.amt; playerMath[p].push(`${matchName}: ($-${r.amt})`); });
+                                r.seg.t2.forEach(p => { bets[p] += r.amt; logs[p].push(`${mName}: +$${r.amt}`); });
+                                r.seg.t1.forEach(p => { bets[p] -= r.amt; logs[p].push(`${mName}: ($-${r.amt})`); });
                             }
-
-                            let wTxt = "ALL SQUARE";
-                            if (r.winner === 1) wTxt = `${this.d.ps[r.seg.t1[0]]} / ${this.d.ps[r.seg.t1[1]]} (WIN $${r.amt})`;
-                            else if (r.winner === 2) wTxt = `${this.d.ps[r.seg.t2[0]]} / ${this.d.ps[r.seg.t2[1]]} (WIN $${r.amt})`;
-                            sett += `\n${matchName}: ${wTxt}`;
+                            let w = (r.winner === 1) ? `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})` : (r.winner === 2 ? `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})` : 'PUSH');
+                            summary += `${mName}: ${w}\n`;
                         });
                     });
-                }
-
-                // 1b. Add Junk Payouts to Total
-                // 1b. Add Junk Payouts to Total
-                const jRes = this.calcJunkRes();
-                if (jRes && jRes.net) {
-                    let jText = "";
-                    let anyJunk = false;
-                    jRes.results.forEach(r => {
-                        if (r.winners.length > 0) {
-                            anyJunk = true;
-                            const wNames = r.winners.map(idx => this.d.ps[idx]).join(', ');
-                            jText += `\n${r.name} (Junk): ${wNames} ($${r.pot})`;
-                        } else {
-                            anyJunk = true; // Still want to show the line
-                            jText += `\n${r.name} (Junk): PUSH`;
-                        }
-                    });
-
-                    if (anyJunk) {
-                        sett += `\n${jText}`;
-                        // Now add to bets for final payout calculation
-                        [0, 1, 2, 3].forEach(i => {
-                            if (this.d.ps[i] && jRes.net[i]) {
-                                let b = jRes.net[i];
-                                bets[i] += b;
-                                const val = Math.round(b);
-                                const fmt = val < 0 ? `($-${Math.abs(val)})` : `$${val}`;
-                                playerMath[i].push(`Junk Total: ${val >= 0 ? '+' : ''}${fmt}`);
-                            }
-                        });
-                    }
-                }
-
-                // 2. Who Pays Who
-                let debtors = [], creditors = [];
-                let initialBalances = [];
-                [0, 1, 2, 3].forEach(i => {
-                    if (!this.d.ps[i]) return;
-                    let b = Math.round(bets[i]);
-                    if (b < 0) debtors.push({ id: i, val: Math.abs(b) });
-                    if (b > 0) creditors.push({ id: i, val: b });
-                    if (b !== 0) {
-                        const fmt = b < 0 ? `($-${Math.abs(b)})` : `$${b}`;
-                        initialBalances.push(`${this.d.ps[i]}: ${b > 0 ? '+' : ''}${fmt}`);
-                    }
-                });
-
-                let mathLog = "";
-                if (debtors.length === 0) sett += "\nALL SQUARE";
-                else {
-                    sett += "\n\nPAYOUTS:\n";
-                    mathLog = "\n\nHERE IS THE MATH:\nThe first person who owes money pays the first person who is owed money until one of them is \"clear.\" Then it moves to the next person in line.\n\nStarting Balances:\n" + initialBalances.join('\n') + "\n";
-                    let stepNum = 1;
-                    debtors.forEach(d => {
-                        let dName = this.d.ps[d.id];
-                        while (d.val > 0 && creditors.length > 0) {
-                            let c = creditors[0];
-                            let cName = this.d.ps[c.id];
-                            let amt = Math.min(d.val, c.val);
-                            sett += `${dName} pays ${cName} $${amt}\n`;
-
-                            let detail = `\nStep ${stepNum}: ${dName} owes $${d.val}. ${cName} is owed $${c.val}. `;
-                            detail += `${dName} pays ${cName} $${amt}. `;
-
-                            d.val -= amt;
-                            c.val -= amt;
-
-                            if (d.val === 0) detail += `${dName} is clear. `;
-                            else detail += `${dName} still owes $${d.val}. `;
-
-                            if (c.val === 0) { detail += `${cName} is clear.`; creditors.shift(); }
-                            else { detail += `${cName} still owed $${c.val}.`; }
-
-                            mathLog += detail;
-                            stepNum++;
-                        }
-                    });
-                }
-
-                // derivation per player breakdown
-                let derivationLog = "\n\nBALANCE CALCULATIONS:";
-                [0, 1, 2, 3].forEach(i => {
-                    if (!this.d.ps[i]) return;
-                    let logs = playerMath[i];
-                    if (logs.length === 0) derivationLog += `\n${this.d.ps[i]}: No entries. ($0)`;
-                    else {
-                        const total = Math.round(bets[i]);
-                        const totalFmt = total < 0 ? `($-${Math.abs(total)})` : `$${total}`;
-                        derivationLog += `\n${this.d.ps[i]} derivation: ${logs.join(', ')} = Total: ${totalFmt}`;
-                    }
-                });
-                mathLog += derivationLog;
-
-                // 3. Generate Fun Summary
-                const isNet = (this.d.gameType !== 'scramble'); // Scramble usually doesn't track individual gross
-                let bestGross = 999;
-                let bestPlayerKey = -1;
-
-                const birdCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
-                if (isNet) {
+                    // Birdie stats for COD
                     [0, 1, 2, 3].forEach(i => {
                         if (!this.d.ps[i]) return;
-                        let gTot = 0;
-                        let valid = false;
+                        let gross = 0;
                         for (let h = 1; h <= 18; h++) {
-                            const s = this.d.s[h] && this.d.s[h][i];
-                            if (typeof s === 'number') {
-                                gTot += s;
-                                valid = true;
-                                const c = CS[this.d.crs] || CS['cc'];
-                                if (c && c.p[h - 1] && s < c.p[h - 1]) birdCounts[i]++;
-                            }
+                            const sc = this.d.s[h] && this.d.s[h][i];
+                            if (sc) { gross += sc; if (sc < c.p[h - 1]) birdCounts[i]++; }
                         }
-                        if (valid && gTot < bestGross) { bestGross = gTot; bestPlayerKey = i; }
+                        if (gross > 0 && gross < bestGross) { bestGross = gross; bestPlayerIdx = i; }
                     });
                 }
 
-                // Find Biggest Loser(s) (or Winner if everyone won/tied)
-                let minVal = 0; // Initialize high for search
-                let losers = [];
-                let isLoser = true;
+                const jRes = this.calcJunkRes();
+                if (jRes && jRes.net) {
+                    [0, 1, 2, 3].forEach(i => {
+                        if (this.d.ps[i] && jRes.net[i]) { bets[i] += jRes.net[i]; logs[i].push(`Junk: $${Math.round(jRes.net[i])}`); }
+                    });
+                }
 
-                // 1. Find the lowest NET value (biggest loss)
-                // Note: minVal stays at 0 if no one is negative (no losers)
+                let statsStr = "";
+                if (bestPlayerIdx !== -1) statsStr += `Low Round: ${this.d.ps[bestPlayerIdx]} (${bestGross})\n`;
+                const fireballers = [0, 1, 2, 3].filter(i => birdCounts[i] >= 2).map(i => `${this.d.ps[i]} (${birdCounts[i]})`);
+                if (fireballers.length > 0) statsStr += `🔥 Birds: ${fireballers.join(', ')}\n`;
+
+                return { bets, logs, summary, statsStr };
+            },
+
+            getSettleStr: function (bets) {
+                let txt = "", debtors = [], creditors = [];
                 [0, 1, 2, 3].forEach(i => {
-                    if (this.d.ps[i] && bets[i] < minVal) minVal = bets[i];
+                    let b = Math.round(bets[i]);
+                    if (b < 0) debtors.push({ id: i, val: Math.abs(b) }); else if (b > 0) creditors.push({ id: i, val: b });
                 });
-
-                // 2. Who has that value?
-                if (minVal < 0) {
-                    [0, 1, 2, 3].forEach(i => {
-                        if (bets[i] === minVal) losers.push(this.d.ps[i]);
-                    });
-                }
-
-                // If no losers (all positive or 0), look for winners
-                let winners = [];
-                let maxVal = -1;
-
-                if (losers.length === 0) {
-                    isLoser = false;
-                    [0, 1, 2, 3].forEach(i => {
-                        if (this.d.ps[i] && bets[i] > maxVal) maxVal = bets[i];
-                    });
-                    [0, 1, 2, 3].forEach(i => {
-                        if (this.d.ps[i] && bets[i] === maxVal) winners.push(this.d.ps[i]);
-                    });
-                }
-
-                let summary = "";
-                // Formatting for Multiple Losers/Winners
-                const formatNames = (arr) => {
-                    if (arr.length === 1) return arr[0];
-                    if (arr.length === 2) return `${arr[0]} & ${arr[1]}`;
-                    return arr.join(', ');
-                };
-
-                const loserStr = formatNames(losers);
-                // winAmount/loseAmount calculation
-                const loseAmount = Math.abs(minVal);
-
-                // Case 1: We have a Best Gross Player
-                if (bestPlayerKey !== -1) {
-                    const bp = this.d.ps[bestPlayerKey];
-                    // Compact Stats: Low Round
-                    summary = `\nLow: ${bp} (${bestGross})`;
-                }
-
-                // Add Loser Stat if applicable
-                if (isLoser) {
-                    const loseAmt = Math.abs(minVal);
-                    // Compact Stats: Biggest Loser
-                    const loserStr = formatNames(losers);
-                    summary += `. Lost Max: ${loserStr} ($${loseAmt})`;
-                }
-                // If not loser (all winners)
-                else if (!isLoser) {
-                    // Maybe show biggest winner?
-                    // summary += `. Top Winner: ...`; // Keep it simple.
-                }
-
-                // Fireball Check
-                const fireballers = [];
-                let totalBirdies = 0;
-                [0, 1, 2, 3].forEach(i => {
-                    if (!this.d.ps[i]) return;
-                    totalBirdies += birdCounts[i];
-                    if (birdCounts[i] > 2) fireballers.push({ name: this.d.ps[i], count: birdCounts[i] });
-                });
-
-                if (fireballers.length > 0) {
-                    if (fireballers.length === 1) {
-                        const f = fireballers[0];
-                        summary += `\n🔥 ${f.name.substring(0, 8)}: ${f.count} Birds!`;
-                    } else {
-                        const names = fireballers.map(f => f.name.substring(0, 8)).join(', ');
-                        summary += `\n🔥 Birds: ${names}`;
+                if (debtors.length === 0) return "ALL SQUARE";
+                debtors.forEach(d => {
+                    while (d.val > 0 && creditors.length > 0) {
+                        let c = creditors[0], amt = Math.min(d.val, c.val);
+                        txt += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${amt}\n`;
+                        d.val -= amt; c.val -= amt; if (c.val === 0) creditors.shift();
                     }
-                }
+                });
+                return txt;
+            },
 
-                if (totalBirdies > 4) {
-                    summary += `\n🔥 ${totalBirdies} Team Birds! ABC Store?`;
-                }
+            copyToClipboard: function (txt) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(txt).then(() => alert("Copied to clipboard!")).catch(() => alert("Clipboard failed. Please manual copy."));
+                } else alert("Clipboard not supported.");
+            },
 
-                if (summary) sett += summary;
-                if (mathLog) sett += mathLog;
+            doShareParams: async function (type) {
+                if (!this.shareBlob) return;
+                const { bets, logs, summary, statsStr } = this.calcBets();
+                let sett = summary + statsStr + "\nPAYOUTS:\n" + this.getSettleStr(bets);
 
-                const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
-                const cName = CS[this.d.crs] ? CS[this.d.crs].n : 'COD Golf';
-                // Compact Header: "Course - Date" instead of "Results from Course on Date"
-                const sText = `${cName} - ${new Date().toLocaleDateString()}${sett}`;
+                [0, 1, 2, 3].forEach(i => {
+                    if (this.d.ps[i] && logs[i].length > 0) sett += `\n${this.d.ps[i]}: ${logs[i].join(', ')}`;
+                });
 
                 if (type === 'image') {
-                    // GOLD STANDARD: Single PNG File, No Text, No Title
-                    const file = new File([this.shareBlob], "cod_scorecard.png", { type: "image/png" });
-
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({
-                                files: [file]
-                            });
-                        } catch (e) {
-                            if (e.name !== 'AbortError') alert("Share Failed: " + e.message);
-                        }
-                    } else {
-                        const a = document.createElement('a');
-                        a.href = URL.createObjectURL(this.shareBlob);
-                        a.download = "cod_scorecard.png";
-                        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    }
+                    const file = new File([this.shareBlob], 'scorecard.png', { type: 'image/png' });
+                    if (navigator.share) await navigator.share({ files: [file], title: 'COD Golf', text: sett }).catch(() => {});
+                    else this.copyToClipboard(sett);
                 } else {
-                    // TEXT SHARE
-                    if (navigator.share) {
-                        try {
-                            await navigator.share({
-                                text: sText
-                            });
-                        } catch (e) {
-                            if (e.name !== 'AbortError') {
-                                // Fallback to clipboard
-                                navigator.clipboard.writeText(sText).then(() => alert("Share failed. Text copied to clipboard!"));
-                            }
-                        }
-                    } else {
-                        navigator.clipboard.writeText(sText).then(() => alert("Text copied to clipboard!"));
-                    }
+                    if (navigator.share) navigator.share({ title: 'COD Golf', text: sett }).catch(() => this.copyToClipboard(sett));
+                    else this.copyToClipboard(sett);
                 }
             },
 
 
             saveToHistory: function () {
                 if (!this.d.s || Object.keys(this.d.s).length === 0) return;
+                const { bets } = this.calcBets();
                 const c = CS[this.d.crs] || CS['cc'];
-                const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
-
-                [0, 1, 2].forEach(idx => {
-                    let r = this.calcSeg(idx);
-                    if (r.winner === 1) {
-                        r.seg.t1.forEach(p => bets[p] += r.amt);
-                        r.seg.t2.forEach(p => bets[p] -= r.amt);
-                    } else if (r.winner === 2) {
-                        r.seg.t2.forEach(p => bets[p] += r.amt);
-                        r.seg.t1.forEach(p => bets[p] -= r.amt);
-                    }
-                });
-                const rec = { id: Date.now(), date: new Date().toLocaleDateString(), course: c.n, ps: this.d.ps, net: [0, 1, 2, 3].map(i => bets[i]) };
+                const rec = { id: Date.now(), date: new Date().toLocaleDateString(), course: c.n, ps: this.d.ps, net: [0, 1, 2, 3].map(i => Math.round(bets[i])) };
                 this.d.gameId = rec.id;
                 this.d.history.push(rec);
                 this.save();
