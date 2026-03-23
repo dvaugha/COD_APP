@@ -3933,15 +3933,27 @@
             },
 
             doShareParams: async function (type) {
-                if (!this.shareBlob) return;
-                const { bets, logs, summary, statsStr } = this.calcBets();
-                let sett = summary + statsStr + "\nPAYOUTS:\n" + this.getSettleStr(bets);
+                const { bets, summary, statsStr } = this.calcBets();
+                const jRes = this.calcJunkRes();
 
-                [0, 1, 2, 3].forEach(i => {
-                    if (this.d.ps[i] && logs[i].length > 0) sett += `\n${this.d.ps[i]}: ${logs[i].join(', ')}`;
-                });
+                // Build a clean, non-redundant text summary
+                let sett = "⛳ COD GOLF SUMMARY\n\n" + summary;
+                if (statsStr) sett += "\n" + statsStr;
+
+                // Add Junk in simple terms
+                if (jRes && jRes.net) {
+                    let jStr = "";
+                    jRes.players.forEach(i => {
+                        const v = Math.round(jRes.net[i]);
+                        if (v !== 0) jStr += `${this.d.ps[i]} ($${v >= 0 ? '+' : ''}${v}), `;
+                    });
+                    if (jStr) sett += "\n💰 JUNK: " + jStr.slice(0, -2) + "\n";
+                }
+
+                sett += "\n---\nPAYOUTS:\n" + this.getSettleStr(bets);
 
                 if (type === 'image') {
+                    if (!this.shareBlob) { alert("Preview still loading..."); return; }
                     const file = new File([this.shareBlob], 'scorecard.png', { type: 'image/png' });
                     if (navigator.share) {
                         try {
