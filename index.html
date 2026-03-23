@@ -1136,6 +1136,17 @@
         </div>
     </div>
 
+    <!-- CART CHECK MODAL -->
+    <div id="cart-check-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">CART CHECK</div>
+            <div style="margin-bottom:24px; color:#cbd5e1; font-size:18px; line-height:1.5; font-weight:700;">
+                Double check the drivers and passengers of each cart!
+            </div>
+            <button class="g-btn" style="background:#10B981;" onclick="App.closeCartCheck()">OK, LETS GO!</button>
+        </div>
+    </div>
+
     <!-- === DASHBOARD === -->
     <div id="v-dash" class="g-view">
         <div class="top-bar">
@@ -2152,6 +2163,15 @@
                         this.speak(`Welcome to today's round. Go play!`);
                     }
                 }
+                this.showCartCheck();
+            },
+
+            showCartCheck: function () {
+                document.getElementById('cart-check-modal').classList.add('active');
+            },
+
+            closeCartCheck: function () {
+                document.getElementById('cart-check-modal').classList.remove('active');
             },
 
             filterCrs: function (reg) {
