@@ -2876,6 +2876,7 @@
                 document.getElementById('lbl-t2').innerText = isSingle ? "PLAYER 3 & 4" : ((this.d.gameType === 'stroke') ? "PARTNERS B" : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`);
                 document.getElementById('lbl-t2').style.display = (this.d.ps[t2[0]] || this.d.ps[t2[1]]) ? 'block' : 'none';
                 this.updateCaddy();
+                this.updateJunkUI();
             },
 
             updateCaddy: function () {
