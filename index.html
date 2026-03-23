@@ -3769,7 +3769,19 @@
 
             ronnieSimple: function () {
                 const { bets, summary } = this.calcBets();
+                const jRes = this.calcJunkRes();
                 let txt = "⛳ ROUND SUMMARY\n\n" + summary;
+
+                // Add Junk in simple terms
+                if (jRes && jRes.net) {
+                    let jStr = "";
+                    jRes.players.forEach(i => {
+                        const v = Math.round(jRes.net[i]);
+                        if (v !== 0) jStr += `${this.d.ps[i]} ($${v >= 0 ? '+' : ''}${v}), `;
+                    });
+                    if (jStr) txt += "\n💰 JUNK: " + jStr.slice(0, -2) + "\n";
+                }
+
                 txt += "\n---\n" + this.getSettleStr(bets);
                 if (navigator.share) {
                     navigator.share({ text: txt }).catch((e) => {
