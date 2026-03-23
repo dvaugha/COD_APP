@@ -3689,8 +3689,13 @@
                 const { bets, summary } = this.calcBets();
                 let txt = "⛳ ROUND SUMMARY\n\n" + summary;
                 txt += "\n---\n" + this.getSettleStr(bets);
-                if (navigator.share) navigator.share({ text: txt }).catch(() => this.copyToClipboard(txt));
-                else this.copyToClipboard(txt);
+                if (navigator.share) {
+                    navigator.share({ text: txt }).catch((e) => {
+                        if (e.name !== 'AbortError') this.copyToClipboard(txt);
+                    });
+                } else {
+                    this.copyToClipboard(txt);
+                }
             },
 
             calcBets: function () {
@@ -3804,9 +3809,33 @@
             },
 
             copyToClipboard: function (txt) {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(txt).then(() => alert("Copied to clipboard!")).catch(() => alert("Clipboard failed. Please manual copy."));
-                } else alert("Clipboard not supported.");
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(txt).then(() => {
+                        alert("Copied to clipboard!");
+                    }).catch(() => {
+                        this.fallbackCopy(txt);
+                    });
+                } else {
+                    this.fallbackCopy(txt);
+                }
+            },
+
+            fallbackCopy: function(txt) {
+                try {
+                    const el = document.createElement('textarea');
+                    el.value = txt;
+                    el.setAttribute('readonly', '');
+                    el.style.position = 'absolute';
+                    el.style.left = '-9999px';
+                    document.body.appendChild(el);
+                    el.select();
+                    const success = document.execCommand('copy');
+                    document.body.removeChild(el);
+                    if (success) alert("Copied to clipboard!");
+                    else alert("Clipboard failed. Please manual copy.");
+                } catch (e) {
+                    alert("Clipboard error: " + e.message);
+                }
             },
 
             doShareParams: async function (type) {
@@ -3820,11 +3849,23 @@
 
                 if (type === 'image') {
                     const file = new File([this.shareBlob], 'scorecard.png', { type: 'image/png' });
-                    if (navigator.share) await navigator.share({ files: [file], title: 'COD Golf', text: sett }).catch(() => {});
-                    else this.copyToClipboard(sett);
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({ files: [file], title: 'COD Golf', text: sett });
+                        } catch (e) {
+                            if (e.name !== 'AbortError') this.copyToClipboard(sett);
+                        }
+                    } else {
+                        this.copyToClipboard(sett);
+                    }
                 } else {
-                    if (navigator.share) navigator.share({ title: 'COD Golf', text: sett }).catch(() => this.copyToClipboard(sett));
-                    else this.copyToClipboard(sett);
+                    if (navigator.share) {
+                        navigator.share({ title: 'COD Golf', text: sett }).catch((e) => {
+                            if (e.name !== 'AbortError') this.copyToClipboard(sett);
+                        });
+                    } else {
+                        this.copyToClipboard(sett);
+                    }
                 }
             },
 

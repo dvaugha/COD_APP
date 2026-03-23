@@ -3957,12 +3957,11 @@
                             });
                         } catch (e) {
                             if (e.name !== 'AbortError') {
-                                // Fallback to clipboard
-                                navigator.clipboard.writeText(sText).then(() => alert("Share failed. Text copied to clipboard!"));
+                                this.copyToClipboard(sText);
                             }
                         }
                     } else {
-                        navigator.clipboard.writeText(sText).then(() => alert("Text copied to clipboard!"));
+                        this.copyToClipboard(sText);
                     }
                 }
             },
@@ -4093,6 +4092,36 @@
                 btn.style.backgroundColor = "#334155";
 
                 this.renderHistory();
+            },
+
+            copyToClipboard: function (txt) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(txt).then(() => {
+                        alert("Copied to clipboard!");
+                    }).catch(() => {
+                        this.fallbackCopy(txt);
+                    });
+                } else {
+                    this.fallbackCopy(txt);
+                }
+            },
+
+            fallbackCopy: function(txt) {
+                try {
+                    const el = document.createElement('textarea');
+                    el.value = txt;
+                    el.setAttribute('readonly', '');
+                    el.style.position = 'absolute';
+                    el.style.left = '-9999px';
+                    document.body.appendChild(el);
+                    el.select();
+                    const success = document.execCommand('copy');
+                    document.body.removeChild(el);
+                    if (success) alert("Copied to clipboard!");
+                    else alert("Clipboard failed. Please manual copy.");
+                } catch (e) {
+                    alert("Clipboard error: " + e.message);
+                }
             }
         };
         window.addEventListener('load', () => App.init());
