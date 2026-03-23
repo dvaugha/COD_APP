@@ -3052,65 +3052,97 @@
                 document.getElementById('junk-modal').classList.remove('active');
             },
             calcJunkRes: function () {
-                const freq = parseInt(this.d.junkFreq || 6);
-                const bet = (this.d.junkBet !== undefined) ? this.d.junkBet : 1;
+                const bet = 1; // Fixed at $1 as per user instruction
                 let players = (!this.d.junkPlayers || this.d.junkPlayers.length == 0) ? [0, 1, 2, 3] : this.d.junkPlayers;
                 players = players.filter(idx => this.d.ps[idx]);
-                const pot = bet * players.length;
-                if (pot === 0) return null;
+                const buyInPerSeg = bet * players.length;
+                if (buyInPerSeg === 0) return null;
 
-                const segs = [];
-                if (freq === 6) {
-                    segs.push({ name: "HOLES 1-6", h: [1, 6] });
-                    segs.push({ name: "HOLES 7-12", h: [7, 12] });
-                    segs.push({ name: "HOLES 13-18", h: [13, 18] });
-                } else {
-                    segs.push({ name: "FRONT 9", h: [1, 9] });
-                    segs.push({ name: "BACK 9", h: [10, 18] });
-                }
+                const segs = [
+                    { name: "HOLES 1-6", h: [1, 6] },
+                    { name: "HOLES 7-12", h: [7, 12] },
+                    { name: "HOLES 13-18", h: [13, 18] }
+                ];
+                
                 const results = [];
-                const net = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                const totalNet = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                let carryover = 0;
 
-                segs.forEach(sig => {
-                    const pts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                segs.forEach((sig, sIdx) => {
+                    const playerItems = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                    let totalItemsInSeg = 0;
+                    
                     for (let h = sig.h[0]; h <= sig.h[1]; h++) {
                         if (this.d.junk && this.d.junk[h]) {
                             Object.keys(this.d.junk[h]).forEach(k => {
                                 if (this.d.junk[h][k]) {
                                     const pIdx = parseInt(k.split('_')[0]);
-                                    if (players.includes(pIdx)) pts[pIdx]++;
+                                    if (players.includes(pIdx)) {
+                                        playerItems[pIdx]++;
+                                        totalItemsInSeg++;
+                                    }
                                 }
                             });
                         }
                     }
-                    let maxP = -1;
-                    players.forEach(i => { if (pts[i] > maxP) maxP = pts[i]; });
-                    const winners = [];
-                    if (maxP > 0) {
-                        players.forEach(i => { if (pts[i] === maxP) winners.push(i); });
-                    }
-                    const res = { name: sig.name, winners: [], pot: pot, push: false };
-                    if (winners.length > 0) {
-                        const count = winners.length;
-                        const base = Math.floor(pot / count);
-                        let rem = pot % count;
 
+                    const segmentPot = buyInPerSeg + carryover;
+                    const payouts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                    let segCarryover = 0;
+
+                    if (totalItemsInSeg === 0) {
+                        segCarryover = segmentPot;
+                    } else if (totalItemsInSeg <= segmentPot) {
+                        // Each item gets $1
                         players.forEach(i => {
-                            if (winners.includes(i)) {
-                                let share = base;
-                                // Distribute remainder to first winners in list order
-                                // This is a simple tie-break for the odd dollar
-                                if (rem > 0) { share++; rem--; }
-                                net[i] += (share - bet);
-                            } else {
-                                net[i] -= bet;
-                            }
+                            payouts[i] = playerItems[i] * bet;
                         });
-                        res.winners = winners;
-                    } else { res.push = true; }
-                    results.push(res);
+                        segCarryover = segmentPot - totalItemsInSeg;
+                    } else {
+                        // Overflow Rule: Proportional split of segmentPot among players based on items
+                        // Each player's target is (theirItems / totalItems) * segmentPot
+                        const targets = {};
+                        let currentTotal = 0;
+                        players.forEach(i => {
+                            const val = Math.round((playerItems[i] / totalItemsInSeg) * segmentPot);
+                            payouts[i] = val;
+                            currentTotal += val;
+                        });
+
+                        // Adjust for rounding differences to ensure we pay out exactly segmentPot
+                        let diff = segmentPot - currentTotal;
+                        if (diff !== 0) {
+                            // Sort players by their fractional remainder to be most 'fair'
+                            // For simplicity, we'll just distribute to those with items
+                            const eligible = players.filter(i => playerItems[i] > 0);
+                            while (diff !== 0 && eligible.length > 0) {
+                                for (let i of eligible) {
+                                    if (diff > 0) { payouts[i]++; diff--; }
+                                    else if (diff < 0 && payouts[i] > 0) { payouts[i]--; diff++; }
+                                    if (diff === 0) break;
+                                }
+                            }
+                        }
+                        segCarryover = 0;
+                    }
+
+                    // Update total net for each player
+                    players.forEach(i => {
+                        totalNet[i] += (payouts[i] - bet);
+                    });
+
+                    results.push({
+                        name: sig.name,
+                        pot: segmentPot,
+                        totalItems: totalItemsInSeg,
+                        payouts: payouts,
+                        carryover: segCarryover
+                    });
+                    
+                    carryover = segCarryover;
                 });
-                return { results, net, players };
+
+                return { results, net: totalNet, players, finalCarryover: carryover };
             },
 
             uCard: function () {
@@ -3301,19 +3333,26 @@
 
                 const jRes = this.calcJunkRes();
                 if (jRes) {
-                    resHTML += `<div style="margin-top:20px; border-top:1px dashed #475569; padding-top:12px;"><div style="font-size:11px; font-weight:900; color:#F59E0B; margin-bottom:4px;">JUNK PAYOUTS</div>`;
+                    resHTML += `<div style="margin-top:20px; border-top:1px dashed #475569; padding-top:12px;"><div style="font-size:11px; font-weight:900; color:#F59E0B; margin-bottom:4px; text-transform:uppercase;">Segment Junk Payouts</div>`;
                     jRes.results.forEach(r => {
-                        let msg = "PUSH (No Winners)"; let col = "#94A3B8";
-                        if (r.winners.length > 0) {
-                            const n = r.winners.map(i => this.d.ps[i]).join(', ');
-                            msg = `WIN: ${n}`; col = "#10B981";
+                        let inner = '';
+                        jRes.players.forEach(i => {
+                            if (r.payouts[i] > 0) {
+                                inner += `<span style="margin-left:8px; color:white;">${this.d.ps[i].substring(0,3)}: $${r.payouts[i]}</span>`;
+                            }
+                        });
+                        resHTML += `<div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#cbd5e1; margin-bottom:4px; border-bottom:1px solid #1e293b; padding-bottom:2px;">
+                            <div style="font-weight:700;">${r.name} (${r.totalItems} items)</div>
+                            <div>${inner || '<span style="color:#94A3B8;">-</span>'}</div>
+                        </div>`;
+                        if (r.carryover > 0) {
+                            resHTML += `<div style="text-align:right; font-size:10px; color:#F59E0B; margin-top:-2px; margin-bottom:6px;">$${r.carryover} carries over</div>`;
                         }
-                        resHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; color:#cbd5e1; margin-bottom:2px;"><span>${r.name} ($${r.pot})</span><span style="color:${col}; font-weight:700;">${msg}</span></div>`;
                     });
-                    resHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px;"><div style="font-size:10px; font-weight:900; color:#94A3B8;">JUNK NET</div>`;
+
+                    resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:4px;"><div style="font-size:11px; font-weight:900; color:#94A3B8; text-transform:uppercase;">Junk Round Totals</div>`;
                     jRes.players.forEach(i => {
-                        const raw = jRes.net[i];
-                        const v = (raw >= 0) ? Math.round(raw) : -Math.round(Math.abs(raw));
+                        const v = Math.round(jRes.net[i]);
                         resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${v >= 0 ? '#10B981' : '#F87171'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
                     });
                     resHTML += `</div></div>`;
@@ -3569,10 +3608,23 @@
                     // Add Junk Financials to Share
                     const jRes = this.calcJunkRes();
                     if (jRes) {
-                        segHTML += `<div style="margin-top:12px; border-top:1px dashed #475569; padding-top:6px; font-size:12px; color:#F59E0B; font-weight:900;">JUNK PAYOUTS</div>`;
+                        segHTML += `<div style="margin-top:12px; border-top:1px dashed #475569; padding-top:6px; font-size:11px; color:#F59E0B; font-weight:900; text-transform:uppercase;">Segment Junk Payouts</div>`;
+                        jRes.results.forEach(r => {
+                            let inner = '';
+                            jRes.players.forEach(i => {
+                                if (r.payouts[i] > 0) {
+                                    inner += `<span style="margin-left:6px; color:white;">${ps[i].substring(0,3)}: $${r.payouts[i]}</span>`;
+                                }
+                            });
+                            segHTML += `<div class="sn-row" style="margin-bottom:2px; font-size:11px;">
+                                <span>${r.name} (${r.totalItems} items)</span>
+                                <span>${inner || '<span style="color:#94A3B8;">-</span>'}</span>
+                            </div>`;
+                        });
+
+                        segHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px; font-size:11px; color:#94A3B8; font-weight:900; text-transform:uppercase;">Junk Round Totals</div>`;
                         jRes.players.forEach(i => {
-                            const raw = jRes.net[i];
-                            const v = (raw >= 0) ? Math.round(raw) : -Math.round(Math.abs(raw));
+                            const v = Math.round(jRes.net[i]);
                             segHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
                         });
                     }
