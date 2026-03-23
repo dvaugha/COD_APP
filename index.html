@@ -3089,19 +3089,30 @@
                     const segmentPot = buyInPerSeg + carryover;
                     const payouts = { 0: 0, 1: 0, 2: 0, 3: 0 };
                     let segCarryover = 0;
+                    const isLastSeg = (sIdx === segs.length - 1);
 
                     if (totalItemsInSeg === 0) {
-                        segCarryover = segmentPot;
-                    } else if (totalItemsInSeg <= segmentPot) {
-                        // Each item gets $1
+                        if (isLastSeg) {
+                            // LAST SEGMENT REFUND: If no items, refund the pot equally to all players
+                            const baseRefund = Math.floor(segmentPot / players.length);
+                            let refundRem = segmentPot % players.length;
+                            players.forEach(i => {
+                                payouts[i] = baseRefund;
+                                if (refundRem > 0) { payouts[i]++; refundRem--; }
+                            });
+                            segCarryover = 0;
+                        } else {
+                            segCarryover = segmentPot;
+                        }
+                    } else if (totalItemsInSeg <= segmentPot && !isLastSeg) {
+                        // NORMAL SEGMENT: Each item gets $1, remainder carries over
                         players.forEach(i => {
                             payouts[i] = playerItems[i] * bet;
                         });
                         segCarryover = segmentPot - totalItemsInSeg;
                     } else {
-                        // Overflow Rule: Proportional split of segmentPot among players based on items
-                        // Each player's target is (theirItems / totalItems) * segmentPot
-                        const targets = {};
+                        // OVERFLOW OR LAST SEGMENT DRAIN: Proportional split of segmentPot among players based on items
+                        // (On the last segment, we split EVERY dollar in the pot among achievers)
                         let currentTotal = 0;
                         players.forEach(i => {
                             const val = Math.round((playerItems[i] / totalItemsInSeg) * segmentPot);
@@ -3109,11 +3120,9 @@
                             currentTotal += val;
                         });
 
-                        // Adjust for rounding differences to ensure we pay out exactly segmentPot
+                        // Adjust for rounding
                         let diff = segmentPot - currentTotal;
                         if (diff !== 0) {
-                            // Sort players by their fractional remainder to be most 'fair'
-                            // For simplicity, we'll just distribute to those with items
                             const eligible = players.filter(i => playerItems[i] > 0);
                             while (diff !== 0 && eligible.length > 0) {
                                 for (let i of eligible) {
@@ -3126,7 +3135,7 @@
                         segCarryover = 0;
                     }
 
-                    // Update total net for each player
+                    // Update total net
                     players.forEach(i => {
                         totalNet[i] += (payouts[i] - bet);
                     });
@@ -3136,7 +3145,8 @@
                         pot: segmentPot,
                         totalItems: totalItemsInSeg,
                         payouts: payouts,
-                        carryover: segCarryover
+                        carryover: segCarryover,
+                        refunded: (isLastSeg && totalItemsInSeg === 0)
                     });
                     
                     carryover = segCarryover;
@@ -3343,9 +3353,9 @@
                         });
                         resHTML += `<div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#cbd5e1; margin-bottom:4px; border-bottom:1px solid #1e293b; padding-bottom:2px;">
                             <div style="font-weight:700;">${r.name} (${r.totalItems} items)</div>
-                            <div>${inner || '<span style="color:#94A3B8;">-</span>'}</div>
+                            <div>${r.refunded ? '<span style="color:#F59E0B;">(REFUNDED)</span>' : ''} ${inner || '<span style="color:#94A3B8;">-</span>'}</div>
                         </div>`;
-                        if (r.carryover > 0) {
+                        if (r.carryover > 0 && sIdx < jRes.results.length - 1) {
                             resHTML += `<div style="text-align:right; font-size:10px; color:#F59E0B; margin-top:-2px; margin-bottom:6px;">$${r.carryover} carries over</div>`;
                         }
                     });
