@@ -1097,6 +1097,14 @@
             </div>
             <div id="hist-list" style="max-height:200px; overflow-y:auto; font-size:12px;"></div>
         </div>
+        <div class="box" style="background:rgba(16, 185, 129, 0.1); border:1px dashed #10B981;">
+            <div class="tx-sm" style="color:#10B981">GITHUB SYNC SETUP</div>
+            <div style="font-size:10px; color:#cbd5e1; margin:8px 0;">Enter your Personal Access Token (PAT) to archive rounds directly to your repo.</div>
+            <input type="password" id="gh-token-input" class="g-input" placeholder="ghp_xxxxxxxxxxxx" 
+                style="width:100%; box-sizing:border-box; padding:10px; margin-bottom:10px;">
+            <button class="g-btn g-btn-sm" style="background:#10B981; color:white;" onclick="App.saveGH()">SAVE TOKEN</button>
+        </div>
+
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
@@ -1304,6 +1312,9 @@
 
         <button id="sms-btn" class="g-btn" style="margin-bottom:12px;" onclick="App.share()">TXT+IMG 🚀</button>
         
+        <button id="gh-sync-btn" class="g-btn" style="background:#0F172A; border:1px solid #10B981; color:#10B981; margin-bottom:12px;"
+            onclick="App.ghSync()">🚀 SYNC TO GITHUB</button>
+
         <button class="g-btn" style="background:#F59E0B; color:black; margin-bottom:20px;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
     </div>
 
@@ -1575,7 +1586,7 @@
         Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
 
         const App = {
-            d: { roster: ['Doug', 'Dan', 'Phil', 'Steve'], ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, history: [], gameId: null, voiceEnabled: false },
+            d: { roster: ['Doug', 'Dan', 'Phil', 'Steve'], ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, history: [], gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false },
 
             ghl: function (h) {
                 if (this.d.nines && h > 9) return `${h - 9}/${h}`;
@@ -1622,6 +1633,8 @@
                     if (!this.d.hcpMode) this.d.hcpMode = 'standard';
                     if (!this.d.permHcps) this.d.permHcps = {};
                     if (this.d.voiceEnabled === undefined) this.d.voiceEnabled = false;
+                    if (this.d.testSyncsDone === undefined) this.d.testSyncsDone = 0;
+                    if (this.d.ghToken === undefined) this.d.ghToken = '';
                 } catch (e) { }
                 this.renderRoster(); this.renderHistory(); this.refreshDrop(); this.restoreSet();
 
@@ -1676,6 +1689,7 @@
             resetScores: function () {
                 this.d.s = {};
                 this.d.junk = {};
+                this.d.isTestMode = false; // Reset test flag
                 this.d.press = { 0: [], 1: [], 2: [] };
                 this.d.start = parseInt(document.getElementById('s-start').value);
                 this.d.h = this.d.start;
@@ -1689,6 +1703,14 @@
                 this.restoreSet();
                 this.resetCourseNames();
                 this.nav('v-setup');
+            },
+
+            saveGH: function() {
+                const val = document.getElementById('gh-token-input').value.trim();
+                if (!val) { alert("Please enter a token"); return; }
+                this.d.ghToken = val;
+                this.save();
+                alert("GitHub Token Saved!");
             },
 
             resetCourseNames: function () {
@@ -1966,6 +1988,7 @@
 
             testFill: function () {
                 try {
+                    this.d.isTestMode = true; // Mark as test
                     const c = CS[this.d.crs] || CS['cc'];
                     if (!this.d.ps[0]) { alert("Start round first!"); return; }
 
@@ -2119,6 +2142,7 @@
                     if (el && this.d[prop] !== undefined) el.value = this.d[prop];
                 });
                 if (document.getElementById('s-voice')) document.getElementById('s-voice').checked = !!this.d.voiceEnabled;
+                if (document.getElementById('gh-token-input')) document.getElementById('gh-token-input').value = this.d.ghToken || '';
                 this.updateScoringModeUI();
                 this.checkCourseOptions();
             },
@@ -3447,7 +3471,7 @@
             },
 
             share: async function () {
-                this.saveToHistory();
+                if (this.d.h >= 18) this.saveToHistory();
                 const btn = document.getElementById('sms-btn');
                 try {
                     btn.innerText = "GENERATING PREVIEW...";
@@ -3856,7 +3880,7 @@
             },
 
             ronnieSimple: function () {
-                this.saveToHistory();
+                if (this.d.h >= 18) this.saveToHistory();
                 const { bets, summary } = this.calcBets();
                 const jRes = this.calcJunkRes();
                 let txt = "⛳ ROUND SUMMARY\n\n" + summary;
@@ -4070,6 +4094,11 @@
 
 
             saveToHistory: function () {
+                // Rule: Strictly NO test rounds (after 3 test syncs)
+                if (this.d.isTestMode && this.d.testSyncsDone >= 3) {
+                    console.log("History Guard: Test round ignored.");
+                    return;
+                }
                 if (!this.d.s || Object.keys(this.d.s).length === 0) return;
                 const { bets } = this.calcBets();
                 const c = CS[this.d.crs] || CS['cc'];
@@ -4079,6 +4108,78 @@
                 this.save();
                 this.uCard();
                 this.renderHistory();
+            },
+
+            ghSync: async function() {
+                const btn = document.getElementById('gh-sync-btn');
+                if (!this.d.ghToken) { alert("Please set GitHub Token in Setup first!"); return; }
+                
+                // Final Check for Test Rounds
+                if (this.d.isTestMode) {
+                    if (this.d.testSyncsDone >= 3) {
+                        alert("TEST MODE: No more test syncs allowed. Please start a REAL game.");
+                        return;
+                    }
+                    if (!confirm(`TEST ROUND: You have ${3 - this.d.testSyncsDone} test syncs remaining. Proceed?`)) return;
+                }
+
+                try {
+                    btn.disabled = true; btn.innerText = "☁️ CONNECTING...";
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                    const fileName = `${month}_${monthNames[now.getMonth()]}.json`;
+                    const path = `history/${year}/${fileName}`;
+                    
+                    const owner = "dvaugha", repo = "COD_APP";
+                    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+                    const headers = { "Authorization": `token ${this.d.ghToken}`, "Accept": "application/vnd.github.v3+json" };
+
+                    // 1. Get latest round data
+                    const { bets } = this.calcBets();
+                    const c = CS[this.d.crs] || CS['cc'];
+                    const newRound = { 
+                        id: Date.now(), 
+                        date: now.toLocaleDateString(), 
+                        course: c.n, 
+                        ps: this.d.ps, 
+                        net: [0, 1, 2, 3].map(i => Math.round(bets[i])),
+                        isTest: !!this.d.isTestMode 
+                    };
+
+                    // 2. Fetch existing file
+                    let existingContent = [];
+                    let sha = null;
+                    const res = await fetch(url, { headers });
+                    if (res.status === 200) {
+                        const data = await res.json();
+                        sha = data.sha;
+                        existingContent = JSON.parse(atob(data.content));
+                    }
+
+                    // 3. Append and Push
+                    existingContent.push(newRound);
+                    const body = {
+                        message: `Archive round: ${newRound.course} (${newRound.date}) ${newRound.isTest ? '[TEST]' : ''}`,
+                        content: btoa(JSON.stringify(existingContent, null, 2)),
+                        sha: sha
+                    };
+
+                    const putRes = await fetch(url, { method: 'PUT', headers, body: JSON.stringify(body) });
+                    if (putRes.ok) {
+                        if (this.d.isTestMode) this.d.testSyncsDone++;
+                        btn.innerText = "✅ CLOUD SYNCED";
+                        btn.style.background = "#059669";
+                        this.save();
+                        alert("Round successfully secured to GitHub Cloud!");
+                    } else {
+                        throw new Error("GitHub rejected the update. Check token permissions.");
+                    }
+                } catch (e) {
+                    alert("Sync Error: " + e.message);
+                    btn.disabled = false; btn.innerText = "🚀 RETRY CLOUD SYNC";
+                }
             },
 
             renderHistory: function () {
