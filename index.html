@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v271.0</title>
+    <title>COD Golf v271.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -900,7 +900,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v271.0</div>
+            <div class="tx-xl">COD GOLF v271.1</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1102,7 +1102,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.0</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.1</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -2715,9 +2715,12 @@
                 const rh = this.getRelHole(this.d.h);
                 let lbl = (this.d.nines && this.d.h > 9) ? `#${this.d.h - 9} / ${this.d.h}` : this.d.h;
                 let hNumStr = "HOLE " + lbl;
-                if (this.d.gameType === 'cod') {
+                
+                // Segment Hole Tracker (S1-H1 style)
+                if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                     const rhp = ((rh - 1) % 6) + 1;
-                    hNumStr += ` (SEG:  H # ${rhp})`;
+                    const sIdx = Math.floor((rh - 1) / 6) + 1;
+                    hNumStr += ` (S${sIdx}-H${rhp})`;
                 }
                 document.getElementById('d-h-num').innerText = hNumStr;
                 document.getElementById('d-par').innerText = par;
@@ -2793,9 +2796,11 @@
                         const t1Score = (totals.find(t => t.name.substring(0, 3) === this.d.ps[0].substring(0, 3)).score || 0) + (totals.find(t => t.name.substring(0, 3) === this.d.ps[1].substring(0, 3)).score || 0);
                         const t2Score = (totals.find(t => t.name.substring(0, 3) === this.d.ps[2].substring(0, 3)).score || 0) + (totals.find(t => t.name.substring(0, 3) === this.d.ps[3].substring(0, 3)).score || 0);
                         statHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px; font-size:10px; font-weight:900; color:#F59E0B;">TEAM TOTALS (NET)</div>`;
+                        const n1 = `${this.d.ps[0].substring(0,3)}/${this.d.ps[1].substring(0,3)}`;
+                        const n2 = `${this.d.ps[2].substring(0,3)}/${this.d.ps[3].substring(0,3)}`;
                         statHTML += `<div style="font-size:11px; display:flex; justify-content:space-between;">
-                            <span>TEAM A (P1+P2): ${t1Score === 0 ? 'E' : (t1Score > 0 ? '+' + t1Score : t1Score)}</span>
-                            <span>TEAM B (P3+P4): ${t2Score === 0 ? 'E' : (t2Score > 0 ? '+' + t2Score : t2Score)}</span>
+                            <span>${n1}: ${t1Score === 0 ? 'E' : (t1Score > 0 ? '+' + t1Score : t1Score)}</span>
+                            <span>${n2}: ${t2Score === 0 ? 'E' : (t2Score > 0 ? '+' + t2Score : t2Score)}</span>
                         </div>`;
                     }
                 } else {
@@ -2872,7 +2877,12 @@
                         const expTxt = (expVal >= 0 ? '+' : '') + expVal;
                         const expCol = expVal >= 0 ? '#10B981' : '#F87171';
                         const expBg = expVal >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(248, 113, 113, 0.1)';
-                        nmEl.innerHTML = `${this.d.ps[pid]}${dots} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
+                        
+                        // JUNK BADGES FOR DASHBOARD
+                        const jk = this.getJunkStats()[this.d.ps[pid]] || { G: 0, S: 0, P: 0 };
+                        const junkStr = `<span style="font-size:9px; color:#94A3B8; margin-left:8px;">🟢${jk.G} 🏖️${jk.S} LP${jk.P}</span>`;
+
+                        nmEl.innerHTML = `${this.d.ps[pid]}${dots} ${junkStr} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
                     }
                     nmEl.style.color = (pops > 0 && this.d.gameType !== 'single') ? '#F59E0B' : '#94A3B8';
 
@@ -3797,7 +3807,7 @@
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v271.0</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v271.1</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
