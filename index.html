@@ -1102,7 +1102,10 @@
             <div style="font-size:10px; color:#cbd5e1; margin:8px 0;">Enter your Personal Access Token (PAT) to archive rounds directly to your repo.</div>
             <input type="password" id="gh-token-input" class="g-input" placeholder="ghp_xxxxxxxxxxxx" 
                 style="width:100%; box-sizing:border-box; padding:10px; margin-bottom:10px;">
-            <button class="g-btn g-btn-sm" style="background:#10B981; color:white;" onclick="App.saveGH()">SAVE TOKEN</button>
+            <div class="flex-r" style="gap:10px;">
+                <button class="g-btn g-btn-sm" style="background:#10B981; color:white; flex:2;" onclick="App.saveGH()">SAVE TOKEN</button>
+                <button class="g-btn g-btn-sm" style="background:#EF4444; color:white; flex:1;" onclick="App.deleteGH()">DELETE</button>
+            </div>
         </div>
 
         <div style="margin-top:24px; text-align:center;">
@@ -1707,10 +1710,18 @@
 
             saveGH: function() {
                 const val = document.getElementById('gh-token-input').value.trim();
-                if (!val) { alert("Please enter a token"); return; }
                 this.d.ghToken = val;
                 this.save();
-                alert("GitHub Token Saved!");
+                alert(val ? "GitHub Token Saved!" : "GitHub Token Cleared!");
+            },
+
+            deleteGH: function() {
+                if (confirm("Clear your GitHub Sync Token?")) {
+                    this.d.ghToken = '';
+                    document.getElementById('gh-token-input').value = '';
+                    this.save();
+                    alert("Token Deleted!");
+                }
             },
 
             resetCourseNames: function () {
