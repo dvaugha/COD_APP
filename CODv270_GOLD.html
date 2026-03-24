@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Deployment Nudge: 2026-03-24 11:45 AM -->
+<!-- Deployment Nudge: 2026-03-05 11:51 AM -->
 <html lang="en">
 
 <head>
@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v271.0</title>
+    <title>COD Golf v270.0 (GOLD)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -900,7 +900,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v271.0</div>
+            <div class="tx-xl">COD GOLF v270.0 (GOLD)</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1102,7 +1102,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.0</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v270.0 (GOLD)</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1144,16 +1144,6 @@
                 Double check the drivers and passengers of each cart!
             </div>
             <button class="g-btn" style="background:#10B981;" onclick="App.closeCartCheck()">OK, LETS GO!</button>
-        </div>
-    </div>
-
-    <!-- SEGMENT JUNK PAYOUT MODAL -->
-    <div id="junk-payout-modal" class="modal-overlay">
-        <div class="modal-box" style="border:1px solid #F59E0B; background:#0F172A;">
-            <div id="junk-payout-title" class="tx-xl" style="color:#F59E0B; margin-bottom:12px;">SEGMENT PAYOUT</div>
-            <div id="junk-payout-body" style="color:white; font-size:16px; margin-bottom:20px; text-align:left;"></div>
-            <button class="g-btn" style="background:#F59E0B;"
-                onclick="document.getElementById('junk-payout-modal').classList.remove('active')">CONTINUE</button>
         </div>
     </div>
 
@@ -1878,15 +1868,6 @@
                 this.save();
                 this.uDash();
                 this.updateJunkUI();
-
-                // SEGMENT JUNK PAYOUT MODAL TRIGGER
-                if (d === 1 && !this.corr) {
-                    const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
-                    if (lastH === 6 || lastH === 12 || lastH === 18) {
-                        const sIdx = (lastH === 6) ? 0 : (lastH === 12 ? 1 : 2);
-                        this.showJunkPayout(sIdx);
-                    }
-                }
 
                 // VOICE ANNOUNCEMENT FOR COD SEGMENTS
                 if (this.d.gameType === 'cod' && !this.corr) {
@@ -3087,43 +3068,6 @@
                 this.save();
                 document.getElementById('junk-modal').classList.remove('active');
             },
-            showJunkPayout: function (segIdx) {
-                const jRes = this.calcJunkRes();
-                if (!jRes || !jRes.results[segIdx]) return;
-
-                const r = jRes.results[segIdx];
-                let h = `<div style="font-weight:900; color:#cbd5e1; margin-bottom:12px;">${r.name}</div>`;
-
-                if (r.refunded) {
-                    h += `<div style="color:#F59E0B; font-weight:700; background:rgba(245,158,11,0.1); padding:8px; border-radius:6px; margin-bottom:12px;">NO JUNK ITEMS EARNED. $${r.pot} REFUNDED TO GROUP.</div>`;
-                } else {
-                    let winners = false;
-                    jRes.players.forEach(pIdx => {
-                        if (r.payouts[pIdx] > 0) {
-                            winners = true;
-                            h += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #1e293b;">
-                                <span style="font-weight:700; color:white;">${this.d.ps[pIdx]}</span>
-                                <span style="font-weight:900; color:#10B981;">+$${r.payouts[pIdx]}</span>
-                            </div>`;
-                        }
-                    });
-                    if (!winners) h += `<div style="color:#94A3B8; font-style:italic;">No payouts this segment.</div>`;
-                }
-
-                if (r.voided && r.voided.length > 0) {
-                    h += `<div style="margin-top:16px; font-size:12px; font-weight:700; color:#EF4444;">VOIDED (Bogey+):</div>`;
-                    r.voided.forEach(v => {
-                        h += `<div style="font-size:11px; color:#F87171; font-style:italic; margin-bottom:2px;">⚠️ ${this.d.ps[v.pIdx].substring(0,3)} ${v.type[0]} on H${v.h}</div>`;
-                    });
-                }
-
-                if (r.carryover > 0) {
-                    h += `<div style="margin-top:16px; background:rgba(245,158,11,0.1); border-radius:6px; padding:6px; font-size:12px; text-align:center; color:#F59E0B;">$${r.carryover} carries over to next segment</div>`;
-                }
-
-                document.getElementById('junk-payout-body').innerHTML = h;
-                document.getElementById('junk-payout-modal').classList.add('active');
-            },
             calcJunkRes: function () {
                 const bet = 1; // Fixed at $1 as per user instruction
                 let players = (!this.d.junkPlayers || this.d.junkPlayers.length == 0) ? [0, 1, 2, 3] : this.d.junkPlayers;
@@ -3797,7 +3741,7 @@
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v271.0</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v270.0 (GOLD)</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
