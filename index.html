@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v271.1</title>
+    <title>COD Golf v271.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -889,18 +889,17 @@
             <div class="tx-xl" style="margin-bottom:12px; color:white;">READY TO SHARE</div>
             <img id="sp-img" style="width:100%; border-radius:8px; border:1px solid #334155; margin-bottom:16px;" />
             <div class="flex-r" style="gap:12px;">
-                <button class="g-btn g-btn-sec" style="flex:1;" onclick="App.closeSharePreview()">CLOSE</button>
-                <button class="g-btn" style="background:#10B981; flex:1;" onclick="App.doShareParams('image')">IMG 🖼️</button>
-                <button class="g-btn" style="background:#0EA5E9; flex:1;" onclick="App.doShareParams('text')">TXT 📝</button>
+                <button class="g-btn g-btn-sec" style="flex:1;" onclick="App.closeSharePreview()">CLOSE ❌</button>
+                <button class="g-btn" style="background:#10B981; flex:2; font-weight:900;" onclick="App.doShareParams('both')">TXT+IMG 🚀</button>
             </div>
-            <button class="g-btn" style="background:#F59E0B; width:100%; margin-top:12px; font-weight:900;" onclick="App.ronnieSimple()">RONNIE SIMPLE 🔥</button>
+            <button class="g-btn" style="background:#F59E0B; width:100%; margin-top:12px; font-weight:900;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
         </div>
     </div>
 
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v271.1</div>
+            <div class="tx-xl">COD GOLF v271.2</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1102,7 +1101,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.1</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.2</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1303,11 +1302,9 @@
         <button class="g-btn" style="background:#334155; border:1px solid #F59E0B; color:#F59E0B; margin-bottom:12px;"
             onclick="App.nav('v-recap')">📊 ROUND RECAP</button>
 
-        <button id="sms-btn" class="g-btn" style="margin-bottom:20px;" onclick="App.share()">SHARE IMAGE
-            SUMMARY</button>
-        <button id="hist-btn" class="g-btn g-btn-sec" style="margin-bottom:12px;" onclick="App.saveToHistory()">SAVE TO
-            HISTORY</button>
-        <button class="g-btn" style="background:#EF4444;" onclick="App.tryNewGame(this)">START NEW ROUND</button>
+        <button id="sms-btn" class="g-btn" style="margin-bottom:12px;" onclick="App.share()">TXT+IMG 🚀</button>
+        
+        <button class="g-btn" style="background:#F59E0B; color:black; margin-bottom:20px;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
     </div>
 
     <!-- === ROUND RECAP === -->
@@ -3450,6 +3447,7 @@
             },
 
             share: async function () {
+                this.saveToHistory();
                 const btn = document.getElementById('sms-btn');
                 try {
                     btn.innerText = "GENERATING PREVIEW...";
@@ -3807,7 +3805,7 @@
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v271.1</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v271.2</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -3858,6 +3856,7 @@
             },
 
             ronnieSimple: function () {
+                this.saveToHistory();
                 const { bets, summary } = this.calcBets();
                 const jRes = this.calcJunkRes();
                 let txt = "⛳ ROUND SUMMARY\n\n" + summary;
@@ -4042,19 +4041,23 @@
 
                 sett += "\n---\nPAYOUTS:\n" + this.getSettleStr(bets);
 
-                if (type === 'image') {
+                if (type === 'both' || type === 'image') {
                     if (!this.shareBlob) { alert("Preview still loading..."); return; }
                     const file = new File([this.shareBlob], 'scorecard.png', { type: 'image/png' });
                     if (navigator.share) {
                         try {
                             await navigator.share({ files: [file], title: 'COD Golf', text: sett });
                         } catch (e) {
-                            if (e.name !== 'AbortError') this.copyToClipboard(sett);
+                            if (e.name !== 'AbortError') {
+                                this.copyToClipboard(sett);
+                                alert("Share failed. Text summary copied to clipboard.");
+                            }
                         }
                     } else {
                         this.copyToClipboard(sett);
+                        alert("Text summary copied to OS clipboard.");
                     }
-                } else {
+                } else { // type === 'text'
                     if (navigator.share) {
                         navigator.share({ title: 'COD Golf', text: sett }).catch((e) => {
                             if (e.name !== 'AbortError') this.copyToClipboard(sett);
