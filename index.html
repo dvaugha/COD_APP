@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v271.2</title>
+    <title>COD Golf v271.3</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -899,7 +899,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v271.2</div>
+            <div class="tx-xl">COD GOLF v271.3</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -970,6 +970,8 @@
                                 style="font-size:10px; padding:2px 6px; background:#475569;">ALL</button>
                             <button onclick="App.filterCrs('NC')" class="chip"
                                 style="font-size:10px; padding:2px 6px; background:#475569;">NC</button>
+                            <button onclick="App.filterCrs('SC')" class="chip"
+                                style="font-size:10px; padding:2px 6px; background:#475569;">SC</button>
                             <button onclick="App.filterCrs('FL')" class="chip"
                                 style="font-size:10px; padding:2px 6px; background:#475569;">FL</button>
                         </div>
@@ -989,6 +991,7 @@
                         <option value="lopez">Nancy Lopez</option>
                         <option value="re">Rivers Edge</option>
                         <option value="lp">Lonnie Poole</option>
+                        <option value="prestwick">Prestwick CC</option>
                     </select>
                 </div>
                 <div style="width:80px;">
@@ -1112,7 +1115,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.2</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.3</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1511,6 +1514,17 @@
                 hcp: [9, 11, 7, 13, 17, 3, 5, 15, 1, 8, 2, 14, 6, 18, 10, 4, 16, 12],
                 cmb: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             },
+            'prestwick': {
+                n: 'Prestwick Country Club',
+                p: [4, 4, 4, 4, 3, 5, 4, 3, 5, 4, 4, 5, 3, 4, 4, 3, 5, 4],
+                y: {
+                    white: [341, 387, 444, 305, 164, 459, 384, 193, 486, 373, 344, 504, 135, 409, 350, 174, 499, 396],
+                    gold: [318, 358, 403, 290, 135, 435, 333, 163, 454, 349, 318, 478, 118, 381, 332, 153, 472, 373],
+                    combo: []
+                },
+                hcp: [9, 1, 5, 7, 11, 15, 13, 17, 3, 10, 14, 12, 18, 4, 8, 16, 2, 6],
+                cmb: [0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1]
+            },
             'sandpiper': {
                 n: 'Sandpiper Bay',
                 nines: {
@@ -1572,7 +1586,7 @@
             }
         };
 
-        ['byrd', 'cc', 'jones', 'lp', 'maples', 're', 'sc', 'so', 'wl'].forEach(k => {
+        ['byrd', 'cc', 'jones', 'lp', 'maples', 'prestwick', 're', 'sc', 'so', 'wl'].forEach(k => {
             const c = CS[k];
             if (c.y.combo.length === 0 && c.y.white.length > 0) {
                 for (let i = 0; i < 18; i++) {
@@ -1584,7 +1598,7 @@
 
         // Initialize Regions
         const regions = {
-            'belle': 'FL', 'bonifay': 'FL', 'byrd': 'NC', 'cc': 'NC', 'havana': 'FL', 'jones': 'NC', 'lopez': 'FL', 'lp': 'NC', 'maples': 'NC', 'palmer': 'FL', 're': 'NC', 'sandpiper': 'NC', 'sc': 'FL', 'so': 'FL', 'wl': 'FL'
+            'belle': 'FL', 'bonifay': 'FL', 'byrd': 'NC', 'cc': 'NC', 'havana': 'FL', 'jones': 'NC', 'lopez': 'FL', 'lp': 'NC', 'maples': 'NC', 'palmer': 'FL', 'prestwick': 'SC', 're': 'NC', 'sandpiper': 'NC', 'sc': 'FL', 'so': 'FL', 'wl': 'FL'
         };
         Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
 
