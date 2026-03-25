@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v271.3</title>
+    <title>COD Golf v271.4</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -899,7 +899,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v271.3</div>
+            <div class="tx-xl">COD GOLF v271.4</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -992,6 +992,7 @@
                         <option value="re">Rivers Edge</option>
                         <option value="lp">Lonnie Poole</option>
                         <option value="prestwick">Prestwick CC</option>
+                        <option value="blackmoor">Blackmoor GC</option>
                     </select>
                 </div>
                 <div style="width:80px;">
@@ -1115,7 +1116,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.3</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v271.4</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1525,6 +1526,17 @@
                 hcp: [9, 1, 5, 7, 11, 15, 13, 17, 3, 10, 14, 12, 18, 4, 8, 16, 2, 6],
                 cmb: [0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1]
             },
+            'blackmoor': {
+                n: 'Blackmoor Golf Club',
+                p: [4, 3, 5, 3, 4, 3, 5, 4, 4, 4, 4, 4, 5, 4, 3, 4, 3, 5],
+                y: {
+                    white: [393, 170, 490, 140, 343, 170, 520, 347, 358, 365, 318, 342, 478, 362, 150, 390, 158, 493],
+                    gold: [327, 159, 475, 138, 285, 160, 498, 335, 326, 346, 293, 322, 466, 335, 126, 353, 148, 476],
+                    combo: []
+                },
+                hcp: [6, 14, 2, 18, 8, 16, 4, 12, 10, 1, 15, 13, 7, 9, 11, 3, 17, 5],
+                cmb: [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1]
+            },
             'sandpiper': {
                 n: 'Sandpiper Bay',
                 nines: {
@@ -1586,7 +1598,7 @@
             }
         };
 
-        ['byrd', 'cc', 'jones', 'lp', 'maples', 'prestwick', 're', 'sc', 'so', 'wl'].forEach(k => {
+        ['byrd', 'cc', 'jones', 'lp', 'maples', 'prestwick', 'blackmoor', 're', 'sc', 'so', 'wl'].forEach(k => {
             const c = CS[k];
             if (c.y.combo.length === 0 && c.y.white.length > 0) {
                 for (let i = 0; i < 18; i++) {
@@ -1598,7 +1610,7 @@
 
         // Initialize Regions
         const regions = {
-            'belle': 'FL', 'bonifay': 'FL', 'byrd': 'NC', 'cc': 'NC', 'havana': 'FL', 'jones': 'NC', 'lopez': 'FL', 'lp': 'NC', 'maples': 'NC', 'palmer': 'FL', 'prestwick': 'SC', 're': 'NC', 'sandpiper': 'NC', 'sc': 'FL', 'so': 'FL', 'wl': 'FL'
+            'belle': 'FL', 'bonifay': 'FL', 'byrd': 'NC', 'cc': 'NC', 'havana': 'FL', 'jones': 'NC', 'lopez': 'FL', 'lp': 'NC', 'maples': 'NC', 'palmer': 'FL', 'prestwick': 'SC', 'blackmoor': 'SC', 're': 'NC', 'sandpiper': 'NC', 'sc': 'FL', 'so': 'FL', 'wl': 'FL'
         };
         Object.keys(CS).forEach(k => { if (regions[k]) CS[k].r = regions[k]; });
 
