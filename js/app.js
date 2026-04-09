@@ -1,5 +1,5 @@
 const App = {
-            d: { roster: ['Doug', 'Dan', 'Phil', 'Steve'], ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, history: [], gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false },
+            d: { roster: ["Dan", "Dave", "Eddie", "Muzzy", "Mark", "Tom", "TonyC", "JohnP", "MikeG", "Putt", "Rizzo", "Dante", "Steve", "Dom", "Lino", "BillB", "JohnT", "TonyS"], permHcps: { "Dan":13, "Dave":18, "Eddie":17, "Muzzy":14, "Mark":16, "Tom":15, "TonyC":22, "JohnP":22, "MikeG":18, "Putt":12, "Rizzo":18, "Dante":15, "Steve":12, "Dom":10, "Lino":20, "BillB":15, "TonyS":9, "JohnT":8 }, ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false },
 
             ghl: function (h) {
                 if (this.d.nines && h > 9) return `${h - 9}/${h}`;
