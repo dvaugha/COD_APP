@@ -2046,7 +2046,7 @@ const App = {
                         if (bMakers.length > 0) fbHoles.push({ h: h, ps: bMakers });
                     }
 
-                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:linear-gradient(135deg, #1E293B, #332d1e);">
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;">
                         <div class="flex-r" style="margin-bottom:8px;">
                             <div class="tx-sm" style="color:#F59E0B;">🔥 FIREBALL HOLES</div>
                             <div class="tx-sm" style="color:white; font-size:10px;">TOTAL: ${fbHoles.length}</div>
@@ -2277,6 +2277,7 @@ const App = {
 
                     // Generate Image (PNG - High Quality)
                     await new Promise(r => setTimeout(r, 200));
+                    await document.fonts.ready;
                     const canvas = await html2canvas(sn, { backgroundColor: '#0F172A', scale: 2, scrollY: 0 });
 
                     canvas.toBlob(async (blob) => {
