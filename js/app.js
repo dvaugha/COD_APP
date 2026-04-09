@@ -439,6 +439,7 @@ const App = {
 
                         [0, 1, 2, 3].forEach(p => {
                             const pid = (this.slotMap[p] !== undefined) ? this.slotMap[p] : p;
+                            if (!this.d.ps[pid]) return;
                             // Variance: Tuned v253.1 - Handicap Based
                             // Exp = Par + Strokes
                             const pops = this.getPops(p, hIdx, true);
