@@ -37,7 +37,16 @@ const App = {
                     if (!this.d.ps) this.d.ps = ['', '', '', ''];
                     if (!this.d.chosen) this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
                     this.save();
-                    if (!this.d.history) this.d.history = [];
+                    let h = localStorage.getItem('GOLF_HISTORY_265');
+                    if (h) {
+                        this.historyArchive = JSON.parse(h);
+                    } else if (this.historyArchive) {
+                        this.historyArchive = this.historyArchive;
+                        delete this.historyArchive;
+                        localStorage.setItem('GOLF_HISTORY_265', JSON.stringify(this.historyArchive));
+                    } else {
+                        this.historyArchive = [];
+                    }
                     if (!this.d.start) this.d.start = 1;
                     if (!this.d.press) this.d.press = { 0: [], 1: [], 2: [] };
                     if (!this.d.hcps) this.d.hcps = {};
@@ -82,8 +91,13 @@ const App = {
             hardReset: function () {
                 if (confirm("This will Delete History and Reset Roster. Continue?")) {
                     localStorage.removeItem('GOLF_265');
+                    localStorage.removeItem('GOLF_HISTORY_265');
                     location.reload();
                 }
+            },
+            saveHistoryData: function() {
+                localStorage.setItem('GOLF_HISTORY_265', JSON.stringify(this.historyArchive));
+            }
             },
 
             tryNewGame: function (btn) {
@@ -1885,7 +1899,7 @@ const App = {
 
                 const btn = document.getElementById('hist-btn');
                 if (btn) {
-                    const exists = this.d.history.some(h => h.id === this.d.gameId);
+                    const exists = this.historyArchive.some(h => h.id === this.d.gameId);
                     if (exists || Object.keys(this.d.s).length === 0) { btn.disabled = true; btn.innerText = "HISTORY SAVED"; btn.style.background = "#334155"; }
                     else { btn.disabled = false; btn.innerText = "SAVE TO HISTORY"; btn.style.background = "#10B981"; }
                 }
@@ -2250,7 +2264,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v272.0</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v273.0</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -2526,7 +2540,8 @@ const App = {
                 const c = CS[this.d.crs] || CS['cc'];
                 const rec = { id: Date.now(), date: new Date().toLocaleDateString(), course: c.n, ps: this.d.ps, net: [0, 1, 2, 3].map(i => Math.round(bets[i])) };
                 this.d.gameId = rec.id;
-                this.d.history.push(rec);
+                this.historyArchive.push(rec);
+                this.saveHistoryData();
                 this.save();
                 this.uCard();
                 this.renderHistory();
@@ -2612,7 +2627,7 @@ const App = {
                 const stats = {};
                 const labels = {}; // Store display name
 
-                this.d.history.forEach(r => {
+                this.historyArchive.forEach(r => {
                     r.ps.forEach((p, i) => {
                         const k = p.trim().toUpperCase();
                         if (!stats[k]) {
@@ -2644,7 +2659,7 @@ const App = {
                 setTimeout(() => { careerDiv.innerHTML = cHTML; }, 10);
 
                 let hH = '';
-                const hist = this.d.history.slice().reverse();
+                const hist = this.historyArchive.slice().reverse();
 
                 const listClass = this.histEdit ? 'hist-edit-mode' : '';
                 div.className = listClass;
@@ -2693,7 +2708,7 @@ const App = {
                     return;
                 }
                 alert(`Deleting ${this.selIds.length} items...`);
-                this.d.history = this.d.history.filter(h => !this.selIds.includes(h.id));
+                this.historyArchive = this.historyArchive.filter(h => !this.selIds.includes(h.id));
                 this.save();
                 this.exitEditMode();
             },
