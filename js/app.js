@@ -165,12 +165,15 @@ const App = {
                 const other = (el.id === 'g-mode-top') ? document.getElementById('g-mode') : document.getElementById('g-mode-top');
                 if (other) other.value = el.value;
 
+                const pc = document.getElementById('pot-container');
                 if (el.value === 'single') {
+                    if (pc) pc.style.display = 'none';
                     document.querySelectorAll('#s-bet').forEach(i => i.value = 0);
                     document.querySelectorAll('#s-pot').forEach(i => i.value = 0);
                     this.d.junkBet = 0;
                     if (document.getElementById('j-bet')) document.getElementById('j-bet').value = 0;
                 } else {
+                    if (pc) pc.style.display = 'flex';
                     document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
                     document.querySelectorAll('#s-pot').forEach(i => { if (i.value == 0) i.value = 20; });
                 }
@@ -1192,7 +1195,7 @@ const App = {
                 const t1 = main.seg.t1, t2 = main.seg.t2;
 
                 let fmt;
-                if (this.d.gameType === 'single') fmt = "INDIVIDUAL PLAY";
+                if (this.d.gameType === 'single') fmt = "SCORECARD ONLY";
                 else if (m === 0) fmt = "CARTS (1-6)";
                 else if (m === 1) fmt = "OPPOSITES (7-12)";
                 else fmt = "DRIVERS (13-18)";
@@ -1351,11 +1354,11 @@ const App = {
                 };
                 map(0, t1[0]); map(1, t1[1]);
                 const isSingle = (this.d.gameType === 'single');
-                document.getElementById('lbl-t1').innerText = isSingle ? "PLAYER 1 & 2" : ((this.d.gameType === 'stroke') ? "PARTNERS A" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`);
+                document.getElementById('lbl-t1').innerText = isSingle ? "PLAYERS" : ((this.d.gameType === 'stroke') ? "PARTNERS A" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`);
                 document.getElementById('lbl-t1').style.display = (this.d.ps[t1[0]] || this.d.ps[t1[1]]) ? 'block' : 'none';
 
                 map(2, t2[0]); map(3, t2[1]);
-                document.getElementById('lbl-t2').innerText = isSingle ? "PLAYER 3 & 4" : ((this.d.gameType === 'stroke') ? "PARTNERS B" : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`);
+                document.getElementById('lbl-t2').innerText = isSingle ? "PLAYERS" : ((this.d.gameType === 'stroke') ? "PARTNERS B" : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`);
                 document.getElementById('lbl-t2').style.display = (this.d.ps[t2[0]] || this.d.ps[t2[1]]) ? 'block' : 'none';
                 this.updateCaddy();
                 this.updateJunkUI();
