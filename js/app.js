@@ -624,9 +624,9 @@ const App = {
                 if (this.d.voiceEnabled) {
                     if (this.d.gameType === 'cod') {
                         const ps = this.d.ps;
-                        this.speak(`Welcome to today's round. First segment: Carts. ${ps[0]} and ${ps[1]} versus ${ps[2]} and ${ps[3]}. Go play!`);
+                        this.speak(`Welcome to today's round. First segment: Carts. ${ps[0]} and ${ps[1]} versus ${ps[2]} and ${ps[3]}. Let the games begin!`);
                     } else {
-                        this.speak(`Welcome to today's round. Go play!`);
+                        this.speak(`Welcome to today's round. Let the games begin!`);
                     }
                 }
                 this.showCartCheck();
