@@ -97,7 +97,6 @@ const App = {
             },
             saveHistoryData: function() {
                 localStorage.setItem('GOLF_HISTORY_265', JSON.stringify(this.historyArchive));
-            }
             },
 
             tryNewGame: function (btn) {
