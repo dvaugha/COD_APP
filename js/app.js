@@ -30,9 +30,7 @@ const App = {
                     }
 
                     if (!this.d.roster) this.d.roster = defR;
-                    else {
-                        defR.forEach(n => { if (!this.d.roster.includes(n)) this.d.roster.push(n); });
-                    }
+                    
                     if (!this.d.s) this.d.s = {};
                     if (!this.d.ps) this.d.ps = ['', '', '', ''];
                     if (!this.d.chosen) this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
