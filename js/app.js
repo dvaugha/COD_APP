@@ -1922,6 +1922,19 @@ const App = {
                             });
                         }
                     }
+                
+                } else if (this.d.gameType === 'rabbit') {
+                    const pot = this.d.pot || 0;
+                    const hP = pot * 0.25;
+                    const fP = pot * 0.75;
+                    const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
+                    if (activeSeats.length > 0) {
+                        activeSeats.forEach(i => bets[i] -= pot);
+                        const h9 = this.d.rabbitHistory[9];
+                        const h18 = this.d.rabbitHistory[18];
+                        if (h9 !== null && h9 !== undefined) bets[h9] += (hP * activeSeats.length);
+                        if (h18 !== null && h18 !== undefined) bets[h18] += (fP * activeSeats.length);
+                    }
                 } else if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                     ["CARTS (1-6)", "OPPOSITES (7-12)", "DRIVERS (13-18)"].forEach((lbl, idx) => {
                         const results = this.calcSegResults(idx);
