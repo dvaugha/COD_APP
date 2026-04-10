@@ -32,6 +32,7 @@ const App = {
                     if (!this.d.roster) this.d.roster = defR;
                     
                     if (!this.d.s) this.d.s = {};
+                this.d.rabbitHistory = {};
                     if (!this.d.ps) this.d.ps = ['', '', '', ''];
                     if (!this.d.chosen) this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
                     this.save();
@@ -300,6 +301,75 @@ const App = {
                 window.speechSynthesis.speak(u);
             },
 
+            
+            calcRabbit: function() {
+                this.d.rabbitHistory = {};
+                let currentRabbit = null;
+                const c = CS[this.d.crs];
+                for (let i = 1; i <= 18; i++) {
+                    if (!this.d.s[i]) break; // Assumes sequential for simplicity
+                    let lowestNet = 999;
+                    let lowestPlayers = [];
+                    this.d.ps.forEach((name, idx) => {
+                        if (!name || !this.d.s[i][idx]) return;
+                        const pops = this.getPops(idx, i - 1, true); 
+                        const net = this.d.s[i][idx] - pops;
+                        if (net < lowestNet) { lowestNet = net; lowestPlayers = [idx]; }
+                        else if (net === lowestNet) { lowestPlayers.push(idx); }
+                    });
+                    
+                    if (lowestPlayers.length === 1 && lowestNet < 99) {
+                        const winner = lowestPlayers[0];
+                        if (currentRabbit === null) currentRabbit = winner; // capture
+                        else if (currentRabbit !== winner) currentRabbit = null; // knock loose
+                    }
+                    this.d.rabbitHistory[i] = currentRabbit;
+                }
+            },
+            
+            announceRabbit: function(finishedHole) {
+                const prev = (finishedHole === 1) ? null : this.d.rabbitHistory[finishedHole - 1];
+                const curr = this.d.rabbitHistory[finishedHole];
+                const activeCount = this.d.ps.filter(x=>x).length;
+                if (activeCount < 2) return;
+                
+                if (finishedHole === 9) {
+                    if (curr !== null && curr !== undefined) {
+                        this.speak('Front nine complete. ' + this.d.ps[curr] + ' wins the rabbit pot.');
+                    } else {
+                        this.speak('Front nine complete. The rabbit is free, pot pushes to the back nine.');
+                    }
+                } else if (finishedHole === 18) {
+                    if (curr !== null && curr !== undefined) {
+                        this.speak('Round complete. ' + this.d.ps[curr] + ' wins the final rabbit pot. Excellent playing.');
+                    } else {
+                        this.speak('Round complete. The rabbit is free! Nobody wins the final pot.');
+                    }
+                } else {
+                    if (prev === null && curr !== null) {
+                        this.speak(this.d.ps[curr] + ' captured the rabbit!');
+                    } else if (prev !== null && curr === null) {
+                        this.speak(this.d.ps[prev] + ' lost the rabbit! The rabbit is free!');
+                    } else if (prev !== null && curr !== null && prev === curr) {
+                        let isLoneLow = false;
+                        // check if they were lone low or push
+                        let lowestPlayers = [];
+                        let lowestNet = 99;
+                        this.d.ps.forEach((nm, idx) => {
+                            if(!nm || !this.d.s[finishedHole][idx]) return;
+                            const np = this.d.s[finishedHole][idx] - this.getPops(idx, finishedHole - 1, true);
+                            if (np < lowestNet) { lowestNet = np; lowestPlayers = [idx]; }
+                            else if (np === lowestNet) lowestPlayers.push(idx);
+                        });
+                        if (lowestPlayers.length > 1) {
+                            this.speak('Hole pushed. ' + this.d.ps[curr] + ' defends the rabbit.');
+                        } else {
+                            this.speak(this.d.ps[curr] + ' keeps the rabbit!');
+                        }
+                    }
+                }
+            },
+            
             navH: function (d) {
                 if (this.tmr) clearTimeout(this.tmr);
                 if (this.strokesTmr) clearTimeout(this.strokesTmr);
@@ -340,6 +410,13 @@ const App = {
                         const sIdx = (lastH === 6) ? 0 : (lastH === 12 ? 1 : 2);
                         this.showJunkPayout(sIdx);
                     }
+                }
+
+                
+                // VOICE ANNOUNCEMENT FOR RABBIT
+                if (d === 1 && this.d.gameType === 'rabbit' && !this.corr) {
+                    const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
+                    this.announceRabbit(lastH);
                 }
 
                 // VOICE ANNOUNCEMENT FOR COD SEGMENTS
@@ -1165,6 +1242,7 @@ const App = {
             },
 
             uDash: function () {
+                if (this.d.gameType === 'rabbit') this.calcRabbit();
                 const c = CS[this.d.crs];
                 if (!c) return;
                 const par = c.p[this.d.h - 1];
@@ -1355,6 +1433,29 @@ const App = {
                 };
                 map(0, t1[0]); map(1, t1[1]);
                 const isSingle = (this.d.gameType === 'single');
+                
+                const rbBanner = document.getElementById('rabbit-banner');
+                if (rbBanner) {
+                    if (this.d.gameType === 'rabbit') {
+                        rbBanner.style.display = 'block';
+                        const lastH = this.d.h === 1 ? null : (this.d.h - 1);
+                        const holder = (lastH && this.d.rabbitHistory) ? this.d.rabbitHistory[lastH] : null;
+                        if (holder !== null && holder !== undefined && this.d.ps[holder]) {
+                            rbBanner.innerText = '🐇 ' + this.d.ps[holder] + ' HOLDS THE RABBIT';
+                            rbBanner.style.background = '#F97316';
+                            rbBanner.style.color = 'white';
+                            rbBanner.style.border = 'none';
+                        } else {
+                            rbBanner.innerText = '🐇 THE RABBIT IS FREE';
+                            rbBanner.style.background = 'transparent';
+                            rbBanner.style.color = '#94A3B8';
+                            rbBanner.style.border = '2px dashed #94A3B8';
+                        }
+                    } else {
+                        rbBanner.style.display = 'none';
+                    }
+                }
+
                 document.getElementById('lbl-t1').innerText = isSingle ? "PLAYERS" : ((this.d.gameType === 'stroke') ? "PARTNERS A" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`);
                 document.getElementById('lbl-t1').style.display = (this.d.ps[t1[0]] || this.d.ps[t1[1]]) ? 'block' : 'none';
 
