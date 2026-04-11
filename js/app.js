@@ -1928,15 +1928,21 @@ const App = {
                     const hP = pot * 0.25;
                     const fP = pot * 0.75;
                     const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
-                    if (activeSeats.length > 0) {
-                        activeSeats.forEach(i => bets[i] -= pot);
+                    const n = activeSeats.length;
+                    
+                    if (n > 0) {
                         const h9 = this.d.rabbitHistory[9];
                         const h18 = this.d.rabbitHistory[18];
-                        if (h9 !== null && h9 !== undefined) bets[h9] += (hP * activeSeats.length);
-                        if (h18 !== null && h18 !== undefined) bets[h18] += (fP * activeSeats.length);
                         
-                        const p9 = (h9 !== null && h9 !== undefined && this.d.ps[h9]) ? this.d.ps[h9] + ' (+$' + (hP * activeSeats.length) + ')' : "NOBODY (PUSHED)";
-                        const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? this.d.ps[h18] + ' (+$' + (fP * activeSeats.length) + ')' : "NOBODY (PUSHED)";
+                        if (h9 !== null && h9 !== undefined && this.d.ps[h9]) {
+                            activeSeats.forEach(i => { if (i === h9) bets[i] += (hP * (n - 1)); else bets[i] -= hP; });
+                        }
+                        if (h18 !== null && h18 !== undefined && this.d.ps[h18]) {
+                            activeSeats.forEach(i => { if (i === h18) bets[i] += (fP * (n - 1)); else bets[i] -= fP; });
+                        }
+
+                        const p9 = (h9 !== null && h9 !== undefined && this.d.ps[h9]) ? `${this.d.ps[h9]} (+$${(hP * n).toFixed(2)})` : "NOBODY (PUSHED)";
+                        const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? `${this.d.ps[h18]} (+$${(fP * n).toFixed(2)})` : "NOBODY (PUSHED)";
                         resHTML += '<div style="margin-bottom:16px; background:rgba(16, 185, 129, 0.1); padding:10px; border-radius:8px;">' +
                             '<div style="font-weight:900; color:#10B981; font-size:14px; text-transform:uppercase; margin-bottom:8px; text-align:center;">🐇 RABBIT HUNTER PAYOUTS</div>' +
                             '<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; font-weight:700;"><span style="color:#94A3B8;">FRONT 9:</span><span style="color:white;">' + p9 + '</span></div>' +
@@ -1982,11 +1988,15 @@ const App = {
                     });
                 }
 
-                resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:8px;"><div style="font-size:11px; font-weight:900; color:white; margin-bottom:4px;">NET TOTALS</div>`;
+                const jRes = this.calcJunkRes();
+                if (jRes && jRes.net) {
+                    [0, 1, 2, 3].forEach(i => { if (this.d.ps[i] && jRes.net[i]) bets[i] += jRes.net[i]; });
+                }
+
+                resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:8px;"><div style="font-size:11px; font-weight:900; color:white; margin-bottom:4px;">NET TOTALS (Incl. Junk)</div>`;
                 [0, 1, 2, 3].forEach(i => { if (this.d.ps[i]) resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${bets[i] >= 0 ? '#10B981' : '#F87171'}">${bets[i] >= 0 ? '+' : ''}$${bets[i]}</span></div>` });
                 resHTML += `</div>`;
 
-                const jRes = this.calcJunkRes();
                 if (jRes) {
                     resHTML += `<div style="margin-top:20px; border-top:1px dashed #475569; padding-top:12px;"><div style="font-size:11px; font-weight:900; color:#F59E0B; margin-bottom:4px; text-transform:uppercase;">Segment Junk Payouts</div>`;
                     jRes.results.forEach((r, segIdx) => {
@@ -2525,10 +2535,20 @@ const App = {
                     const hP = pot * 0.25;
                     const fP = pot * 0.75;
                     const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
-                    if (activeSeats.length > 0) {
-                        activeSeats.forEach(i => bets[i] -= pot);
-                        if (h9 !== null && h9 !== undefined) { bets[h9] += (hP * activeSeats.length); logs[h9].push('Front 9 Rabbit'); }
-                        if (h18 !== null && h18 !== undefined) { bets[h18] += (fP * activeSeats.length); logs[h18].push('Back 18 Rabbit'); }
+                    const n = activeSeats.length;
+                    if (n > 0) {
+                        if (h9 !== null && h9 !== undefined && this.d.ps[h9]) {
+                            activeSeats.forEach(i => {
+                                if (i === h9) { bets[i] += (hP * (n - 1)); logs[i].push('Front 9 Rabbit Win'); }
+                                else { bets[i] -= hP; logs[i].push('Front 9 Rabbit Loss'); }
+                            });
+                        }
+                        if (h18 !== null && h18 !== undefined && this.d.ps[h18]) {
+                            activeSeats.forEach(i => {
+                                if (i === h18) { bets[i] += (fP * (n - 1)); logs[i].push('Back 18 Rabbit Win'); }
+                                else { bets[i] -= fP; logs[i].push('Back 18 Rabbit Loss'); }
+                            });
+                        }
                     }
                 } else if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                     [0, 1, 2].forEach(idx => {
