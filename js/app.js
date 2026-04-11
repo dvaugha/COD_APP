@@ -176,7 +176,7 @@ const App = {
                 } else {
                     if (pc) pc.style.display = 'flex';
                     document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
-                    document.querySelectorAll('#s-pot').forEach(i => { if (i.value == 0) i.value = 20; });
+                    document.querySelectorAll('#s-pot').forEach(i => { if (i.value == 0) i.value = 10; });
                 }
 
                 // Update POT label for Rabbit Hunter (v275.10)
