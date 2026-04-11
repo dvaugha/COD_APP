@@ -178,6 +178,12 @@ const App = {
                     document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
                     document.querySelectorAll('#s-pot').forEach(i => { if (i.value == 0) i.value = 20; });
                 }
+
+                // Update POT label for Rabbit Hunter (v275.10)
+                const potLbl = document.getElementById('pot-label');
+                if (potLbl) {
+                    potLbl.innerText = (el.value === 'rabbit') ? 'BUY-IN $' : 'POT';
+                }
             },
 
             onHcpModeChange: function (el) {
@@ -671,6 +677,13 @@ const App = {
                 if (document.getElementById('s-voice')) document.getElementById('s-voice').checked = !!this.d.voiceEnabled;
                 if (document.getElementById('gh-token-input')) document.getElementById('gh-token-input').value = this.d.ghToken || '';
                 this.updateScoringModeUI();
+                
+                // Update POT label for Rabbit Hunter (v275.10)
+                const potLbl = document.getElementById('pot-label');
+                if (potLbl) {
+                    potLbl.innerText = (this.d.gameType === 'rabbit') ? 'BUY-IN $' : 'POT';
+                }
+
                 this.checkCourseOptions();
             },
             startRound: function () {
