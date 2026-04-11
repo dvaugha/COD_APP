@@ -2519,7 +2519,7 @@ const App = {
                     const h18 = this.d.rabbitHistory[18];
                     const p9 = (h9 !== null && h9 !== undefined && this.d.ps[h9]) ? this.d.ps[h9] : "NOBODY";
                     const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? this.d.ps[h18] : "NOBODY";
-                    summary += 'FRONT 9 WINNER: ' + p9 + '\\nBACK 18 WINNER: ' + p18 + '\\n';
+                    summary += 'FRONT 9 WINNER: ' + p9 + '\nBACK 18 WINNER: ' + p18 + '\n';
                     
                     const pot = this.d.pot || 0;
                     const hP = pot * 0.25;
