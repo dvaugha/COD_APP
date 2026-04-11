@@ -666,6 +666,8 @@ const App = {
 
                 if (gt === 'stroke') {
                     if (count < 2) { alert("Need at least 2 players for Stroke Play!"); return; }
+                } else if (gt === 'rabbit') {
+                    if (count < 2) { alert("Need at least 2 players for Rabbit Hunter!"); return; }
                 } else if (gt === 'single') {
                     if (count < 1) { alert("Need at least 1 player for Single Player!"); return; }
                 } else {
