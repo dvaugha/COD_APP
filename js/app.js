@@ -1105,6 +1105,10 @@ const App = {
                 if (completedHoles === 0) { con.innerHTML = '<div style="padding:20px; text-align:center; color:#94A3B8;">No scores yet.</div>'; return; }
 
                 let html = '';
+                // 0. FULL SCORECARD (Requested v275.5)
+                html += this.getScorecardHTML();
+                html += this.getGrossTotalsHTML();
+
                 // 1. GROSS BREAKDOWN
                 html += `<div class="box" style="margin-top:20px;">
                     <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (GROSS)</div>
@@ -1148,6 +1152,9 @@ const App = {
                     </div>`;
                 });
                 html += `</div>`;
+
+                // 3. FINANCIAL NET TOTALS (Requested v275.5)
+                html += this.getNetTotalsHTML();
 
                 // HANDICAP SUMMARY
                 const strokeHoles = [];
@@ -1806,11 +1813,8 @@ const App = {
                 return { results, net: totalNet, players, finalCarryover: carryover };
             },
 
-            uCard: function () {
+            getScorecardHTML: function () {
                 const c = CS[this.d.crs] || CS['cc'];
-                const cardCon = document.getElementById('card-con-body');
-                if (!cardCon) return;
-
                 const build9 = (startH, label) => {
                     let hH = `<tr><th>#</th>`;
                     for (let n = startH; n < startH + 9; n++) {
@@ -1833,6 +1837,7 @@ const App = {
 
                     let pRows = '';
                     [0, 1, 2, 3].forEach(pIdx => {
+                        if (!this.d.ps[pIdx]) return;
                         let r = `<tr><td>${this.d.ps[pIdx].substring(0, 8)}</td>`;
                         let tot = 0;
                         for (let n = startH; n < startH + 9; n++) {
@@ -1872,23 +1877,115 @@ const App = {
                     });
 
                     return `<div style="margin-bottom:20px;">
-                        <div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:4px;">${label}</div>
+                        <div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:4px; text-transform:uppercase;">${label}</div>
                         <div class="card-table-wrap">
-                            <table><thead id="tb-head-${startH}">${hH}</thead><tbody id="tb-body-${startH}">${hP}${pRows}</tbody></table>
+                            <table><thead>${hH}</thead><tbody>${hP}${pRows}</tbody></table>
                         </div>
                     </div>`;
                 };
+                return build9(1, 'FRONT 9') + build9(10, 'BACK 18');
+            },
 
-                cardCon.innerHTML = build9(1, 'FRONT 9') + build9(10, 'BACK 18');
-
-                let totHTML = '<div style="margin-top:20px; padding:12px; background:#1E293B; border:1px solid #334155; border-radius:12px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:8px; text-transform:uppercase;">Gross Totals</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">';
+            getGrossTotalsHTML: function () {
+                let totHTML = '<div class="box" style="margin-top:0; padding:12px; background:#1E293B; border:1px solid #334155; border-radius:12px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:8px; text-transform:uppercase;">Gross Totals</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">';
                 this.d.ps.forEach((p, i) => {
+                    if (!p) return;
                     let t = 0;
                     for (let h = 1; h <= 18; h++) if (this.d.s[h] && this.d.s[h][i]) t += this.d.s[h][i];
                     totHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#94A3B8; text-transform:uppercase;">${p.substring(0, 8)}</span><span style="font-size:15px; font-weight:900; color:white;">${t || '-'}</span></div>`;
                 });
                 totHTML += '</div></div>';
-                cardCon.innerHTML += totHTML;
+                return totHTML;
+            },
+
+            getNetTotalsHTML: function () {
+                const c = CS[this.d.crs] || CS['cc'];
+                const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                
+                // 1. Match/Game logic
+                if (this.d.gameType === 'stroke') {
+                    const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
+                    const pot = this.d.pot || 0;
+                    const buyIn = activeSeats.length > 0 ? Math.round(pot / activeSeats.length) : 0;
+                    const totals = [];
+                    this.d.ps.forEach((p, pIdx) => {
+                        if (!p) return;
+                        let net = 0;
+                        for (let h = 1; h <= 18; h++) {
+                            const sc = (this.d.s[h] && this.d.s[h][pIdx]);
+                            if (sc) net += (sc - this.getPops(pIdx, h - 1) - c.p[h - 1]);
+                        }
+                        totals.push({ idx: pIdx, score: net });
+                    });
+                    totals.sort((a, b) => a.score - b.score);
+                    const winner = totals[0];
+                    if (winner && pot > 0) {
+                        activeSeats.forEach(i => {
+                            if (i !== winner.idx) bets[i] -= buyIn;
+                            else bets[i] += (buyIn * (activeSeats.length - 1));
+                        });
+                    }
+                } else if (this.d.gameType === 'rabbit') {
+                    const pot = this.d.pot || 0;
+                    const hP = pot * 0.25;
+                    const fP = pot * 0.75;
+                    const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
+                    const n = activeSeats.length;
+                    if (n > 0) {
+                        const h9 = this.d.rabbitHistory && this.d.rabbitHistory[9];
+                        const h18 = this.d.rabbitHistory && this.d.rabbitHistory[18];
+                        if (h9 !== null && h9 !== undefined && this.d.ps[h9]) {
+                            activeSeats.forEach(i => { if (i === h9) bets[i] += (hP * (n - 1)); else bets[i] -= hP; });
+                        }
+                        if (h18 !== null && h18 !== undefined && this.d.ps[h18]) {
+                            activeSeats.forEach(i => { if (i === h18) bets[i] += (fP * (n - 1)); else bets[i] -= fP; });
+                        }
+                    }
+                } else if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
+                    [0, 1, 2].forEach(idx => {
+                        const results = this.calcSegResults(idx);
+                        results.forEach(r => {
+                            if (r.winner === 1) {
+                                r.seg.t1.forEach(p => bets[p] += r.amt);
+                                r.seg.t2.forEach(p => bets[p] -= r.amt);
+                            } else if (r.winner === 2) {
+                                r.seg.t2.forEach(p => bets[p] += r.amt);
+                                r.seg.t1.forEach(p => bets[p] -= r.amt);
+                            }
+                        });
+                    });
+                }
+
+                // 2. Junk logic
+                const jRes = this.calcJunkRes();
+                if (jRes && jRes.net) {
+                    [0, 1, 2, 3].forEach(i => { if (this.d.ps[i] && jRes.net[i]) bets[i] += jRes.net[i]; });
+                }
+
+                // 3. Render
+                let html = `<div class="box" style="margin-top:12px; border-top:1px solid #334155; padding-top:12px;">
+                    <div style="font-size:11px; font-weight:900; color:#10B981; margin-bottom:12px; text-transform:uppercase;">Financial Net Totals (Incl. Junk)</div>`;
+                [0, 1, 2, 3].forEach(i => {
+                    if (this.d.ps[i]) {
+                        const val = bets[i];
+                        const color = val >= 0 ? '#10B981' : '#EF4444';
+                        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155; margin-bottom:6px;">
+                            <span style="font-size:13px; font-weight:700; color:#94A3B8;">${this.d.ps[i]}</span>
+                            <span style="font-size:15px; font-weight:900; color:${color};">${val >= 0 ? '+' : ''}$${val}</span>
+                        </div>`;
+                    }
+                });
+                html += `</div>`;
+                return html;
+            },
+
+            uCard: function () {
+                const c = CS[this.d.crs] || CS['cc'];
+                const cardCon = document.getElementById('card-con-body');
+                if (!cardCon) return;
+
+                cardCon.innerHTML = this.getScorecardHTML();
+                cardCon.innerHTML += this.getGrossTotalsHTML();
 
                 const bets = { 0: 0, 1: 0, 2: 0, 3: 0 };
                 let resHTML = "";
@@ -1988,15 +2085,9 @@ const App = {
                     });
                 }
 
+                resHTML += this.getNetTotalsHTML();
+
                 const jRes = this.calcJunkRes();
-                if (jRes && jRes.net) {
-                    [0, 1, 2, 3].forEach(i => { if (this.d.ps[i] && jRes.net[i]) bets[i] += jRes.net[i]; });
-                }
-
-                resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:8px;"><div style="font-size:11px; font-weight:900; color:white; margin-bottom:4px;">NET TOTALS (Incl. Junk)</div>`;
-                [0, 1, 2, 3].forEach(i => { if (this.d.ps[i]) resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${bets[i] >= 0 ? '#10B981' : '#F87171'}">${bets[i] >= 0 ? '+' : ''}$${bets[i]}</span></div>` });
-                resHTML += `</div>`;
-
                 if (jRes) {
                     resHTML += `<div style="margin-top:20px; border-top:1px dashed #475569; padding-top:12px;"><div style="font-size:11px; font-weight:900; color:#F59E0B; margin-bottom:4px; text-transform:uppercase;">Segment Junk Payouts</div>`;
                     jRes.results.forEach((r, segIdx) => {

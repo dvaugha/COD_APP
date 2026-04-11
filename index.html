@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v273.0</title>
+    <title>COD Golf v275.5</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -62,7 +62,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v275.4</div>
+            <div class="tx-xl">COD GOLF v275.5</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -85,7 +85,6 @@
                 onclick="App.tryNewGame(this)">START NEW GAME</button>
         </div>
 
-        <!-- Roster/Seats/Settings... Same as before -->
         <div class="box">
             <div class="tx-sm">ROSTER</div>
             <div class="flex-r" style="gap:8px; margin-bottom:12px;">
@@ -281,7 +280,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v275.4</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v275.5</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -339,6 +338,11 @@
     <!-- === DASHBOARD === -->
     <div id="v-dash" class="g-view">
         <div class="top-bar">
+            <div class="flex-r" style="margin-bottom:12px;">
+                <button class="nav-btn" style="background:#334155; border:1px solid #475569;" onclick="App.nav('v-setup')">⚙️</button>
+                <button class="nav-btn" style="background:#F59E0B; width:auto; flex:1; margin:0 10px; font-size:14px; font-weight:900; color:black;" onclick="App.nav('v-recap')">📊 RECAP</button>
+                <button class="nav-btn" style="background:#334155; border:1px solid #475569;" onclick="App.nav('v-card')">📄</button>
+            </div>
             <div class="flex-r" style="margin-bottom:8px;">
                 <button class="nav-btn" onclick="App.navH(-1)">←</button>
                 <div style="flex:1; text-align:center;">
@@ -348,7 +352,7 @@
                         style="font-size:10px; font-weight:900; color:#F59E0B; margin-top:-2px; text-transform:uppercase;">
                         WHITE TEE</div>
                 </div>
-                <button class="nav-btn" style="background:#10B981;" onclick="App.navH(1)">→</button>
+                <button class="nav-btn" style="background:#10B981;" onclick="App.navH(1)">>→</button>
             </div>
             <div class="flex-r">
                 <div class="h-stat">
@@ -466,7 +470,6 @@
         <div id="card-con-body" class="card-con"></div>
 
         <!-- === SPACER AND RESULTS === -->
-        <!-- Forced Spacer matching the gap above Gross Totals -->
         <div style="height:20px; width:100%;"></div>
 
         <div class="box" style="margin-top:0;">
@@ -502,7 +505,7 @@
     </div>
 
     <script src="data/courses.js"></script>
-    <script src="js/app.js?v=275.4"></script>
+    <script src="js/app.js?v=275.5"></script>
 </body>
 
 </html>
