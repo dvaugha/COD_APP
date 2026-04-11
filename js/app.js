@@ -173,10 +173,14 @@ const App = {
                     document.querySelectorAll('#s-pot').forEach(i => i.value = 0);
                     this.d.junkBet = 0;
                     if (document.getElementById('j-bet')) document.getElementById('j-bet').value = 0;
+                } else if (el.value === 'rabbit') {
+                    if (pc) pc.style.display = 'flex';
+                    document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
+                    document.querySelectorAll('#s-pot').forEach(i => i.value = 10); // Default $10/player for Rabbit (v275.14)
                 } else {
                     if (pc) pc.style.display = 'flex';
                     document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
-                    document.querySelectorAll('#s-pot').forEach(i => { if (i.value == 0) i.value = 10; });
+                    document.querySelectorAll('#s-pot').forEach(i => { if (i.value == 0) i.value = 20; });
                 }
 
                 // Update POT label for Rabbit Hunter (v275.10)
