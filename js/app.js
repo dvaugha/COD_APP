@@ -330,11 +330,19 @@ const App = {
                         else if (net === lowestNet) { lowestPlayers.push(idx); }
                     });
 
-                    // 1. LONE NATURAL BIRDIE RULE (Super Capture v275.7)
+                    // 1. DOUBLE BOGEY PENALTY (Requested v275.12)
+                    if (currentRabbit !== null) {
+                        const holderGross = this.d.s[i][currentRabbit];
+                        if (holderGross >= par + 2) {
+                            currentRabbit = null;
+                        }
+                    }
+
+                    // 2. LONE NATURAL BIRDIE RULE (Super Capture)
                     if (birdies.length === 1) {
                         currentRabbit = birdies[0];
                     }
-                    // 2. STANDARD LONE LOW RULE
+                    // 3. STANDARD LONE LOW RULE
                     else if (lowestPlayers.length === 1 && lowestNet < 99) {
                         const winner = lowestPlayers[0];
                         if (currentRabbit === null) currentRabbit = winner; // Capture
@@ -368,7 +376,13 @@ const App = {
                     if (prev === null && curr !== null) {
                         this.speak(this.d.ps[curr] + ' captured the rabbit!');
                     } else if (prev !== null && curr === null) {
-                        this.speak(this.d.ps[prev] + ' lost the rabbit! The rabbit is free!');
+                        const hGross = this.d.s[finishedHole][prev];
+                        const hPar = CS[this.d.crs].p[finishedHole - 1];
+                        if (hGross >= hPar + 2) {
+                            this.speak(this.d.ps[prev] + ' lost the rabbit with a double bogey! The rabbit is free!');
+                        } else {
+                            this.speak(this.d.ps[prev] + ' lost the rabbit! The rabbit is free!');
+                        }
                     } else if (prev !== null && curr !== null && prev !== curr) {
                         this.speak(this.d.ps[curr] + ' stole the rabbit with a natural birdie! Incredible!');
                     } else if (prev !== null && curr !== null && prev === curr) {
@@ -1993,8 +2007,8 @@ const App = {
                     }
                 } else if (this.d.gameType === 'rabbit') {
                     const pot = this.d.pot || 0;
-                    const hP = pot * 0.25;
-                    const fP = pot * 0.75;
+                    const hP = pot * 0.40; // 40% Front (Updated v275.12)
+                    const fP = pot * 0.60; // 60% Back (Updated v275.12)
                     const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
                     const n = activeSeats.length;
                     if (n > 0) {
