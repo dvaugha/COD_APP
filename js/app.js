@@ -1144,6 +1144,29 @@ const App = {
                 html += this.getScorecardHTML();
                 html += this.getGrossTotalsHTML();
 
+                // RABBIT HISTORY TRACKER (Requested v275.9, Moved v275.11)
+                if (this.d.gameType === 'rabbit') {
+                    this.calcRabbit();
+                    let rHTML = `<div class="box" style="margin-top:12px;">
+                        <div class="tx-sm" style="color:#F97316; margin-bottom:12px;">🐇 RABBIT TRACKER</div>
+                        <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:6px;">`;
+                    for (let h = 1; h <= 18; h++) {
+                        const holder = (this.d.rabbitHistory && this.d.rabbitHistory[h] !== undefined) ? this.d.rabbitHistory[h] : null;
+                        let hCol = "#1E293B", txt = '-', bdr = '1px solid #334155';
+                        if (holder !== null && holder !== undefined) {
+                            hCol = "#F97316";
+                            txt = this.d.ps[holder] ? this.d.ps[holder].substring(0, 3) : '-';
+                            bdr = '1px solid #EA580C';
+                        }
+                        rHTML += `<div style="background:${hCol}; border:${bdr}; padding:4px; border-radius:6px; text-align:center;">
+                            <div style="font-size:9px; color:rgba(255,255,255,0.7); font-weight:900;">H${this.ghl(h)}</div>
+                            <div style="font-size:11px; color:white; font-weight:900; overflow:hidden; text-transform:uppercase;">${txt}</div>
+                        </div>`;
+                    }
+                    rHTML += `</div></div>`;
+                    html += rHTML;
+                }
+
                 // 1. GROSS BREAKDOWN
                 html += `<div class="box" style="margin-top:20px;">
                     <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (GROSS)</div>
@@ -1281,28 +1304,6 @@ const App = {
                 });
                 html += `</div>`;
 
-                // RABBIT HISTORY TRACKER (Requested v275.9)
-                if (this.d.gameType === 'rabbit') {
-                    this.calcRabbit();
-                    let rHTML = `<div class="box" style="margin-top:12px;">
-                        <div class="tx-sm" style="color:#F97316; margin-bottom:12px;">🐇 RABBIT TRACKER</div>
-                        <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:6px;">`;
-                    for (let h = 1; h <= 18; h++) {
-                        const holder = (this.d.rabbitHistory && this.d.rabbitHistory[h] !== undefined) ? this.d.rabbitHistory[h] : null;
-                        let hCol = "#1E293B", txt = '-', bdr = '1px solid #334155';
-                        if (holder !== null && holder !== undefined) {
-                            hCol = "#F97316";
-                            txt = this.d.ps[holder] ? this.d.ps[holder].substring(0, 3) : '-';
-                            bdr = '1px solid #EA580C';
-                        }
-                        rHTML += `<div style="background:${hCol}; border:${bdr}; padding:4px; border-radius:6px; text-align:center;">
-                            <div style="font-size:9px; color:rgba(255,255,255,0.7); font-weight:900;">H${this.ghl(h)}</div>
-                            <div style="font-size:11px; color:white; font-weight:900; overflow:hidden; text-transform:uppercase;">${txt}</div>
-                        </div>`;
-                    }
-                    rHTML += `</div></div>`;
-                    html += rHTML;
-                }
                 con.innerHTML = html;
             },
 
