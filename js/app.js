@@ -2519,7 +2519,7 @@ const App = {
                     const h18 = this.d.rabbitHistory[18];
                     const p9 = (h9 !== null && h9 !== undefined && this.d.ps[h9]) ? this.d.ps[h9] : "NOBODY";
                     const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? this.d.ps[h18] : "NOBODY";
-                    summary += 'FRONT 9 WINNER: ' + p9 + '\nBACK 18 WINNER: ' + p18 + '\n';
+                    summary += `FRONT 9: ${p9}\nBACK 18: ${p18}\n`;
                     
                     const pot = this.d.pot || 0;
                     const hP = pot * 0.25;
@@ -2562,6 +2562,16 @@ const App = {
                 if (jRes && jRes.net) {
                     [0, 1, 2, 3].forEach(i => {
                         if (this.d.ps[i] && jRes.net[i]) { bets[i] += jRes.net[i]; logs[i].push(`Junk: $${Math.round(jRes.net[i])}`); }
+                    });
+                }
+
+                if (this.d.gameType === 'rabbit') {
+                    summary += '---\nTOTAL NET (Incl. Junk):\n';
+                    [0, 1, 2, 3].forEach(i => {
+                        if (this.d.ps[i]) {
+                            const val = Math.round(bets[i]);
+                            summary += `${this.d.ps[i]}: ${val >= 0 ? '+' : ''}$${val}\n`;
+                        }
                     });
                 }
 
