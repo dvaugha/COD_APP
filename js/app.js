@@ -1934,6 +1934,14 @@ const App = {
                         const h18 = this.d.rabbitHistory[18];
                         if (h9 !== null && h9 !== undefined) bets[h9] += (hP * activeSeats.length);
                         if (h18 !== null && h18 !== undefined) bets[h18] += (fP * activeSeats.length);
+                        
+                        const p9 = (h9 !== null && h9 !== undefined && this.d.ps[h9]) ? this.d.ps[h9] + ' (+$' + (hP * activeSeats.length) + ')' : "NOBODY (PUSHED)";
+                        const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? this.d.ps[h18] + ' (+$' + (fP * activeSeats.length) + ')' : "NOBODY (PUSHED)";
+                        resHTML += '<div style="margin-bottom:16px; background:rgba(16, 185, 129, 0.1); padding:10px; border-radius:8px;">' +
+                            '<div style="font-weight:900; color:#10B981; font-size:14px; text-transform:uppercase; margin-bottom:8px; text-align:center;">🐇 RABBIT HUNTER PAYOUTS</div>' +
+                            '<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; font-weight:700;"><span style="color:#94A3B8;">FRONT 9:</span><span style="color:white;">' + p9 + '</span></div>' +
+                            '<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#94A3B8;">BACK 18:</span><span style="color:white;">' + p18 + '</span></div>' +
+                            '</div>';
                     }
                 } else if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                     ["CARTS (1-6)", "OPPOSITES (7-12)", "DRIVERS (13-18)"].forEach((lbl, idx) => {
@@ -2506,7 +2514,23 @@ const App = {
                         const par = c.p.slice(0, 18).reduce((a, b) => a + b, 0), rel = net - par;
                         summary += `${p}: ${gross} (${rel === 0 ? 'E' : (rel > 0 ? '+' : '') + rel} NET)\n`;
                     });
-                } else {
+                } else if (this.d.gameType === 'rabbit') {
+                    const h9 = this.d.rabbitHistory[9];
+                    const h18 = this.d.rabbitHistory[18];
+                    const p9 = (h9 !== null && h9 !== undefined && this.d.ps[h9]) ? this.d.ps[h9] : "NOBODY";
+                    const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? this.d.ps[h18] : "NOBODY";
+                    summary += 'FRONT 9 WINNER: ' + p9 + '\\nBACK 18 WINNER: ' + p18 + '\\n';
+                    
+                    const pot = this.d.pot || 0;
+                    const hP = pot * 0.25;
+                    const fP = pot * 0.75;
+                    const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
+                    if (activeSeats.length > 0) {
+                        activeSeats.forEach(i => bets[i] -= pot);
+                        if (h9 !== null && h9 !== undefined) { bets[h9] += (hP * activeSeats.length); logs[h9].push('Front 9 Rabbit'); }
+                        if (h18 !== null && h18 !== undefined) { bets[h18] += (fP * activeSeats.length); logs[h18].push('Back 18 Rabbit'); }
+                    }
+                } else if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                     [0, 1, 2].forEach(idx => {
                         const results = this.calcSegResults(idx);
                         results.forEach((r, rIdx) => {
