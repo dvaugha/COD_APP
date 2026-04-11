@@ -1267,6 +1267,29 @@ const App = {
                     html += `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px; padding:6px 0; border-top:1px solid #334155;"><div style="font-size:12px; font-weight:700; color:#cbd5e1;">${p.name.substring(0, 8)}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a3}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a4}</div><div style="font-size:12px; font-weight:700; color:white; text-align:center;">${a5}</div></div>`;
                 });
                 html += `</div>`;
+
+                // RABBIT HISTORY TRACKER (Requested v275.9)
+                if (this.d.gameType === 'rabbit') {
+                    this.calcRabbit();
+                    let rHTML = `<div class="box" style="margin-top:12px;">
+                        <div class="tx-sm" style="color:#F97316; margin-bottom:12px;">🐇 RABBIT TRACKER</div>
+                        <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:6px;">`;
+                    for (let h = 1; h <= 18; h++) {
+                        const holder = (this.d.rabbitHistory && this.d.rabbitHistory[h] !== undefined) ? this.d.rabbitHistory[h] : null;
+                        let hCol = "#1E293B", txt = '-', bdr = '1px solid #334155';
+                        if (holder !== null && holder !== undefined) {
+                            hCol = "#F97316";
+                            txt = this.d.ps[holder] ? this.d.ps[holder].substring(0, 3) : '-';
+                            bdr = '1px solid #EA580C';
+                        }
+                        rHTML += `<div style="background:${hCol}; border:${bdr}; padding:4px; border-radius:6px; text-align:center;">
+                            <div style="font-size:9px; color:rgba(255,255,255,0.7); font-weight:900;">H${this.ghl(h)}</div>
+                            <div style="font-size:11px; color:white; font-weight:900; overflow:hidden; text-transform:uppercase;">${txt}</div>
+                        </div>`;
+                    }
+                    rHTML += `</div></div>`;
+                    html += rHTML;
+                }
                 con.innerHTML = html;
             },
 
@@ -1446,7 +1469,14 @@ const App = {
                         const jk = this.getJunkStats()[this.d.ps[pid]] || { G: 0, S: 0, P: 0 };
                         const junkStr = `<span style="font-size:9px; color:#94A3B8; margin-left:8px;">🟢${jk.G} 🏖️${jk.S} LP${jk.P}</span>`;
 
-                        nmEl.innerHTML = `${this.d.ps[pid]}${dots} ${junkStr} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
+                        // RABBIT HOLDER ICON (Requested v275.9)
+                        let rabbitIcon = '';
+                        const lastH = this.d.h === 1 ? null : (this.d.h - 1);
+                        if (this.d.gameType === 'rabbit' && lastH && this.d.rabbitHistory && this.d.rabbitHistory[lastH] === pid) {
+                            rabbitIcon = ' <span style="font-size:18px;">🐇</span>';
+                        }
+
+                        nmEl.innerHTML = `${this.d.ps[pid]}${rabbitIcon}${dots} ${junkStr} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
                     }
                     nmEl.style.color = (pops > 0 && this.d.gameType !== 'single') ? '#F59E0B' : '#94A3B8';
 
