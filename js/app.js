@@ -302,27 +302,40 @@ const App = {
             },
 
             
-            calcRabbit: function() {
+            calcRabbit: function () {
                 this.d.rabbitHistory = {};
                 let currentRabbit = null;
                 const c = CS[this.d.crs];
                 for (let i = 1; i <= 18; i++) {
-                    if (!this.d.s[i]) break; // Assumes sequential for simplicity
+                    if (!this.d.s[i]) break;
                     let lowestNet = 999;
                     let lowestPlayers = [];
+                    let birdies = []; // Players with Gross < Par
+
                     this.d.ps.forEach((name, idx) => {
                         if (!name || !this.d.s[i][idx]) return;
-                        const pops = this.getPops(idx, i - 1, true); 
-                        const net = this.d.s[i][idx] - pops;
+                        const gross = this.d.s[i][idx];
+                        const par = c.p[i - 1];
+                        if (gross < par) birdies.push(idx);
+
+                        const pops = this.getPops(idx, i - 1, true);
+                        const net = gross - pops;
                         if (net < lowestNet) { lowestNet = net; lowestPlayers = [idx]; }
                         else if (net === lowestNet) { lowestPlayers.push(idx); }
                     });
-                    
-                    if (lowestPlayers.length === 1 && lowestNet < 99) {
-                        const winner = lowestPlayers[0];
-                        if (currentRabbit === null) currentRabbit = winner; // capture
-                        else if (currentRabbit !== winner) currentRabbit = null; // knock loose
+
+                    // 1. LONE NATURAL BIRDIE RULE (Super Capture v275.7)
+                    if (birdies.length === 1) {
+                        currentRabbit = birdies[0];
                     }
+                    // 2. STANDARD LONE LOW RULE
+                    else if (lowestPlayers.length === 1 && lowestNet < 99) {
+                        const winner = lowestPlayers[0];
+                        if (currentRabbit === null) currentRabbit = winner; // Capture
+                        else if (currentRabbit !== winner) currentRabbit = null; // Knock Loose
+                    }
+                    // Otherwise: TIE (Current holder defends)
+
                     this.d.rabbitHistory[i] = currentRabbit;
                 }
             },
@@ -350,13 +363,14 @@ const App = {
                         this.speak(this.d.ps[curr] + ' captured the rabbit!');
                     } else if (prev !== null && curr === null) {
                         this.speak(this.d.ps[prev] + ' lost the rabbit! The rabbit is free!');
+                    } else if (prev !== null && curr !== null && prev !== curr) {
+                        this.speak(this.d.ps[curr] + ' stole the rabbit with a natural birdie! Incredible!');
                     } else if (prev !== null && curr !== null && prev === curr) {
                         let isLoneLow = false;
-                        // check if they were lone low or push
                         let lowestPlayers = [];
                         let lowestNet = 99;
                         this.d.ps.forEach((nm, idx) => {
-                            if(!nm || !this.d.s[finishedHole][idx]) return;
+                            if (!nm || !this.d.s[finishedHole][idx]) return;
                             const np = this.d.s[finishedHole][idx] - this.getPops(idx, finishedHole - 1, true);
                             if (np < lowestNet) { lowestNet = np; lowestPlayers = [idx]; }
                             else if (np === lowestNet) lowestPlayers.push(idx);
