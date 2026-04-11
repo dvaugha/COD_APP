@@ -321,11 +321,11 @@ const App = {
                     let lowestNet = 999;
                     let lowestPlayers = [];
                     let birdies = []; // Players with Gross < Par
+                    const par = c.p[i - 1]; // Declared here so penalty check can access it (bugfix v275.15)
 
                     this.d.ps.forEach((name, idx) => {
                         if (!name || !this.d.s[i][idx]) return;
                         const gross = this.d.s[i][idx];
-                        const par = c.p[i - 1];
                         if (gross < par) birdies.push(idx);
 
                         const pops = this.getPops(idx, i - 1, true);
