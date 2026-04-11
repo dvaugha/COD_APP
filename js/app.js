@@ -740,6 +740,12 @@ const App = {
                 this.showCartCheck();
             },
 
+            endRound: function () {
+                if (confirm("End this round and return to setup?")) {
+                    this.nav('v-setup');
+                }
+            },
+
             showCartCheck: function () {
                 document.getElementById('cart-check-modal').classList.add('active');
             },
