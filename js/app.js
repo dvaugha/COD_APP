@@ -742,6 +742,7 @@ const App = {
                 this.d.s = {};
                 this.d.junk = {};
                 this.d.press = { 0: [], 1: [], 2: [] };
+                this.d.rabbitHistory = {}; // Clear Rabbit state on new round (bugfix v275.16)
                 this.d.h = this.d.start;
 
                 // Composite Course Logic
