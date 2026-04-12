@@ -167,26 +167,33 @@ const App = {
                 if (other) other.value = el.value;
 
                 const pc = document.getElementById('pot-container');
+                const potLbl = document.getElementById('pot-label');
+                const potWrap = document.querySelectorAll('#s-pot');
+
                 if (el.value === 'single') {
                     if (pc) pc.style.display = 'none';
                     document.querySelectorAll('#s-bet').forEach(i => i.value = 0);
-                    document.querySelectorAll('#s-pot').forEach(i => i.value = 0);
+                    potWrap.forEach(i => i.value = 0);
                     this.d.junkBet = 0;
                     if (document.getElementById('j-bet')) document.getElementById('j-bet').value = 0;
+                } else if (el.value === 'cod' || el.value === 'scramble') {
+                    if (pc) pc.style.display = 'none';  // POT irrelevant for COD/Scramble (v275.17)
+                    document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
                 } else if (el.value === 'rabbit') {
                     if (pc) pc.style.display = 'flex';
+                    if (potLbl) potLbl.innerText = 'BUY-IN $';
                     document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
-                    document.querySelectorAll('#s-pot').forEach(i => i.value = 10); // Default $10/player for Rabbit (v275.14)
+                    potWrap.forEach(i => i.value = 10); // Always default $10/player for Rabbit
+                } else if (el.value === 'stroke') {
+                    if (pc) pc.style.display = 'flex';
+                    if (potLbl) potLbl.innerText = 'TOTAL POT $';
+                    document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
+                    potWrap.forEach(i => { if (i.value == 0) i.value = 20; });
                 } else {
                     if (pc) pc.style.display = 'flex';
+                    if (potLbl) potLbl.innerText = 'POT';
                     document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
-                    document.querySelectorAll('#s-pot').forEach(i => { if (i.value == 0) i.value = 20; });
-                }
-
-                // Update POT label for Rabbit Hunter (v275.10)
-                const potLbl = document.getElementById('pot-label');
-                if (potLbl) {
-                    potLbl.innerText = (el.value === 'rabbit') ? 'BUY-IN $' : 'POT';
+                    potWrap.forEach(i => { if (i.value == 0) i.value = 20; });
                 }
             },
 
@@ -696,10 +703,19 @@ const App = {
                 if (document.getElementById('gh-token-input')) document.getElementById('gh-token-input').value = this.d.ghToken || '';
                 this.updateScoringModeUI();
                 
-                // Update POT label for Rabbit Hunter (v275.10)
-                const potLbl = document.getElementById('pot-label');
-                if (potLbl) {
-                    potLbl.innerText = (this.d.gameType === 'rabbit') ? 'BUY-IN $' : 'POT';
+                // Update POT visibility and label based on game mode (v275.17)
+                const gt = this.d.gameType;
+                const pc2 = document.getElementById('pot-container');
+                const potLbl2 = document.getElementById('pot-label');
+                if (gt === 'cod' || gt === 'scramble' || gt === 'single') {
+                    if (pc2) pc2.style.display = 'none';
+                } else {
+                    if (pc2) pc2.style.display = 'flex';
+                    if (potLbl2) {
+                        if (gt === 'rabbit') potLbl2.innerText = 'BUY-IN $';
+                        else if (gt === 'stroke') potLbl2.innerText = 'TOTAL POT $';
+                        else potLbl2.innerText = 'POT';
+                    }
                 }
 
                 this.checkCourseOptions();
