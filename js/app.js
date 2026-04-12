@@ -1572,6 +1572,7 @@ const App = {
                 document.getElementById('lbl-t2').style.display = (this.d.ps[t2[0]] || this.d.ps[t2[1]]) ? 'block' : 'none';
                 this.updateCaddy();
                 this.updateJunkUI();
+                this.checkStandingsBtn();
             },
 
             updateCaddy: function () {
@@ -3082,6 +3083,280 @@ const App = {
                 btn.style.backgroundColor = "#334155";
 
                 this.renderHistory();
+            },
+
+            // ============================================================
+            // MID-ROUND STANDINGS  (v275.18)
+            // Button activates every time holesPlayed % 3 === 0
+            // ============================================================
+            checkStandingsBtn: function () {
+                const btn = document.getElementById('standings-btn');
+                if (!btn) return;
+
+                // Count holes that have a complete score entry
+                const activeCount = this.d.ps.filter(x => x).length;
+                if (activeCount === 0) { btn.classList.remove('active'); return; }
+
+                let holesPlayed = 0;
+                for (let h = 1; h <= 18; h++) {
+                    const s = this.d.s[h];
+                    if (s && Object.keys(s).length === activeCount && Object.values(s).every(v => v > 0)) {
+                        holesPlayed++;
+                    }
+                }
+
+                if (holesPlayed >= 3 && holesPlayed % 3 === 0) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            },
+
+            showStandings: function () {
+                const modal = document.getElementById('standings-modal');
+                const inner = document.getElementById('standings-modal-inner');
+                const subtitle = document.getElementById('std-subtitle');
+                if (!modal || !inner) return;
+
+                // --- Count holes played ---
+                const activeCount = this.d.ps.filter(x => x).length;
+                let holesPlayed = 0;
+                for (let h = 1; h <= 18; h++) {
+                    const s = this.d.s[h];
+                    if (s && Object.keys(s).length === activeCount && Object.values(s).every(v => v > 0)) {
+                        holesPlayed++;
+                    }
+                }
+
+                // Determine subtitle (last completed absolute hole)
+                const lastAbsHole = this.d.h > 1 ? this.d.h - 1 : (holesPlayed > 0 ? this.getAbsHole(holesPlayed) : '-');
+                if (subtitle) subtitle.innerText = `Through Hole ${lastAbsHole}  (${holesPlayed} Played)`;
+
+                let html = '';
+                const gt = this.d.gameType;
+                const c = CS[this.d.crs] || CS['cc'];
+                const segs = [
+                    { label: 'CARTS (1-6)',      t1: [0,1], t2: [2,3] },
+                    { label: 'OPPOSITES (7-12)', t1: [0,3], t2: [1,2] },
+                    { label: 'DRIVERS (13-18)',  t1: [0,2], t2: [1,3] }
+                ];
+
+                // ===== SECTION 1: COD MATCH =====
+                if (gt === 'cod' || gt === 'scramble') {
+                    const rh = this.getRelHole(this.d.h > 1 ? this.d.h : 1);
+                    const curSeg = Math.min(Math.floor((rh - 1) / 6), 2);
+
+                    html += `<div class="std-section">`;
+                    html += `<div class="std-section-title" style="color:#10B981;">🏌️ COD Match — Segment Status</div>`;
+
+                    for (let si = 0; si <= curSeg; si++) {
+                        const seg = segs[si];
+                        const res = this.calcMatch(si, si*6+1, si*6+6, 0, null);
+                        const n1 = `${this.d.ps[seg.t1[0]] || '?'}/${this.d.ps[seg.t1[1]] || '?'}`;
+                        const n2 = `${this.d.ps[seg.t2[0]] || '?'}/${this.d.ps[seg.t2[1]] || '?'}`;
+                        const d = res.w1 - res.w2;
+                        let statusTxt, statusCol;
+                        if (d > 0)       { statusTxt = `${n1} leads ${d} UP`; statusCol = '#10B981'; }
+                        else if (d < 0)  { statusTxt = `${n2} leads ${Math.abs(d)} UP`; statusCol = '#F59E0B'; }
+                        else             { statusTxt = 'All Square'; statusCol = '#94A3B8'; }
+
+                        html += `<div class="std-row">`;
+                        html += `<span style="color:#94A3B8; font-size:12px;">${seg.label}</span>`;
+                        html += `<span style="color:${statusCol}; font-weight:900;">${statusTxt}</span>`;
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // ===== SECTION 2: NASSAU =====
+                // Show front and back 9 team net-stroke comparison
+                if (gt === 'cod') {
+                    const frontNets = { t1: 0, t2: 0 };
+                    const backNets  = { t1: 0, t2: 0 };
+                    // Use current segment segs[0] teams as Nassau reference (Carts seg)
+                    const nassauSeg = segs[0];
+                    let frontHoles = 0, backHoles = 0;
+
+                    for (let h = 1; h <= 18; h++) {
+                        const s = this.d.s[h];
+                        if (!s || Object.keys(s).length < activeCount) continue;
+                        const par = c.p[h - 1];
+                        // Best net of the team
+                        const b1 = Math.min(
+                            s[nassauSeg.t1[0]] - this.getPops(nassauSeg.t1[0], h-1),
+                            s[nassauSeg.t1[1]] - this.getPops(nassauSeg.t1[1], h-1)
+                        );
+                        const b2 = Math.min(
+                            s[nassauSeg.t2[0]] - this.getPops(nassauSeg.t2[0], h-1),
+                            s[nassauSeg.t2[1]] - this.getPops(nassauSeg.t2[1], h-1)
+                        );
+                        if (h <= 9) {
+                            frontNets.t1 += (b1 - par); frontNets.t2 += (b2 - par); frontHoles++;
+                        } else {
+                            backNets.t1  += (b1 - par); backNets.t2  += (b2 - par); backHoles++;
+                        }
+                    }
+
+                    const tn1 = `${this.d.ps[nassauSeg.t1[0]] || '?'}/${this.d.ps[nassauSeg.t1[1]] || '?'}`;
+                    const tn2 = `${this.d.ps[nassauSeg.t2[0]] || '?'}/${this.d.ps[nassauSeg.t2[1]] || '?'}`;
+
+                    const nassauRow = (label, n1, n2, score1, score2, holesCount) => {
+                        if (holesCount === 0) return `<div class="std-row"><span style="color:#94A3B8;font-size:12px;">${label}</span><span style="color:#475569;">Not started</span></div>`;
+                        const diff = score1 - score2;
+                        let txt, col;
+                        if (diff < 0)      { txt = `${n1} leads (${Math.abs(diff)})`; col = '#10B981'; }
+                        else if (diff > 0) { txt = `${n2} leads (${diff})`;            col = '#F59E0B'; }
+                        else               { txt = 'All Square';                        col = '#94A3B8'; }
+                        return `<div class="std-row"><span style="color:#94A3B8;font-size:12px;">${label}</span><span style="color:${col};font-weight:900;">${txt}</span></div>`;
+                    };
+
+                    html += `<div class="std-section">`;
+                    html += `<div class="std-section-title" style="color:#60A5FA;">🏆 Nassau</div>`;
+                    html += nassauRow('Front 9', tn1, tn2, frontNets.t1, frontNets.t2, frontHoles);
+                    html += nassauRow('Back 9',  tn1, tn2, backNets.t1,  backNets.t2,  backHoles);
+                    // Overall
+                    const ov1 = frontNets.t1 + backNets.t1;
+                    const ov2 = frontNets.t2 + backNets.t2;
+                    html += nassauRow('Overall', tn1, tn2, ov1, ov2, frontHoles + backHoles);
+                    html += `</div>`;
+                }
+
+                // ===== SECTION 3: JUNK EARNINGS =====
+                const jStats = this.getJunkStats();
+                const jRes = this.calcJunkRes();
+                const junkActive = jRes && jRes.players && jRes.players.length > 0;
+
+                if (junkActive) {
+                    // Compute running dollar totals through holes played
+                    const bet = 1;
+                    const players = jRes.players;
+                    const buyInPerSeg = bet * players.length;
+
+                    // Running accumulation per segment
+                    const running = { 0:0, 1:0, 2:0, 3:0 };
+                    let carryover = 0;
+                    const allSegs = [
+                        { h: [1,6] }, { h: [7,12] }, { h: [13,18] }
+                    ];
+                    allSegs.forEach((sig, segIdx) => {
+                        const playerItems = { 0:0, 1:0, 2:0, 3:0 };
+                        let totalItems = 0;
+                        for (let rh = 1; rh <= 6; rh++) {
+                            const h = (segIdx * 6) + rh;
+                            const par = c.p[h - 1];
+                            // Only count if hole is fully scored
+                            const s = this.d.s[h];
+                            if (!s || Object.keys(s).length < activeCount) continue;
+                            if (this.d.junk && this.d.junk[h]) {
+                                players.forEach(pIdx => {
+                                    ['G','S','P'].forEach(t => {
+                                        if (this.d.junk[h][pIdx+'_'+t]) {
+                                            const sc = s && s[pIdx];
+                                            if (sc && (t==='G'||t==='S') && sc > par) return;
+                                            playerItems[pIdx]++; totalItems++;
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                        const segPot = buyInPerSeg + carryover;
+                        // Only payout if segment is complete (all 6 holes played)
+                        const segComplete = (() => {
+                            for (let rh = 1; rh <= 6; rh++) {
+                                const h = (segIdx * 6) + rh;
+                                const s = this.d.s[h];
+                                if (!s || Object.keys(s).length < activeCount) return false;
+                            }
+                            return true;
+                        })();
+
+                        if (segComplete) {
+                            if (totalItems === 0) {
+                                if (segIdx === 2) players.forEach(i => running[i] += -bet);
+                                else { carryover = segPot; players.forEach(i => running[i] -= bet); }
+                            } else {
+                                players.forEach(i => {
+                                    const p = Math.round((playerItems[i] / totalItems) * segPot);
+                                    running[i] += (p - bet);
+                                });
+                                carryover = 0;
+                            }
+                        } else {
+                            // Mid-segment: show items earned only (not finalized payout)
+                            players.forEach(i => running[i] += playerItems[i]); // store items as proxy
+                            // Use actual calcJunkRes net instead for simplicity
+                        }
+                    });
+
+                    // Use the system's authoritative calcJunkRes net values
+                    const junkNet = jRes.net;
+
+                    html += `<div class="std-section">`;
+                    html += `<div class="std-section-title" style="color:#F59E0B;">💰 Junk Earnings (Running)</div>`;
+
+                    // Show each player sorted by earnings desc
+                    const jRows = players.map(pIdx => ({
+                        name: this.d.ps[pIdx],
+                        net: junkNet ? (junkNet[pIdx] || 0) : 0,
+                        g: jStats[this.d.ps[pIdx]] ? jStats[this.d.ps[pIdx]].G : 0,
+                        s: jStats[this.d.ps[pIdx]] ? jStats[this.d.ps[pIdx]].S : 0,
+                        p: jStats[this.d.ps[pIdx]] ? jStats[this.d.ps[pIdx]].P : 0
+                    })).sort((a,b) => b.net - a.net);
+
+                    jRows.forEach(row => {
+                        const valStr = (row.net >= 0 ? '+$' : '-$') + Math.abs(row.net);
+                        const valCol = row.net > 0 ? '#10B981' : row.net < 0 ? '#F87171' : '#94A3B8';
+                        const itemStr = `<span style="font-size:10px;color:#64748B;margin-left:6px;">🟢${row.g} 🏖️${row.s} LP${row.p}</span>`;
+                        html += `<div class="std-row">`;
+                        html += `<span style="color:white;">${row.name}${itemStr}</span>`;
+                        html += `<span style="color:${valCol}; font-size:16px; font-weight:900;">${valStr}</span>`;
+                        html += `</div>`;
+                    });
+                    html += `</div>`;
+                }
+
+                // ===== SECTION 4: RABBIT (if active) =====
+                if (gt === 'rabbit') {
+                    this.calcRabbit();
+                    const lastH = this.d.h > 1 ? this.d.h - 1 : null;
+                    const holder = (lastH && this.d.rabbitHistory) ? this.d.rabbitHistory[lastH] : null;
+
+                    // Count consecutive holes held
+                    let holesHeld = 0;
+                    if (holder !== null && holder !== undefined) {
+                        for (let h = (lastH || 0); h >= 1; h--) {
+                            if (this.d.rabbitHistory[h] === holder) holesHeld++;
+                            else break;
+                        }
+                    }
+
+                    const pot = this.d.pot || 0;
+                    const n = this.d.ps.filter(x=>x).length;
+                    const potPerHole = n > 0 ? (pot * n / 18) : 0; // rough per-hole value
+
+                    html += `<div class="std-section" style="border-color:#F97316;">`;
+                    html += `<div class="std-section-title" style="color:#F97316;">🐇 Rabbit Hunter</div>`;
+                    if (holder !== null && holder !== undefined && this.d.ps[holder]) {
+                        html += `<div class="std-row"><span style="color:#94A3B8;">Current Holder</span><span style="color:#F97316;font-size:16px;font-weight:900;">${this.d.ps[holder]}</span></div>`;
+                        html += `<div class="std-row"><span style="color:#94A3B8;">Holes Held</span><span style="color:white;">${holesHeld}</span></div>`;
+                        const frontPot = pot * 0.40;
+                        const backPot  = pot * 0.60;
+                        const curHalf  = (lastH || 0) <= 9 ? `Front Pot: $${frontPot.toFixed(0)} per player` : `Back Pot: $${backPot.toFixed(0)} per player`;
+                        html += `<div class="std-row"><span style="color:#94A3B8;">Pot At Stake</span><span style="color:#F59E0B;font-weight:900;">${curHalf}</span></div>`;
+                    } else {
+                        html += `<div class="std-row" style="justify-content:center;"><span style="color:#94A3B8;font-style:italic;">🐇 RABBIT IS FREE — up for grabs!</span></div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                inner.innerHTML = html || `<div style="padding:30px;text-align:center;color:#64748B;">No scores entered yet.</div>`;
+
+                modal.classList.add('active');
+            },
+
+            closeStandings: function () {
+                const modal = document.getElementById('standings-modal');
+                if (modal) modal.classList.remove('active');
             }
         };
         window.addEventListener('load', () => App.init());

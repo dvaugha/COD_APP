@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy"
         content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v275.17</title>
+    <title>COD Golf v275.18</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -62,7 +62,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD GOLF v275.17</div>
+            <div class="tx-xl">COD GOLF v275.18</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -280,7 +280,7 @@
             <button class="g-btn g-btn-sm"
                 style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
                 onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v275.17</div>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v275.18</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -335,12 +335,28 @@
         </div>
     </div>
 
+    <!-- === MID-ROUND STANDINGS MODAL === -->
+    <div id="standings-modal">
+        <div class="std-header">
+            <div>
+                <div style="font-size:11px; font-weight:900; color:#10B981; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px;">📊 MID-ROUND STANDINGS</div>
+                <div id="std-subtitle" style="font-size:18px; font-weight:900; color:white;">Through Hole -</div>
+            </div>
+            <div style="text-align:right; font-size:10px; color:#64748B; font-weight:700;">LIVE<br>SNAPSHOT</div>
+        </div>
+        <div id="standings-modal-inner"></div>
+        <div class="std-close-bar">
+            <button class="g-btn" style="background:#10B981; font-size:15px;" onclick="App.closeStandings()">✕ CLOSE</button>
+        </div>
+    </div>
+
     <!-- === DASHBOARD === -->
     <div id="v-dash" class="g-view">
         <div class="top-bar">
             <div class="flex-r" style="margin-bottom:12px;">
                 <button class="nav-btn" style="background:#334155; border:1px solid #475569;" onclick="App.nav('v-setup')">⚙️</button>
-                <button class="nav-btn" style="background:#F59E0B; width:auto; flex:1; margin:0 10px; font-size:14px; font-weight:900; color:black;" onclick="App.nav('v-recap')">📊 RECAP</button>
+                <button id="standings-btn" onclick="App.showStandings()">📊 STANDINGS</button>
+                <button class="nav-btn" style="background:#F59E0B; width:52px; font-size:14px; font-weight:900; color:black;" onclick="App.nav('v-recap')">RCP</button>
                 <button class="nav-btn" style="background:#334155; border:1px solid #475569;" onclick="App.nav('v-card')">📄</button>
             </div>
             <div class="flex-r" style="margin-bottom:8px;">
@@ -505,7 +521,7 @@
     </div>
 
     <script src="data/courses.js"></script>
-    <script src="js/app.js?v=275.17"></script>
+    <script src="js/app.js?v=275.18"></script>
 </body>
 
 </html>
