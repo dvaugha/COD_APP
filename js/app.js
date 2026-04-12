@@ -177,8 +177,11 @@ const App = {
                     this.d.junkBet = 0;
                     if (document.getElementById('j-bet')) document.getElementById('j-bet').value = 0;
                 } else if (el.value === 'cod' || el.value === 'scramble') {
-                    if (pc) pc.style.display = 'none';  // POT irrelevant for COD/Scramble (v275.17)
+                    if (pc) pc.style.display = 'none';
                     document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
+                } else if (el.value === 'nassau') {
+                    if (pc) pc.style.display = 'none'; // No separate pot for Nassau
+                    document.querySelectorAll('#s-bet').forEach(i => i.value = 4); // Default $4/player/segment
                 } else if (el.value === 'rabbit') {
                     if (pc) pc.style.display = 'flex';
                     if (potLbl) potLbl.innerText = 'BUY-IN $';
@@ -731,6 +734,8 @@ const App = {
                     if (count < 2) { alert("Need at least 2 players for Rabbit Hunter!"); return; }
                 } else if (gt === 'single') {
                     if (count < 1) { alert("Need at least 1 player for Single Player!"); return; }
+                } else if (gt === 'nassau') {
+                    if (count < 4) { alert("Nassau requires 4 players (Cart A vs Cart B)!"); return; }
                 } else {
                     if (count < 4) { alert("COD and Scramble require 4 players (2 vs 2 / Rotating)!"); return; }
                 }
@@ -1370,12 +1375,15 @@ const App = {
 
                 // RELATIVE HOLE LOGIC
                 let m = Math.floor((rh - 1) / 6);
+                // Nassau: always use Cart A vs Cart B (segment 0 teams), no rotation
+                if (this.d.gameType === 'nassau') m = 0;
                 const results = this.calcSegResults(m);
                 const main = results[0];
                 const t1 = main.seg.t1, t2 = main.seg.t2;
 
                 let fmt;
                 if (this.d.gameType === 'single') fmt = "SCORECARD ONLY";
+                else if (this.d.gameType === 'nassau') fmt = "NASSAU MATCH";
                 else if (m === 0) fmt = "CARTS (1-6)";
                 else if (m === 1) fmt = "OPPOSITES (7-12)";
                 else fmt = "DRIVERS (13-18)";
@@ -1439,6 +1447,18 @@ const App = {
                             <span>${n2}: ${t2Score === 0 ? 'E' : (t2Score > 0 ? '+' + t2Score : t2Score)}</span>
                         </div>`;
                     }
+                } else if (this.d.gameType === 'nassau') {
+                    const nr = this.calcNassau();
+                    const tn1 = `${this.d.ps[nr.t1[0]].substring(0,3)}/${this.d.ps[nr.t1[1]].substring(0,3)}`;
+                    const tn2 = `${this.d.ps[nr.t2[0]].substring(0,3)}/${this.d.ps[nr.t2[1]].substring(0,3)}`;
+                    const nassauLine = (label, seg) => {
+                        const d = seg.w1 - seg.w2;
+                        let val = 'ALL SQUARE';
+                        if (d > 0) val = `${tn1} <em style="color:#10B981">${d} UP</em>`;
+                        else if (d < 0) val = `${tn2} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
+                        return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#94A3B8; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${val}</div>`;
+                    };
+                    statHTML = nassauLine('Front', nr.front) + nassauLine('Back', nr.back) + nassauLine('Total', nr.overall);
                 } else {
                     statHTML = getStatStr(main, "Main Match");
                     results.slice(1).forEach((pR, pIdx) => {
@@ -1450,7 +1470,7 @@ const App = {
 
                 // PRESS BUTTONS
                 let pressButtons = '';
-                if (this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && (rh % 6 !== 0)) {
+                if (this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'nassau' && (rh % 6 !== 0)) {
                     const diff1 = main.w1 - main.w2;
                     const diff2 = main.w2 - main.w1;
 
@@ -2043,6 +2063,18 @@ const App = {
                             activeSeats.forEach(i => { if (i === h18) bets[i] += (fP * (n - 1)); else bets[i] -= fP; });
                         }
                     }
+                } else if (this.d.gameType === 'nassau') {
+                    const nr = this.calcNassau();
+                    const bet = this.d.bet || 4;
+                    [nr.front, nr.back, nr.overall].forEach(seg => {
+                        if (seg.winner === 1) {
+                            nr.t1.forEach(p => bets[p] += bet);
+                            nr.t2.forEach(p => bets[p] -= bet);
+                        } else if (seg.winner === 2) {
+                            nr.t2.forEach(p => bets[p] += bet);
+                            nr.t1.forEach(p => bets[p] -= bet);
+                        }
+                    });
                 } else if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                     [0, 1, 2].forEach(idx => {
                         const results = this.calcSegResults(idx);
@@ -2148,6 +2180,26 @@ const App = {
                             '<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#94A3B8;">BACK 18:</span><span style="color:white;">' + p18 + '</span></div>' +
                             '</div>';
                     }
+                } else if (this.d.gameType === 'nassau') {
+                    const nr = this.calcNassau();
+                    const bet = this.d.bet || 4;
+                    const tn1 = `${this.d.ps[nr.t1[0]]}/${this.d.ps[nr.t1[1]]}`;
+                    const tn2 = `${this.d.ps[nr.t2[0]]}/${this.d.ps[nr.t2[1]]}`;
+                    [nr.front, nr.back, nr.overall].forEach(seg => {
+                        if (seg.winner === 1) { nr.t1.forEach(p => bets[p] += bet); nr.t2.forEach(p => bets[p] -= bet); }
+                        else if (seg.winner === 2) { nr.t2.forEach(p => bets[p] += bet); nr.t1.forEach(p => bets[p] -= bet); }
+                    });
+                    const segLine = (label, seg) => {
+                        if (seg.winner === 1) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#94A3B8;">${label}:</span><span style="color:#10B981;">${tn1} wins +$${bet}</span></div>`;
+                        if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#94A3B8;">${label}:</span><span style="color:#F59E0B;">${tn2} wins +$${bet}</span></div>`;
+                        return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#94A3B8;">${label}:</span><span style="color:#94A3B8;">All Square</span></div>`;
+                    };
+                    resHTML += `<div style="margin-bottom:16px;background:rgba(96,165,250,0.1);padding:10px;border-radius:8px;">`
+                        + `<div style="font-weight:900;color:#60A5FA;font-size:14px;text-align:center;margin-bottom:10px;">🏆 NASSAU RESULTS</div>`
+                        + segLine('FRONT 9', nr.front)
+                        + segLine('BACK 9', nr.back)
+                        + segLine('TOTAL', nr.overall)
+                        + `</div>`;
                 } else if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                     ["CARTS (1-6)", "OPPOSITES (7-12)", "DRIVERS (13-18)"].forEach((lbl, idx) => {
                         const results = this.calcSegResults(idx);
@@ -3168,56 +3220,24 @@ const App = {
                     html += `</div>`;
                 }
 
-                // ===== SECTION 2: NASSAU =====
-                // Show front and back 9 team net-stroke comparison
-                if (gt === 'cod') {
-                    const frontNets = { t1: 0, t2: 0 };
-                    const backNets  = { t1: 0, t2: 0 };
-                    // Use current segment segs[0] teams as Nassau reference (Carts seg)
-                    const nassauSeg = segs[0];
-                    let frontHoles = 0, backHoles = 0;
-
-                    for (let h = 1; h <= 18; h++) {
-                        const s = this.d.s[h];
-                        if (!s || Object.keys(s).length < activeCount) continue;
-                        const par = c.p[h - 1];
-                        // Best net of the team
-                        const b1 = Math.min(
-                            s[nassauSeg.t1[0]] - this.getPops(nassauSeg.t1[0], h-1),
-                            s[nassauSeg.t1[1]] - this.getPops(nassauSeg.t1[1], h-1)
-                        );
-                        const b2 = Math.min(
-                            s[nassauSeg.t2[0]] - this.getPops(nassauSeg.t2[0], h-1),
-                            s[nassauSeg.t2[1]] - this.getPops(nassauSeg.t2[1], h-1)
-                        );
-                        if (h <= 9) {
-                            frontNets.t1 += (b1 - par); frontNets.t2 += (b2 - par); frontHoles++;
-                        } else {
-                            backNets.t1  += (b1 - par); backNets.t2  += (b2 - par); backHoles++;
-                        }
-                    }
-
-                    const tn1 = `${this.d.ps[nassauSeg.t1[0]] || '?'}/${this.d.ps[nassauSeg.t1[1]] || '?'}`;
-                    const tn2 = `${this.d.ps[nassauSeg.t2[0]] || '?'}/${this.d.ps[nassauSeg.t2[1]] || '?'}`;
-
-                    const nassauRow = (label, n1, n2, score1, score2, holesCount) => {
-                        if (holesCount === 0) return `<div class="std-row"><span style="color:#94A3B8;font-size:12px;">${label}</span><span style="color:#475569;">Not started</span></div>`;
-                        const diff = score1 - score2;
+                // ===== SECTION 2: NASSAU MATCH (only when game mode is nassau) =====
+                if (gt === 'nassau') {
+                    const nr = this.calcNassau();
+                    const tn1 = `${this.d.ps[nr.t1[0]] || '?'}/${this.d.ps[nr.t1[1]] || '?'}`;
+                    const tn2 = `${this.d.ps[nr.t2[0]] || '?'}/${this.d.ps[nr.t2[1]] || '?'}`;
+                    const nassauStdRow = (label, seg) => {
+                        const d = seg.w1 - seg.w2;
                         let txt, col;
-                        if (diff < 0)      { txt = `${n1} leads (${Math.abs(diff)})`; col = '#10B981'; }
-                        else if (diff > 0) { txt = `${n2} leads (${diff})`;            col = '#F59E0B'; }
-                        else               { txt = 'All Square';                        col = '#94A3B8'; }
+                        if (d > 0)      { txt = `${tn1} leads ${d} UP`; col = '#10B981'; }
+                        else if (d < 0) { txt = `${tn2} leads ${Math.abs(d)} UP`; col = '#F59E0B'; }
+                        else            { txt = 'All Square'; col = '#94A3B8'; }
                         return `<div class="std-row"><span style="color:#94A3B8;font-size:12px;">${label}</span><span style="color:${col};font-weight:900;">${txt}</span></div>`;
                     };
-
-                    html += `<div class="std-section">`;
-                    html += `<div class="std-section-title" style="color:#60A5FA;">🏆 Nassau</div>`;
-                    html += nassauRow('Front 9', tn1, tn2, frontNets.t1, frontNets.t2, frontHoles);
-                    html += nassauRow('Back 9',  tn1, tn2, backNets.t1,  backNets.t2,  backHoles);
-                    // Overall
-                    const ov1 = frontNets.t1 + backNets.t1;
-                    const ov2 = frontNets.t2 + backNets.t2;
-                    html += nassauRow('Overall', tn1, tn2, ov1, ov2, frontHoles + backHoles);
+                    html += `<div class="std-section" style="border-color:#60A5FA;">`;
+                    html += `<div class="std-section-title" style="color:#60A5FA;">🏆 Nassau Match</div>`;
+                    html += nassauStdRow('Front 9', nr.front);
+                    html += nassauStdRow('Back 9', nr.back);
+                    html += nassauStdRow('Total', nr.overall);
                     html += `</div>`;
                 }
 
@@ -3352,6 +3372,45 @@ const App = {
                 inner.innerHTML = html || `<div style="padding:30px;text-align:center;color:#64748B;">No scores entered yet.</div>`;
 
                 modal.classList.add('active');
+            },
+
+            // ============================================================
+            // NASSAU GAME ENGINE  (v275.19)
+            // Fixed teams: Cart A (0,1) vs Cart B (2,3)
+            // 3 bets: Front 9, Back 9, Overall (holes won match play)
+            // ============================================================
+            calcNassau: function () {
+                const t1 = [0, 1];  // Cart A
+                const t2 = [2, 3];  // Cart B
+                const c = CS[this.d.crs] || CS['cc'];
+                const activeCount = this.d.ps.filter(x => x).length;
+                let fW1 = 0, fW2 = 0, bW1 = 0, bW2 = 0;
+
+                for (let h = 1; h <= 18; h++) {
+                    const s = this.d.s[h];
+                    if (!s || Object.keys(s).length < activeCount) continue;
+                    const best1 = Math.min(
+                        (s[t1[0]] || 99) - this.getPops(t1[0], h - 1),
+                        (s[t1[1]] || 99) - this.getPops(t1[1], h - 1)
+                    );
+                    const best2 = Math.min(
+                        (s[t2[0]] || 99) - this.getPops(t2[0], h - 1),
+                        (s[t2[1]] || 99) - this.getPops(t2[1], h - 1)
+                    );
+                    if (h <= 9) {
+                        if (best1 < best2) fW1++; else if (best2 < best1) fW2++;
+                    } else {
+                        if (best1 < best2) bW1++; else if (best2 < best1) bW2++;
+                    }
+                }
+
+                const oW1 = fW1 + bW1, oW2 = fW2 + bW2;
+                return {
+                    t1, t2,
+                    front:   { w1: fW1, w2: fW2, winner: fW1 > fW2 ? 1 : (fW2 > fW1 ? 2 : 0) },
+                    back:    { w1: bW1, w2: bW2, winner: bW1 > bW2 ? 1 : (bW2 > bW1 ? 2 : 0) },
+                    overall: { w1: oW1, w2: oW2, winner: oW1 > oW2 ? 1 : (oW2 > oW1 ? 2 : 0) }
+                };
             },
 
             closeStandings: function () {
