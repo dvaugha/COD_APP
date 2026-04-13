@@ -1,0 +1,96 @@
+============================================================
+  RABBIT HUNTER — OFFICIAL GAME RULES
+  COD Golf App  |  Last Updated: 2026-04-13
+============================================================
+
+OVERVIEW
+--------
+Rabbit Hunter is a side game played alongside a standard round
+of golf. One "Rabbit" is in play at a time. Players compete to
+capture and hold the Rabbit — and defend it — hole by hole.
+A player earns a payout based on how many holes they hold the
+Rabbit on the Front 9 and Back 9.
+
+------------------------------------------------------------
+
+BUY-IN & POT
+------------
+- Each player contributes a BUY-IN amount (e.g. $10/player).
+- Total Pot = BUY-IN × Number of Players
+  Example: 3 players × $10 = $30 total pot
+
+Payout Split:
+  - Front 9 Winner  →  40% of total pot
+  - Back 9 Winner   →  60% of total pot
+
+The player who holds the Rabbit on the most holes within
+each 9-hole segment wins that segment's share of the pot.
+
+------------------------------------------------------------
+
+HOLE RULES (applied in priority order each hole)
+-------------------------------------------------
+
+RULE 1 — SUPER CAPTURE (Highest Priority)
+  A player who makes a NATURAL BIRDIE (gross score < par,
+  no handicap strokes used) immediately captures the Rabbit,
+  regardless of any other outcome on that hole.
+  This overrides Rule 2 and Rule 3.
+
+RULE 2 — STANDARD CAPTURE / KNOCK LOOSE
+  The player with the LONE LOW NET score on a hole (no ties)
+  either captures the Rabbit (if it is free) or knocks it
+  loose and captures it (if someone else held it).
+
+RULE 3 — DOUBLE BOGEY PENALTY
+  If the current Rabbit HOLDER posts a gross score of
+  PAR + 2 or worse (double bogey or worse), the Rabbit is
+  automatically released — regardless of how other players
+  scored. The Rabbit becomes FREE for the next hole.
+
+RULE 4 — TIE DEFENSE
+  If 2 or more players tie for the low net score on a hole,
+  the Rabbit does NOT change hands:
+    - If a player currently holds the Rabbit → they keep it.
+    - If the Rabbit is free → it remains free.
+
+------------------------------------------------------------
+
+STATUS DEFINITIONS
+------------------
+  FREE     — No one currently holds the Rabbit. Any player
+              can capture it on the next hole.
+  HELD     — A specific player currently holds the Rabbit.
+              They earn credit for each hole they hold it.
+  RELEASED — The holder triggered a Double Bogey Penalty;
+              the Rabbit is now FREE starting next hole.
+
+------------------------------------------------------------
+
+SCORING & WINNER DETERMINATION
+-------------------------------
+- Each hole a player HOLDS the Rabbit counts as +1 for them
+  in that 9-hole segment.
+- The player with the MOST holes held in the Front 9 wins
+  40% of the pot.
+- The player with the MOST holes held in the Back 9 wins
+  60% of the pot.
+- In the event of a tie in holes held within a segment, the
+  tied players split that segment's payout equally.
+
+------------------------------------------------------------
+
+QUICK REFERENCE SUMMARY
+------------------------
+  Lone Low Net          →  Capture / Knock Loose Rabbit
+  Natural Birdie (Gross < Par)  →  Super Capture (overrides)
+  Double Bogey (Gross ≥ Par+2)  →  Holder releases Rabbit
+  Tie for Low Net       →  No change (holder defends)
+
+  Front 9 Payout  =  40% of pot
+  Back 9 Payout   =  60% of pot
+  Total Pot       =  BUY-IN × Players
+
+============================================================
+  END OF RULES
+============================================================
