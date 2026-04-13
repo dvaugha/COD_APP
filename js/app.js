@@ -178,7 +178,7 @@ const App = {
                     if (document.getElementById('j-bet')) document.getElementById('j-bet').value = 0;
                 } else if (el.value === 'cod' || el.value === 'scramble') {
                     if (pc) pc.style.display = 'none';
-                    document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
+                    document.querySelectorAll('#s-bet').forEach(i => i.value = 5); // Always default $5 for COD
                 } else if (el.value === 'nassau') {
                     if (pc) pc.style.display = 'none'; // No separate pot for Nassau
                     document.querySelectorAll('#s-bet').forEach(i => i.value = 4); // Default $4/player/segment
