@@ -107,7 +107,7 @@ const App = {
             tryNewGame: function (btn) {
                 if (btn.innerText.includes("CONFIRM")) {
                     this.startRound(false);
-                    btn.innerText = "START NEW ROUND";
+                    btn.innerText = "START NEW MATCH";
                     btn.style.backgroundColor = "#EF4444";
                     return;
                 }
