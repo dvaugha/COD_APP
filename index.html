@@ -121,45 +121,32 @@
             <button class="g-btn g-btn-sm"
                 style="background:#334155; width:100%; margin-top:10px; border:1px solid #475569;"
                 onclick="App.openHcpModal()">SET HANDICAPS ⛳</button>
-        </div>
+              <div class="box">
+            <div class="tx-sm">COURSE SELECTION</div>
+            <div style="position:relative;">
+                <input type="text" id="course-search" class="g-inp" placeholder="Search courses (NC, SC, FL)..." oninput="App.onSearchInput(this.value)" autocomplete="off">
+                <div id="course-results" class="search-results"></div>
+            </div>
+            
+            <div id="active-course-indicator" style="display:none;"></div>
+            
+            <!-- Hidden original select to maintain compatibility with existing App.js logic -->
+            <select id="s-course" style="display:none;" onchange="App.checkCourseOptions()"></select>
 
-        <div class="box">
-            <div class="tx-sm">SETTINGS</div>
-            <div class="flex-r" style="gap:10px;">
-                <div style="flex:1;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                        <div class="tx-sm">COURSE</div>
-                        <div style="display:flex; gap:4px; margin-bottom:4px;">
-                            <button onclick="App.filterCrs('ALL')" class="chip"
-                                style="font-size:10px; padding:2px 6px; background:#475569;">ALL</button>
-                            <button onclick="App.filterCrs('NC')" class="chip"
-                                style="font-size:10px; padding:2px 6px; background:#475569;">NC</button>
-                            <button onclick="App.filterCrs('SC')" class="chip"
-                                style="font-size:10px; padding:2px 6px; background:#475569;">SC</button>
-                            <button onclick="App.filterCrs('FL')" class="chip"
-                                style="font-size:10px; padding:2px 6px; background:#475569;">FL</button>
-                        </div>
+            <div id="course-routing-opt" style="display:none; margin-top:20px; padding:15px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius:12px;">
+                <div class="tx-sm" style="color:#10B981; margin-bottom:12px;">9-HOLE ROUTING</div>
+                <div class="flex-r" style="gap:10px;">
+                    <div style="flex:1">
+                        <div class="tx-sm" style="font-size:10px; color:#94A3B8;">FRONT 9</div>
+                        <select id="s-n1" class="g-inp" style="margin-top:4px;"></select>
                     </div>
-                    <select id="s-course" class="g-inp" onchange="App.checkCourseOptions()">
-                        <option value="cc">Crow Creek</option>
-                        <option value="jones">Sea Trail - Jones</option>
-                        <option value="maples">Sea Trail - Maples</option>
-                        <option value="byrd">Sea Trail - Byrd</option>
-                        <option value="so">Southern Oaks</option>
-                        <option value="wl">Woodlands</option>
-                        <option value="sc">Shallow Creek</option>
-                        <option value="havana">Havana CC</option>
-                        <option value="palmer">Palmer Legends</option>
-                        <option value="belle">Belle Glade</option>
-                        <option value="bonifay">Bonifay</option>
-                        <option value="lopez">Nancy Lopez</option>
-                        <option value="re">Rivers Edge</option>
-                        <option value="lp">Lonnie Poole</option>
-                        <option value="prestwick">Prestwick CC</option>
-                        <option value="blackmoor">Blackmoor GC</option>
-                    </select>
+                    <div style="flex:1">
+                        <div class="tx-sm" style="font-size:10px; color:#94A3B8;">BACK 9</div>
+                        <select id="s-n2" class="g-inp" style="margin-top:4px;"></select>
+                    </div>
                 </div>
-                <div style="width:80px;">
+            </div>
+        </div>              <div style="width:80px;">
                     <div class="tx-sm">SEG BET $</div>
                     <input type="number" id="s-bet" class="g-inp" value="5">
                 </div>

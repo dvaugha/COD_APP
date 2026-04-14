@@ -59,9 +59,15 @@ const App = {
                 } catch (e) { }
                 this.renderRoster(); this.renderHistory(); this.refreshDrop(); this.restoreSet();
 
-                if (this.d.crs && CS[this.d.crs]) {
-                    if (CS[this.d.crs].nines && this.d.nines) {
-                        this.buildComposite(this.d.crs, this.d.nines[0], this.d.nines[1]);
+                if (this.d.crs) {
+                    // Start by checking index
+                    const entry = CS_INDEX[this.d.crs];
+                    if (entry) {
+                        this.selectCourse(this.d.crs, true).then(() => {
+                            if (this.d.nines && CS[this.d.crs]) {
+                                this.buildComposite(this.d.crs, this.d.nines[0], this.d.nines[1]);
+                            }
+                        });
                     }
                 }
 
@@ -146,19 +152,8 @@ const App = {
                 }
             },
 
-            resetCourseNames: function () {
-                Object.keys(CS).forEach(k => {
-                    const c = CS[k];
-                    if (c.origN) {
-                        c.n = c.origN;
-                        // update dropdown option text?
-                        // The dropdown is rebuilt by filterCrs or static HTML.
-                        // If static HTML, we need to update DOM?
-                        // Or just let filterCrs handle it.
-                    }
-                });
-                // Force refresh of course dropdown if possible
-                this.filterCrs("ALL"); // This rebuilds options
+                // Refresh Search UI
+                this.updateActiveCourseUI();
             },
 
             onGameModeChange: function (el) {
@@ -807,26 +802,94 @@ const App = {
                 document.getElementById('cart-check-modal').classList.remove('active');
             },
 
-            filterCrs: function (reg) {
-                const el = document.getElementById('s-course');
-                const cur = el.value;
-                el.innerHTML = '';
-
-                Object.keys(CS).forEach(k => {
-                    const c = CS[k];
-                    // If reg is ALL, show all. If c has no region, maybe show in ALL?
-                    // We'll show if reg matches c.r or reg is ALL
-                    if (reg === 'ALL' || c.r === reg) {
-                        el.innerHTML += `<option value="${k}">${c.n}</option>`;
+            onSearchInput: function(q) {
+                const resDiv = document.getElementById('course-results');
+                if (!q || q.length < 1) { resDiv.classList.remove('active'); return; }
+                
+                const matches = [];
+                const searchQ = q.toLowerCase();
+                
+                Object.keys(CS_INDEX).forEach(id => {
+                    const c = CS_INDEX[id];
+                    if (c.n.toLowerCase().includes(searchQ) || id.toLowerCase().includes(searchQ) || c.r.toLowerCase().includes(searchQ)) {
+                        matches.push({ id, ...c });
                     }
                 });
 
-                // Restore selection if possible, else pick first
-                const available = Array.from(el.options).map(o => o.value);
-                if (cur && available.includes(cur)) el.value = cur;
-                else el.value = available[0] || '';
+                if (matches.length > 0) {
+                    let html = '';
+                    matches.slice(0, 10).forEach(m => {
+                        html += `<div class="search-item" onclick="App.selectCourse('${m.id}')">
+                            <span class="course-name">${m.n}</span>
+                            <span class="course-region">${m.r}</span>
+                        </div>`;
+                    });
+                    resDiv.innerHTML = html;
+                    resDiv.classList.add('active');
+                } else {
+                    resDiv.classList.remove('active');
+                }
+            },
 
+            selectCourse: async function(id, fromInit = false) {
+                const entry = CS_INDEX[id];
+                if (!entry) return;
+
+                // Load region if not already in memory
+                if (!CS[id]) {
+                    try {
+                        const regId = entry.r.toLowerCase();
+                        const response = await fetch(`data/regions/${regId}.json?v=${Date.now()}`);
+                        const data = await response.json();
+                        // Merge regional data into local CS cache
+                        Object.assign(CS, data);
+                    } catch (e) {
+                        console.error("Course load failed", e);
+                        if (!fromInit) alert("Error loading course data. Ensure you're connected to the internet.");
+                        return;
+                    }
+                }
+
+                this.d.crs = id;
+                const sel = document.getElementById('s-course');
+                
+                // Add to hidden select for compatibility with rest of app
+                if (!Array.from(sel.options).some(o => o.value === id)) {
+                    const opt = document.createElement('option');
+                    opt.value = id;
+                    opt.innerText = entry.n;
+                    sel.appendChild(opt);
+                }
+                sel.value = id;
+
+                document.getElementById('course-results').classList.remove('active');
+                document.getElementById('course-search').value = '';
+                
+                this.updateActiveCourseUI();
                 this.checkCourseOptions();
+                this.save();
+            },
+
+            updateActiveCourseUI: function() {
+                const indicator = document.getElementById('active-course-indicator');
+                if (!this.d.crs || !CS_INDEX[this.d.crs]) {
+                    indicator.style.display = 'none';
+                    return;
+                }
+                const c = CS_INDEX[this.d.crs];
+                indicator.innerHTML = `<div class="active-course-ribbon">
+                    <span>⛳ ${c.n} (${c.r})</span>
+                    <button class="clear-btn" onclick="App.clearActiveCourse()">×</button>
+                </div>`;
+                indicator.style.display = 'block';
+            },
+
+            clearActiveCourse: function() {
+                this.d.crs = '';
+                delete this.d.nines;
+                this.updateActiveCourseUI();
+                this.checkCourseOptions();
+                this.save();
             },
 
             checkCourseOptions: function () {
@@ -837,44 +900,57 @@ const App = {
                 const val = el.value;
                 const c = CS[val];
 
+                if (!c || !c.nines) {
+                    optEl.style.display = 'none';
+                    return;
+                }
+
+                optEl.style.display = 'block';
+
                 // Helper to populate n2 based on n1
                 const populateN2 = (selectedN1) => {
-                    const cur2 = n2.value;
+                    const currentSelection2 = n2.value;
                     n2.innerHTML = '';
-                    const keys = Object.keys(c.nines);
-                    keys.forEach(k => {
+                    Object.keys(c.nines).forEach(k => {
                         if (k !== selectedN1) {
-                            n2.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`;
+                            const opt = document.createElement('option');
+                            opt.value = k;
+                            opt.innerText = c.nines[k].n;
+                            n2.appendChild(opt);
                         }
                     });
-                    // Restore selection if valid, check saved round nines if not
+
+                    // Restore selection if valid
                     const available = Array.from(n2.options).map(o => o.value);
                     const saved2 = (this.d.nines && this.d.crs === val) ? this.d.nines[1] : null;
-                    if (cur2 && available.includes(cur2)) n2.value = cur2;
+
+                    if (currentSelection2 && available.includes(currentSelection2)) n2.value = currentSelection2;
                     else if (saved2 && available.includes(saved2)) n2.value = saved2;
                     else n2.value = available[0];
                 };
 
-                if (c && c.nines) {
-                    optEl.style.display = 'block';
-                    n1.onchange = () => populateN2(n1.value);
+                // Rebuild N1
+                const currentSelection1 = n1.value;
+                const saved1 = (this.d.nines && this.d.crs === val) ? this.d.nines[0] : null;
+                const keys = Object.keys(c.nines);
+                
+                n1.innerHTML = '';
+                keys.forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = k;
+                    opt.innerText = c.nines[k].n;
+                    n1.appendChild(opt);
+                });
 
-                    // Population: Always rebuild N1 to ensure it matches the current course
-                    const cur1 = n1.value;
-                    const saved1 = (this.d.nines && this.d.crs === val) ? this.d.nines[0] : null;
-                    const keys = Object.keys(c.nines);
-                    n1.innerHTML = '';
-                    keys.forEach(k => { n1.innerHTML += `<option value="${k}">${c.nines[k].n}</option>`; });
+                if (currentSelection1 && c.nines[currentSelection1]) n1.value = currentSelection1;
+                else if (saved1 && c.nines[saved1]) n1.value = saved1;
+                else n1.value = keys[0];
 
-                    if (cur1 && c.nines[cur1]) n1.value = cur1;
-                    else if (saved1 && c.nines[saved1]) n1.value = saved1;
-                    else n1.value = keys[0];
+                // Attach event listener
+                n1.onchange = () => populateN2(n1.value);
 
-                    // Always refresh N2 to be safe
-                    populateN2(n1.value);
-                } else {
-                    optEl.style.display = 'none';
-                }
+                // Initial population of N2
+                populateN2(n1.value);
             },
 
             buildComposite: function (crsId, k1, k2) {
