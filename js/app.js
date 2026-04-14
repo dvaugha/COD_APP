@@ -170,6 +170,14 @@ const App = {
                 }); 
             },
 
+            clearSeats: function () {
+                [0, 1, 2, 3].forEach(i => {
+                    this.d.chosen[i] = '';
+                });
+                this.refreshDrop();
+                this.save();
+            },
+
             refreshDrop: function () {
                 [0, 1, 2, 3].forEach(i => {
                     const el = document.getElementById('sel-' + i);
