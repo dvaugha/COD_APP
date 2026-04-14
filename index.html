@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Deployment Nudge: 2026-04-14 05:20 PM
+<!-- Deployment Nudge: 2026-04-14 05:30 PM
 <html lang="en">
 
 <head>
@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
     <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="css/styles.css?v=202604141720">
+    <link rel="stylesheet" href="css/styles.css?v=202604141730">
 </head>
 
 <body>
@@ -84,9 +84,7 @@
 
             <button class="g-btn g-btn-lg" style="background:#EF4444; width:100%; padding:14px; font-size:16px;"
                 onclick="App.tryNewGame(this)">START NEW GAME</button>
-        </div>
-
-        <div class="box">
+        </        <div class="box">
             <div class="tx-sm">ROSTER</div>
             <div class="flex-r" style="gap:8px; margin-bottom:12px;">
                 <input type="text" id="new-p-name" class="g-inp" placeholder="Name..." style="margin:0;">
@@ -103,36 +101,35 @@
         <div class="box">
             <div class="tx-sm">SEATS</div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#10B981">CART A<br>DRIVER</div><select id="sel-0" class="role-sel"
-                    onchange="App.onRole()"></select>
+                <div class="role-lbl" style="color:#10B981">CART A<br>DRIVER</div>
+                <select id="sel-0" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#10B981">CART A<br>PASS</div><select id="sel-1" class="role-sel"
-                    onchange="App.onRole()"></select>
+                <div class="role-lbl" style="color:#10B981">CART A<br>PASS</div>
+                <select id="sel-1" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#F59E0B">CART B<br>DRIVER</div><select id="sel-2" class="role-sel"
-                    onchange="App.onRole()"></select>
+                <div class="role-lbl" style="color:#F59E0B">CART B<br>DRIVER</div>
+                <select id="sel-2" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#F59E0B">CART B<br>PASS</div><select id="sel-3" class="role-sel"
-                    onchange="App.onRole()"></select>
+                <div class="role-lbl" style="color:#F59E0B">CART B<br>PASS</div>
+                <select id="sel-3" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <button class="g-btn g-btn-sm"
                 style="background:#334155; width:100%; margin-top:10px; border:1px solid #475569;"
                 onclick="App.openHcpModal()">SET HANDICAPS ⛳</button>
-              <div class="box">
-            <div class="tx-sm">COURSE SELECTION</div>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm" style="color:#10B981">COURSE SELECTION</div>
             <div style="position:relative;">
                 <input type="text" id="course-search" class="g-inp" placeholder="Search courses (NC, SC, FL)..." oninput="App.onSearchInput(this.value)" autocomplete="off">
                 <div id="course-results" class="search-results"></div>
             </div>
-            
             <div id="active-course-indicator" style="display:none;"></div>
-            
-            <!-- Hidden original select to maintain compatibility with existing App.js logic -->
             <select id="s-course" style="display:none;" onchange="App.checkCourseOptions()"></select>
-
+            
             <div id="course-routing-opt" style="display:none; margin-top:20px; padding:15px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius:12px;">
                 <div class="tx-sm" style="color:#10B981; margin-bottom:12px;">9-HOLE ROUTING</div>
                 <div class="flex-r" style="gap:10px;">
@@ -146,12 +143,11 @@
                     </div>
                 </div>
             </div>
-        </div>              <div style="width:80px;">
-                    <div class="tx-sm">SEG BET $</div>
-                    <input type="number" id="s-bet" class="g-inp" value="5">
-                </div>
-            </div>
-            <div class="flex-r" style="gap:10px; margin-top:10px;">
+        </div>
+
+        <div class="box">
+            <div class="tx-sm">GAME SETTINGS</div>
+            <div class="flex-r" style="gap:10px; margin-bottom:10px;">
                 <div style="flex:1;">
                     <div class="tx-sm">TEE</div>
                     <select id="s-tee" class="g-inp">
@@ -168,35 +164,8 @@
                     </select>
                 </div>
             </div>
-
-            <!-- 27-Hole Routing Options -->
-            <div id="course-routing-opt"
-                style="display:none; background:#0F172A; padding:12px; border-radius:12px; margin-top:12px; border:1px solid #334155;">
-                <div class="tx-sm" style="color:#F59E0B; margin-bottom:8px;">COURSE ROUTING</div>
-                <div class="flex-r" style="gap:10px;">
-                    <div style="flex:1;">
-                        <div class="tx-sm">FRONT 9</div>
-                        <select id="s-n1" class="g-inp"></select>
-                    </div>
-                    <div style="flex:1;">
-                        <div class="tx-sm">BACK 9</div>
-                        <select id="s-n2" class="g-inp"></select>
-                    </div>
-                </div>
-            </div>
-            <div class="flex-r" style="gap:10px; margin-top:10px;">
-                <div style="flex:1;">
-                    <div class="tx-sm">GAME MODE</div>
-                    <select id="g-mode" class="g-inp" onchange="App.onGameModeChange(this)">
-                        <option value="cod">C.O.D. (6-6-6)</option>
-                        <option value="nassau">Nassau (18-Hole)</option>
-                        <option value="scramble">2-Man Scramble</option>
-                        <option value="stroke">Versus (18-Hole Stroke)</option>
-                        <option value="single">SCORECARD ONLY</option>
-                        <option value="rabbit">RABBIT HUNTER</option>
-                        </select>
-                </div>
-                <div style="flex:1;">
+            <div class="flex-r" style="gap:10px;">
+                <div style="flex:2;">
                     <div class="tx-sm">HCP MODE</div>
                     <select id="s-hcp-mode" class="g-inp" onchange="App.onHcpModeChange(this)">
                         <option value="standard">Standard (Full List)</option>
@@ -204,31 +173,27 @@
                         <option value="team">Team Equalizer (Per Seg)</option>
                     </select>
                 </div>
-                <div style="width:60px;">
-                    <div class="tx-sm" id="pot-label">POT</div>
-                    <input type="number" id="s-pot" class="g-inp" value="20">
+                <div style="flex:1;">
+                    <div class="tx-sm">SEG BET $</div>
+                    <input type="number" id="s-bet" class="g-inp" value="5">
                 </div>
             </div>
+        </div>
 
-            <!-- SCORING MODE -->
-            <div style="margin-top:16px; border-top:1px solid #334155; padding-top:12px;">
-                <div class="tx-sm" style="margin-bottom:8px;">SCORING MODE</div>
-                <div class="flex-r" style="gap:8px;">
-                    <button id="sm-std" class="g-btn" style="flex:1; font-size:12px;"
-                        onclick="App.setScoringMode('std')">STANDARD</button>
-                    <button id="sm-cc" class="g-btn g-btn-sec" style="flex:1; font-size:12px;"
-                        onclick="App.setScoringMode('cc')">CAPT. CHOICE ⚔️</button>
-                </div>
-                <div id="sm-desc" style="font-size:11px; color:#94A3B8; margin-top:6px; font-style:italic;">
-                    Enter individual scores for each player.
-                </div>
+        <div class="box">
+            <div class="tx-sm" style="margin-bottom:8px;">SCORING MODE</div>
+            <div class="flex-r" style="gap:8px;">
+                <button id="sm-std" class="g-btn" style="flex:1; font-size:12px;" onclick="App.setScoringMode('std')">STANDARD</button>
+                <button id="sm-cc" class="g-btn g-btn-sec" style="flex:1; font-size:12px;" onclick="App.setScoringMode('cc')">CAPT. CHOICE ⚔️</button>
             </div>
-            <!-- VOICE ALERTS -->
-            <div
-                style="margin-top:16px; border-top:1px solid #334155; padding-top:12px; display:flex; align-items:center; justify-content:space-between;">
+            <div id="sm-desc" style="font-size:11px; color:#94A3B8; margin-top:6px; font-style:italic;">Enter individual scores for each player.</div>
+        </div>
+
+        <div class="box">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
                 <div>
                     <div class="tx-sm" style="margin-bottom:0;">VOICE ALERTS 🔊</div>
-                    <div style="font-size:10px; color:#94A3B8;">Announces partner swaps in COD <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px;" onclick="App.testVoice()">[ TEST BRITISH VOICE ]</span></div>
+                    <div style="font-size:10px; color:#94A3B8;">Announces partner swaps <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px;" onclick="App.testVoice()">[ TEST ]</span></div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="s-voice" onchange="App.toggleVoice(this.checked)">
@@ -237,9 +202,9 @@
             </div>
         </div>
 
+        <button id="start-btn" class="g-btn" style="margin-bottom:20px; background:#EF4444;" onclick="App.tryNewGame(this)">START NEW ROUND</button>
         <button class="g-btn" style="margin-bottom:20px;" onclick="App.startRound()">CONTINUE ROUND</button>
-        <button class="g-btn g-btn-sec" style="margin-bottom:20px; border:1px solid #10B981; color:#10B981;"
-            onclick="App.openJunkModal()">JUNK BETTING ⚙️</button>
+        <button class="g-btn g-btn-sec" style="margin-bottom:20px; border:1px solid #10B981; color:#10B981;" onclick="App.openJunkModal()">JUNK BETTING ⚙️</button>
 
         <div class="box">
             <div class="tx-sm" style="color:#F59E0B">CAREER EARNINGS</div>
@@ -249,16 +214,15 @@
         <div class="box">
             <div class="flex-r">
                 <div class="tx-sm">HISTORY</div>
-                <button id="hist-edit-btn" class="g-btn g-btn-sm" style="background:#334155; width:auto;"
-                    onclick="App.handleManageClick()">MANAGE</button>
+                <button id="hist-edit-btn" class="g-btn g-btn-sm" style="background:#334155; width:auto;" onclick="App.handleManageClick()">MANAGE</button>
             </div>
             <div id="hist-list" style="max-height:200px; overflow-y:auto; font-size:12px;"></div>
         </div>
+
         <div class="box" style="background:rgba(16, 185, 129, 0.1); border:1px dashed #10B981;">
             <div class="tx-sm" style="color:#10B981">GITHUB SYNC SETUP</div>
             <div style="font-size:10px; color:#cbd5e1; margin:8px 0;">Enter your Personal Access Token (PAT) to archive rounds directly to your repo.</div>
-            <input type="password" id="gh-token-input" class="g-input" placeholder="ghp_xxxxxxxxxxxx" 
-                style="width:100%; box-sizing:border-box; padding:10px; margin-bottom:10px;">
+            <input type="password" id="gh-token-input" class="g-input" placeholder="ghp_xxxxxxxxxxxx" style="width:100%; box-sizing:border-box; padding:10px; margin-bottom:10px;">
             <div class="flex-r" style="gap:10px;">
                 <button class="g-btn g-btn-sm" style="background:#10B981; color:white; flex:2;" onclick="App.saveGH()">SAVE TOKEN</button>
                 <button class="g-btn g-btn-sm" style="background:#EF4444; color:white; flex:1;" onclick="App.deleteGH()">DELETE</button>
@@ -266,13 +230,12 @@
         </div>
 
         <div style="margin-top:24px; text-align:center;">
-            <button class="g-btn g-btn-sm"
-                style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;"
-                onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v275.19</div>
+            <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v275.20</div>
         </div>
         <div style="height:50px;"></div>
     </div>
+
 
     <!-- JUNK CONFIG MODAL -->
     <div id="junk-modal" class="modal-overlay">
@@ -509,8 +472,8 @@
         <div id="recap-body"></div>
     </div>
 
-    <script src="data/courses.js?v=202604141720"></script>
-    <script src="js/app.js?v=202604141720"></script>
+    <script src="data/courses.js?v=202604141730"></script>
+    <script src="js/app.js?v=202604141730"></script>
 </body>
 
 </html>
