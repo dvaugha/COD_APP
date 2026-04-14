@@ -105,16 +105,21 @@ const App = {
             },
 
             tryNewGame: function (btn) {
-                if (btn.innerText === "CONFIRM NEW ROUND?") return; // Prevent double trigger if clicked fast
-
-                const oldText = btn.innerText;
-                btn.innerText = "CONFIRMED";
-                btn.style.backgroundColor = "#B91C1C";
-                setTimeout(() => {
-                    this.resetScores();
+                if (btn.innerText.includes("CONFIRM")) {
+                    this.startRound(false);
                     btn.innerText = "START NEW ROUND";
                     btn.style.backgroundColor = "#EF4444";
-                }, 2000);
+                    return;
+                }
+                const oldText = btn.innerText;
+                btn.innerText = "CONFIRM NEW MATCH?";
+                btn.style.backgroundColor = "#B91C1C";
+                setTimeout(() => {
+                    if (btn.innerText.includes("CONFIRM")) {
+                        btn.innerText = oldText;
+                        btn.style.backgroundColor = "#EF4444";
+                    }
+                }, 4000);
             },
 
             resetScores: function () {
@@ -786,7 +791,7 @@ const App = {
 
                 this.checkCourseOptions();
             },
-            startRound: function () {
+            startRound: function (keepScores) {
                 const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
                 const gtLine = document.getElementById('g-mode-top');
                 const gt = gtLine ? gtLine.value : this.d.gameType;
@@ -804,8 +809,9 @@ const App = {
                     if (count < 4) { alert("COD and Scramble require 4 players (2 vs 2 / Rotating)!"); return; }
                 }
 
+                // SYNC SETTINGS
                 this.d.ps = p;
-                this.d.crs = document.getElementById('s-course').value;
+                this.d.crs = document.getElementById('course-search').value ? document.getElementById('s-course').value : this.d.crs;
                 this.d.tee = document.getElementById('s-tee').value;
                 this.d.bet = parseInt(document.getElementById('s-bet').value);
                 this.d.start = parseInt(document.getElementById('s-start').value);
@@ -824,11 +830,15 @@ const App = {
                     this.d.pot = 0;
                     this.d.junkBet = 0;
                 }
-                this.d.s = {};
-                this.d.junk = {};
-                this.d.press = { 0: [], 1: [], 2: [] };
-                this.d.rabbitHistory = {}; // Clear Rabbit state on new round (bugfix v275.16)
-                this.d.h = this.d.start;
+
+                // ONLY WIPE IF STARTING NEW
+                if (!keepScores) {
+                    this.d.s = {};
+                    this.d.junk = {};
+                    this.d.press = { 0: [], 1: [], 2: [] };
+                    this.d.rabbitHistory = {};
+                    this.d.h = this.d.start;
+                }
 
                 // Composite Course Logic
                 const crsData = CS[this.d.crs];
