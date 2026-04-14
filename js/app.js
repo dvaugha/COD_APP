@@ -152,7 +152,76 @@ const App = {
                 }
             },
 
-                // Refresh Search UI
+            resetCourseNames: function () {
+                this.updateActiveCourseUI();
+            },
+
+            renderRoster: function () { 
+                const c = document.getElementById('roster-list'); 
+                if (!c) return;
+                c.innerHTML = ''; 
+                this.d.roster.sort().forEach(p => { 
+                    c.innerHTML += `<div class="p-chip" onclick="App.onRole('${p}')">${p}</div>`; 
+                }); 
+            },
+
+            refreshDrop: function () {
+                [0, 1, 2, 3].forEach(i => {
+                    const el = document.getElementById('sel-' + i);
+                    if (!el) return;
+                    const cur = this.d.chosen[i];
+                    el.innerHTML = '<option value="">-- NO PLAYER --</option>';
+                    this.d.roster.forEach(p => {
+                        el.innerHTML += `<option value="${p}">${p}</option>`;
+                    });
+                    if (cur) el.value = cur;
+                });
+            },
+
+            onRole: function (p) {
+                for (let i = 0; i < 4; i++) {
+                    if (this.d.chosen[i] === p) {
+                        this.d.chosen[i] = '';
+                        this.refreshDrop();
+                        this.save();
+                        return;
+                    }
+                }
+                for (let i = 0; i < 4; i++) {
+                    if (!this.d.chosen[i]) {
+                        this.d.chosen[i] = p;
+                        this.refreshDrop();
+                        this.save();
+                        return;
+                    }
+                }
+            },
+
+            restoreSet: function () {
+                if (document.getElementById('g-mode')) document.getElementById('g-mode').value = this.d.gameType;
+                if (document.getElementById('g-mode-top')) document.getElementById('g-mode-top').value = this.d.gameType;
+                document.querySelectorAll('#s-bet').forEach(i => i.value = this.d.bet);
+                document.querySelectorAll('#s-pot').forEach(i => i.value = this.d.pot);
+                if (document.getElementById('s-tee')) document.getElementById('s-tee').value = this.d.tee;
+                if (document.getElementById('s-start')) document.getElementById('s-start').value = this.d.start;
+
+                const pc = document.getElementById('pot-container');
+                const potLbl = document.getElementById('pot-label');
+                const potLbl2 = document.getElementById('pot-label-2');
+                const gt = this.d.gameType;
+
+                if (gt === 'single') { if (pc) pc.style.display = 'none'; }
+                else if (gt === 'cod' || gt === 'scramble') { if (pc) pc.style.display = 'none'; }
+                else if (gt === 'nassau') { if (pc) pc.style.display = 'none'; }
+                else if (gt === 'rabbit') {
+                    if (pc) pc.style.display = 'flex';
+                    if (potLbl) potLbl.innerText = 'BUY-IN $';
+                    if (potLbl2) potLbl2.innerText = 'BUY-IN $';
+                } else {
+                    if (pc) pc.style.display = 'flex';
+                    if (potLbl) potLbl.innerText = 'POT';
+                    if (potLbl2) potLbl2.innerText = 'POT';
+                }
                 this.updateActiveCourseUI();
             },
 
