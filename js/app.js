@@ -198,7 +198,6 @@ const App = {
             },
 
             restoreSet: function () {
-                if (document.getElementById('g-mode')) document.getElementById('g-mode').value = this.d.gameType;
                 if (document.getElementById('g-mode-top')) document.getElementById('g-mode-top').value = this.d.gameType;
                 document.querySelectorAll('#s-bet').forEach(i => i.value = this.d.bet);
                 document.querySelectorAll('#s-pot').forEach(i => i.value = this.d.pot);
@@ -789,7 +788,8 @@ const App = {
             },
             startRound: function () {
                 const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
-                const gt = document.getElementById('g-mode').value;
+                const gtLine = document.getElementById('g-mode-top');
+                const gt = gtLine ? gtLine.value : this.d.gameType;
                 const count = p.filter(x => x).length;
 
                 if (gt === 'stroke') {
@@ -809,7 +809,7 @@ const App = {
                 this.d.tee = document.getElementById('s-tee').value;
                 this.d.bet = parseInt(document.getElementById('s-bet').value);
                 this.d.start = parseInt(document.getElementById('s-start').value);
-                this.d.gameType = document.getElementById('g-mode').value;
+                this.d.gameType = gt;
                 this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
                 this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
 
