@@ -171,6 +171,13 @@ const App = {
                 this.updateActiveCourseUI();
             },
 
+            clearSeats: function () {
+                this.d.chosen = ['', '', '', ''];
+                this.refreshDrop();
+                this.renderRoster();
+                this.save();
+            },
+
             onGameModeChange: function (el) {
                 // Sync the two dropdowns if they exist
                 const other = (el.id === 'g-mode-top') ? document.getElementById('g-mode') : document.getElementById('g-mode-top');
