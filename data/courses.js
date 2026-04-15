@@ -15,7 +15,7 @@ const CS_INDEX = {
     
     // NORTH CAROLINA (NC)
     "byrd": { n: "Byrd (Sea Trail)", r: "NC" },
-    "cc": { n: "Course Only (Crow Creek)", r: "NC" },
+    "cc": { n: "Crow Creek CC", r: "NC" },
     "jones": { n: "Jones (Sea Trail)", r: "NC" },
     "lp": { n: "Lonnie Poole", r: "NC" },
     "maples": { n: "Maples (Sea Trail)", r: "NC" },
