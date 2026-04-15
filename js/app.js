@@ -171,87 +171,12 @@ const App = {
                 this.updateActiveCourseUI();
             },
 
-            renderRoster: function () { 
-                const c = document.getElementById('roster-list'); 
-                if (!c) return;
-                c.innerHTML = ''; 
-                this.d.roster.sort().forEach(p => { 
-                    c.innerHTML += `<div class="p-chip" onclick="App.onRole('${p}')">${p}</div>`; 
-                }); 
-            },
-
-            clearSeats: function () {
-                [0, 1, 2, 3].forEach(i => {
-                    this.d.chosen[i] = '';
-                });
-                this.refreshDrop();
-                this.save();
-            },
-
-            refreshDrop: function () {
-                [0, 1, 2, 3].forEach(i => {
-                    const el = document.getElementById('sel-' + i);
-                    if (!el) return;
-                    const cur = this.d.chosen[i];
-                    el.innerHTML = '<option value="">-- NO PLAYER --</option>';
-                    this.d.roster.forEach(p => {
-                        el.innerHTML += `<option value="${p}">${p}</option>`;
-                    });
-                    if (cur) el.value = cur;
-                });
-            },
-
-            onRole: function (p) {
-                for (let i = 0; i < 4; i++) {
-                    if (this.d.chosen[i] === p) {
-                        this.d.chosen[i] = '';
-                        this.refreshDrop();
-                        this.save();
-                        return;
-                    }
-                }
-                for (let i = 0; i < 4; i++) {
-                    if (!this.d.chosen[i]) {
-                        this.d.chosen[i] = p;
-                        this.refreshDrop();
-                        this.save();
-                        return;
-                    }
-                }
-            },
-
-            restoreSet: function () {
-                if (document.getElementById('g-mode-top')) document.getElementById('g-mode-top').value = this.d.gameType;
-                document.querySelectorAll('#s-bet').forEach(i => i.value = this.d.bet);
-                document.querySelectorAll('#s-pot').forEach(i => i.value = this.d.pot);
-                if (document.getElementById('s-tee')) document.getElementById('s-tee').value = this.d.tee;
-                if (document.getElementById('s-start')) document.getElementById('s-start').value = this.d.start;
-
-                const pc = document.getElementById('pot-container');
-                const potLbl = document.getElementById('pot-label');
-                const potLbl2 = document.getElementById('pot-label-2');
-                const gt = this.d.gameType;
-
-                if (gt === 'single') { if (pc) pc.style.display = 'none'; }
-                else if (gt === 'cod' || gt === 'scramble') { if (pc) pc.style.display = 'none'; }
-                else if (gt === 'nassau') { if (pc) pc.style.display = 'none'; }
-                else if (gt === 'rabbit') {
-                    if (pc) pc.style.display = 'flex';
-                    if (potLbl) potLbl.innerText = 'BUY-IN $';
-                    if (potLbl2) potLbl2.innerText = 'BUY-IN $';
-                } else {
-                    if (pc) pc.style.display = 'flex';
-                    if (potLbl) potLbl.innerText = 'POT';
-                    if (potLbl2) potLbl2.innerText = 'POT';
-                }
-                this.updateActiveCourseUI();
-            },
-
             onGameModeChange: function (el) {
                 // Sync the two dropdowns if they exist
                 const other = (el.id === 'g-mode-top') ? document.getElementById('g-mode') : document.getElementById('g-mode-top');
                 if (other) other.value = el.value;
-
+                this.d.gameType = el.value;
+                
                 const pc = document.getElementById('pot-container');
                 const potLbl = document.getElementById('pot-label');
                 const potWrap = document.querySelectorAll('#s-pot');
@@ -284,6 +209,8 @@ const App = {
                     document.querySelectorAll('#s-bet').forEach(i => { if (i.value == 0) i.value = 5; });
                     potWrap.forEach(i => { if (i.value == 0) i.value = 20; });
                 }
+                this.save();
+                this.restoreSet(); // Update UI
             },
 
             onHcpModeChange: function (el) {
@@ -707,7 +634,32 @@ const App = {
             },
 
             toggleDelMode: function () { this.delMode = !this.delMode; const b = document.getElementById('del-mode-btn'), l = document.getElementById('roster-list'), s = document.getElementById('del-status'); if (this.delMode) { b.innerText = "DONE DELETING"; b.style.background = "#EF4444"; l.classList.add('del-mode'); s.style.display = "block"; } else { b.innerText = "ENABLE DELETE MODE"; b.style.background = "#334155"; l.classList.remove('del-mode'); s.style.display = "none"; } },
-            renderRoster: function () { const c = document.getElementById('roster-list'); c.innerHTML = ''; this.d.roster.forEach(p => { const d = document.createElement('div'); d.className = 'chip'; d.innerHTML = `<div class="chip-lbl">${p}</div>`; d.setAttribute('onclick', `App.clickRoster('${p.replace(/'/g, "\\'")}')`); c.appendChild(d); }); },
+            renderRoster: function () { 
+                const c = document.getElementById('roster-list'); 
+                if (!c) return;
+                c.innerHTML = ''; 
+                this.d.roster.sort().forEach(p => { 
+                    const isSelected = this.d.chosen.includes(p);
+                    const d = document.createElement('div');
+                    d.className = 'chip' + (isSelected ? ' active-g' : '');
+                    d.innerHTML = `<div class="chip-lbl">${p}</div>`;
+                    d.onclick = () => this.onRosterClick(p);
+                    c.appendChild(d);
+                }); 
+            },
+            onRosterClick: function (p) {
+                if (this.delMode) { this.delP(p); return; }
+                const idx = this.d.chosen.indexOf(p);
+                if (idx !== -1) {
+                    this.d.chosen[idx] = '';
+                } else {
+                    const empty = this.d.chosen.indexOf('');
+                    if (empty !== -1) this.d.chosen[empty] = p;
+                }
+                this.save();
+                this.refreshDrop();
+                this.renderRoster();
+            },
             clickRoster: function (p) { if (this.delMode) this.delP(p); },
             addRoster: function () { const el = document.getElementById('new-p-name'); const v = el.value.trim(); if (v && !this.d.roster.includes(v)) { this.d.roster.push(v); el.value = ''; this.save(); this.renderRoster(); this.refreshDrop(); } },
             delP: function (p) { this.d.roster = this.d.roster.filter(n => n !== p); this.save(); this.renderRoster(); this.refreshDrop(); },
