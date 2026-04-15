@@ -21,9 +21,10 @@ const App = {
             init: function () {
                 const defR = [...this.d.roster];
                 try {
-                    let s = localStorage.getItem('COD_GOLF_DATA_v275_21');
+                    let s = localStorage.getItem('COD_GOLF_DATA_v275_22');
                     if (!s) {
-                        const old = localStorage.getItem('COD_GOLF_DATA_v275_20') || 
+                        const old = localStorage.getItem('COD_GOLF_DATA_v275_21') ||
+                                    localStorage.getItem('COD_GOLF_DATA_v275_20') || 
                                     localStorage.getItem('COD_GOLF_v275_20') || 
                                     localStorage.getItem('COD_GOLF_DATA_v273_0') || 
                                     localStorage.getItem('GOLF_265') ||
@@ -98,14 +99,14 @@ const App = {
                 return function () {
                     clearTimeout(t);
                     t = setTimeout(() => {
-                        localStorage.setItem('COD_GOLF_DATA_v275_21', JSON.stringify(this.d));
+                        localStorage.setItem('COD_GOLF_DATA_v275_22', JSON.stringify(this.d));
                     }, 500);
                 };
             })(),
 
             hardReset: function () {
                 if (confirm("This will Delete History and Reset Roster. Continue?")) {
-                    localStorage.removeItem('COD_GOLF_DATA_v275_21');
+                    localStorage.removeItem('COD_GOLF_DATA_v275_22');
                     localStorage.removeItem('GOLF_HISTORY_265');
                     location.reload();
                 }
