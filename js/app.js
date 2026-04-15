@@ -1534,7 +1534,9 @@ const App = {
                 html += `</div>`;
 
                 con.innerHTML = html;
-             uDash: function () {
+            },
+
+            uDash: function () {
                 if (this.d.gameType === 'rabbit') this.calcRabbit();
                 const c = CS[this.d.crs];
                 const hIdx = this.d.h - 1;
