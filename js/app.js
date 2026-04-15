@@ -1,5 +1,5 @@
 const App = {
-            d: { roster: ["Dan", "Dave", "Eddie", "Muzzy", "Mark", "Tom", "TonyC", "JohnP", "MikeG", "Putt", "Rizzo", "Dante", "Steve", "Dom", "Lino", "BillB", "JohnT", "TonyS"], permHcps: { "Dan":13, "Dave":18, "Eddie":17, "Muzzy":14, "Mark":16, "Tom":15, "TonyC":22, "JohnP":22, "MikeG":18, "Putt":12, "Rizzo":18, "Dante":15, "Steve":12, "Dom":10, "Lino":20, "BillB":15, "TonyS":9, "JohnT":8 }, ps: ['', '', '', ''], chosen: { 0: '', 1: '', 2: '', 3: '' }, bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false },
+            d: { roster: ["Dan", "Dave", "Eddie", "Muzzy", "Mark", "Tom", "TonyC", "JohnP", "MikeG", "Putt", "Rizzo", "Dante", "Steve", "Dom", "Lino", "BillB", "JohnT", "TonyS"], permHcps: { "Dan":13, "Dave":18, "Eddie":17, "Muzzy":14, "Mark":16, "Tom":15, "TonyC":22, "JohnP":22, "MikeG":18, "Putt":12, "Rizzo":18, "Dante":15, "Steve":12, "Dom":10, "Lino":20, "BillB":15, "TonyS":9, "JohnT":8 }, ps: ['', '', '', ''], chosen: ['', '', '', ''], bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false },
 
             ghl: function (h) {
                 if (this.d.nines && h > 9) return `${h - 9}/${h}`;
@@ -21,20 +21,26 @@ const App = {
             init: function () {
                 const defR = [...this.d.roster];
                 try {
-                    let s = localStorage.getItem('GOLF_265');
+                    let s = localStorage.getItem('COD_GOLF_DATA_v275_21');
                     if (!s) {
-                        const old = localStorage.getItem('GOLF_241');
+                        const old = localStorage.getItem('COD_GOLF_v275_20') || localStorage.getItem('GOLF_265');
                         if (old) this.d = JSON.parse(old);
                     } else {
                         this.d = JSON.parse(s);
                     }
 
                     if (!this.d.roster) this.d.roster = defR;
-                    
                     if (!this.d.s) this.d.s = {};
-                this.d.rabbitHistory = {};
+                    this.d.rabbitHistory = {};
                     if (!this.d.ps) this.d.ps = ['', '', '', ''];
-                    if (!this.d.chosen) this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
+                    
+                    // Migrate 'chosen' from object to array if needed
+                    if (this.d.chosen && typeof this.d.chosen === 'object' && !Array.isArray(this.d.chosen)) {
+                        const newC = ['', '', '', ''];
+                        Object.keys(this.d.chosen).forEach(k => newC[k] = this.d.chosen[k]);
+                        this.d.chosen = newC;
+                    }
+                    if (!this.d.chosen || !Array.isArray(this.d.chosen)) this.d.chosen = ['', '', '', ''];
                     this.save();
                     let h = localStorage.getItem('GOLF_HISTORY_265');
                     if (h) {
@@ -88,14 +94,14 @@ const App = {
                 return function () {
                     clearTimeout(t);
                     t = setTimeout(() => {
-                        localStorage.setItem('GOLF_265', JSON.stringify(this.d));
+                        localStorage.setItem('COD_GOLF_DATA_v275_21', JSON.stringify(this.d));
                     }, 500);
                 };
             })(),
 
             hardReset: function () {
                 if (confirm("This will Delete History and Reset Roster. Continue?")) {
-                    localStorage.removeItem('GOLF_265');
+                    localStorage.removeItem('COD_GOLF_DATA_v275_21');
                     localStorage.removeItem('GOLF_HISTORY_265');
                     location.reload();
                 }
@@ -130,7 +136,7 @@ const App = {
                 this.d.start = parseInt(document.getElementById('s-start').value);
                 this.d.h = this.d.start;
                 this.d.ps = ['', '', '', ''];
-                this.d.chosen = { 0: '', 1: '', 2: '', 3: '' };
+                this.d.chosen = ['', '', '', ''];
                 delete this.d.hcpEqualize;
                 delete this.d.gameId;
                 this.save();
@@ -1725,6 +1731,8 @@ const App = {
                 };
 
                 map(0, t1[0]); map(1, t1[1]);
+                map(2, t2[0]); map(3, t2[1]);
+                
                 const isSingle = (this.d.gameType === 'single');
                 
                 const rbBanner = document.getElementById('rabbit-banner');
