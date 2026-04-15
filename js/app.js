@@ -26,13 +26,14 @@ const App = {
                         const old = localStorage.getItem('COD_GOLF_DATA_v275_20') || 
                                     localStorage.getItem('COD_GOLF_v275_20') || 
                                     localStorage.getItem('COD_GOLF_DATA_v273_0') || 
-                                    localStorage.getItem('GOLF_265');
+                                    localStorage.getItem('GOLF_265') ||
+                                    localStorage.getItem('GOLF_241');
                         if (old) this.d = JSON.parse(old);
                     } else {
                         this.d = JSON.parse(s);
                     }
 
-                    if (!this.d.roster) this.d.roster = defR;
+                    if (!this.d.roster || this.d.roster.length === 0) this.d.roster = defR;
                     if (!this.d.s) this.d.s = {};
                     this.d.rabbitHistory = {};
                     if (!this.d.ps) this.d.ps = ['', '', '', ''];
