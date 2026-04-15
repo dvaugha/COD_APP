@@ -949,12 +949,28 @@ const App = {
                 }
                 sel.value = id;
 
+                // Fixup course data: Generate 'combo' yards if cmb is present but combo yards are missing
+                const c = CS[id];
+                if (c && c.cmb && c.cmb.length === 18 && (!c.y.combo || c.y.combo.length === 0)) {
+                    c.y.combo = [];
+                    for (let i = 0; i < 18; i++) {
+                        const useGold = c.cmb[i] === 1;
+                        if (c.y.gold && c.y.white) {
+                            c.y.combo[i] = useGold ? (c.y.gold[i] || 0) : (c.y.white[i] || 0);
+                        } else {
+                            c.y.combo[i] = 0;
+                        }
+                    }
+                }
+
                 document.getElementById('course-results').classList.remove('active');
                 document.getElementById('course-search').value = '';
                 
                 this.updateActiveCourseUI();
                 this.checkCourseOptions();
                 this.save();
+                this.uDash();
+                this.uCard();
             },
 
             updateActiveCourseUI: function() {
@@ -1508,13 +1524,11 @@ const App = {
                 html += `</div>`;
 
                 con.innerHTML = html;
-            },
-
-            uDash: function () {
+             uDash: function () {
                 if (this.d.gameType === 'rabbit') this.calcRabbit();
                 const c = CS[this.d.crs];
-                if (!c) return;
-                const par = c.p[this.d.h - 1];
+                const hIdx = this.d.h - 1;
+                const par = (c && c.p) ? c.p[hIdx] : 4;
 
                 const rh = this.getRelHole(this.d.h);
                 let lbl = (this.d.nines && this.d.h > 9) ? `#${this.d.h - 9} / ${this.d.h}` : this.d.h;
@@ -1526,53 +1540,64 @@ const App = {
                     const sIdx = Math.floor((rh - 1) / 6) + 1;
                     hNumStr += ` (S${sIdx}-H${rhp})`;
                 }
-                document.getElementById('d-h-num').innerText = hNumStr;
-                document.getElementById('d-par').innerText = par;
-                const dists = c.y[this.d.tee] || [];
-                document.getElementById('d-dist').innerText = dists[this.d.h - 1] || '-';
-                document.getElementById('d-hcp').innerText = (c.hcp[this.d.h - 1] || '-');
-                let tT = this.d.tee.toUpperCase() + " TEE";
-                if (this.d.tee === 'combo') { const isGold = (c.cmb && c.cmb[this.d.h - 1] === 1); if (isGold) tT = "GOLD TEE"; else tT = "WHITE TEE"; }
-                document.getElementById('d-tee-ind').innerText = tT;
-                document.getElementById('d-tee-ind').style.color = (tT.includes('GOLD') ? '#F59E0B' : 'white');
+                
+                const safeGet = (elId, val) => { const el = document.getElementById(elId); if (el) el.innerText = val; };
+                safeGet('d-h-num', hNumStr);
+                safeGet('d-par', par);
+                
+                const dists = (c && c.y) ? (c.y[this.d.tee] || []) : [];
+                safeGet('d-dist', dists[hIdx] || '-');
+                safeGet('d-hcp', (c && c.hcp) ? (c.hcp[hIdx] || '-') : '-');
+                
+                let tT = (this.d.tee || 'white').toUpperCase() + " TEE";
+                if (this.d.tee === 'combo' && c) { 
+                    const isGold = (c.cmb && c.cmb[hIdx] === 1); 
+                    tT = isGold ? "GOLD TEE" : "WHITE TEE"; 
+                }
+                const teeInd = document.getElementById('d-tee-ind');
+                if (teeInd) {
+                    teeInd.innerText = tT;
+                    teeInd.style.color = (tT.includes('GOLD') ? '#F59E0B' : 'white');
+                }
+
+                // Helper for safe name substrings
+                const sn = (idx) => (this.d.ps[idx] || "").substring(0, 3).toUpperCase() || `P${idx+1}`;
 
                 // RELATIVE HOLE LOGIC
                 let m = Math.floor((rh - 1) / 6);
-                // Nassau: always use Cart A vs Cart B (segment 0 teams), no rotation
                 if (this.d.gameType === 'nassau') m = 0;
                 const results = this.calcSegResults(m);
                 const main = results[0];
-                const t1 = main.seg.t1, t2 = main.seg.t2;
+                const t1 = (main && main.seg) ? main.seg.t1 : [0, 1];
+                const t2 = (main && main.seg) ? main.seg.t2 : [2, 3];
 
-                let fmt;
+                let fmt = "COD (1-18)";
                 if (this.d.gameType === 'single') fmt = "SCORECARD ONLY";
                 else if (this.d.gameType === 'nassau') fmt = "NASSAU MATCH";
                 else if (m === 0) fmt = "CARTS (1-6)";
                 else if (m === 1) fmt = "OPPOSITES (7-12)";
                 else fmt = "DRIVERS (13-18)";
-                document.getElementById('d-fmt').innerText = fmt;
+                safeGet('d-fmt', fmt);
 
                 // Status String (Main Match & Presses)
                 const getStatStr = (res, label) => {
                     let s = "ALL SQUARE";
-                    const t1 = res.seg.t1, t2 = res.seg.t2;
+                    const rt1 = res.seg.t1, rt2 = res.seg.t2;
                     if (this.d.gameType === 'scramble') {
                         s = `PTS: ${res.w1} - ${res.w2}`;
                     } else if (this.d.gameType === 'stroke') {
                         return "";
                     } else {
                         let d = res.w1 - res.w2;
-                        if (d > 0) s = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)} <em style="color:#10B981">${d} UP</em>`;
-                        else if (d < 0) s = `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
+                        if (d > 0) s = `${sn(rt1[0])}/${sn(rt1[1])} <em style="color:#10B981">${d} UP</em>`;
+                        else if (d < 0) s = `${sn(rt2[0])}/${sn(rt2[1])} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
                     }
                     return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#94A3B8; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${s}</div>`;
                 };
 
                 let statHTML = "";
-
                 if (this.d.gameType === 'stroke' || this.d.gameType === 'single') {
                     const totals = [];
-                    const c = CS[this.d.crs] || CS['cc'];
                     [0, 1, 2, 3].forEach(pIdx => {
                         if (!this.d.ps[pIdx]) return;
                         let relScore = 0;
@@ -1580,12 +1605,12 @@ const App = {
                         for (let h = 1; h <= 18; h++) {
                             const sc = (this.d.s[h] && this.d.s[h][pIdx]);
                             if (sc) {
-                                const par = c.p[h - 1];
-                                relScore += (sc - par);
+                                const hPar = (c && c.p) ? c.p[h - 1] : 4;
+                                relScore += (sc - hPar);
                                 played++;
                             }
                         }
-                        totals.push({ name: this.d.ps[pIdx].substring(0, 8), score: relScore, played });
+                        totals.push({ name: this.d.ps[pIdx], short: this.d.ps[pIdx].substring(0, 8), score: relScore, played });
                     });
                     totals.sort((a, b) => a.score - b.score);
                     statHTML = `<div style="font-size:11px; font-weight:900; color:#10B981; margin-bottom:4px;">${this.d.gameType === 'single' ? 'SCORING SUMMARY' : 'LEADERBOARD (NET)'}</div>`;
@@ -1593,18 +1618,18 @@ const App = {
                         let sStr = t.score === 0 ? 'E' : (t.score > 0 ? '+' + t.score : t.score);
                         if (t.played === 0) sStr = "-";
                         statHTML += `<div style="font-size:12px; display:flex; justify-content:space-between; margin-bottom:2px;">
-                            <span>${i + 1}. ${t.name}</span>
+                            <span>${i + 1}. ${t.short}</span>
                             <span style="color:${t.score < 0 ? '#10B981' : (t.score > 0 ? '#F87171' : 'white')}">${sStr}</span>
                          </div>`;
                     });
 
                     // Team Combined Score if 4 players and in stroke mode
                     if (this.d.gameType === 'stroke' && this.d.ps.filter(x => x).length === 4) {
-                        const t1Score = (totals.find(t => t.name.substring(0, 3) === this.d.ps[0].substring(0, 3)).score || 0) + (totals.find(t => t.name.substring(0, 3) === this.d.ps[1].substring(0, 3)).score || 0);
-                        const t2Score = (totals.find(t => t.name.substring(0, 3) === this.d.ps[2].substring(0, 3)).score || 0) + (totals.find(t => t.name.substring(0, 3) === this.d.ps[3].substring(0, 3)).score || 0);
+                        const t1Score = (totals.find(t => t.name.substring(0, 3) === (this.d.ps[0]||"").substring(0, 3))?.score || 0) + (totals.find(t => t.name.substring(0, 3) === (this.d.ps[1]||"").substring(0, 3))?.score || 0);
+                        const t2Score = (totals.find(t => t.name.substring(0, 3) === (this.d.ps[2]||"").substring(0, 3))?.score || 0) + (totals.find(t => t.name.substring(0, 3) === (this.d.ps[3]||"").substring(0, 3))?.score || 0);
                         statHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px; font-size:10px; font-weight:900; color:#F59E0B;">TEAM TOTALS (NET)</div>`;
-                        const n1 = `${this.d.ps[0].substring(0,3)}/${this.d.ps[1].substring(0,3)}`;
-                        const n2 = `${this.d.ps[2].substring(0,3)}/${this.d.ps[3].substring(0,3)}`;
+                        const n1 = `${sn(0)}/${sn(1)}`;
+                        const n2 = `${sn(2)}/${sn(3)}`;
                         statHTML += `<div style="font-size:11px; display:flex; justify-content:space-between;">
                             <span>${n1}: ${t1Score === 0 ? 'E' : (t1Score > 0 ? '+' + t1Score : t1Score)}</span>
                             <span>${n2}: ${t2Score === 0 ? 'E' : (t2Score > 0 ? '+' + t2Score : t2Score)}</span>
@@ -1612,8 +1637,8 @@ const App = {
                     }
                 } else if (this.d.gameType === 'nassau') {
                     const nr = this.calcNassau();
-                    const tn1 = `${this.d.ps[nr.t1[0]].substring(0,3)}/${this.d.ps[nr.t1[1]].substring(0,3)}`;
-                    const tn2 = `${this.d.ps[nr.t2[0]].substring(0,3)}/${this.d.ps[nr.t2[1]].substring(0,3)}`;
+                    const tn1 = `${sn(nr.t1[0])}/${sn(nr.t1[1])}`;
+                    const tn2 = `${sn(nr.t2[0])}/${sn(nr.t2[1])}`;
                     const nassauLine = (label, seg) => {
                         const d = seg.w1 - seg.w2;
                         let val = 'ALL SQUARE';
@@ -1622,106 +1647,83 @@ const App = {
                         return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#94A3B8; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${val}</div>`;
                     };
                     statHTML = nassauLine('Front', nr.front) + nassauLine('Back', nr.back) + nassauLine('Total', nr.overall);
-                } else {
+                } else if (main) {
                     statHTML = getStatStr(main, "Main Match");
                     results.slice(1).forEach((pR, pIdx) => {
-                        const pData = this.d.press[m][pIdx];
-                        const pTeamNames = pData.team === 1 ? `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)}` : `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)}`;
-                        statHTML += getStatStr(pR, `${pTeamNames} Press (H${this.getAbsHole(pData.startH)})`);
+                        const pData = (this.d.press && this.d.press[m]) ? this.d.press[m][pIdx] : null;
+                        if (!pData) return;
+                        const pNameStr = pData.team === 1 ? `${sn(t1[0])}/${sn(t1[1])}` : `${sn(t2[0])}/${sn(t2[1])}`;
+                        statHTML += getStatStr(pR, `${pNameStr} Press (H${this.getAbsHole(pData.startH)})`);
                     });
                 }
 
                 // PRESS BUTTONS
                 let pressButtons = '';
-                if (this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'nassau' && (rh % 6 !== 0)) {
+                if (main && this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'nassau' && (rh % 6 !== 0)) {
                     const diff1 = main.w1 - main.w2;
                     const diff2 = main.w2 - main.w1;
-
-                    // Only show button if no press already exists for that team in this segment
-                    const hasP1 = this.d.press[m] && this.d.press[m].some(p => p.team === 1);
-                    const hasP2 = this.d.press[m] && this.d.press[m].some(p => p.team === 2);
-
-                    if (diff1 < 0 && !hasP1) {
-                        const nameA = `${this.d.ps[t1[0]].substring(0, 3)}/${this.d.ps[t1[1]].substring(0, 3)}`;
-                        pressButtons += `<button class="g-btn g-btn-sm" style="background:#EF4444; width:auto; margin-top:4px; margin-right:4px; padding:6px 10px; font-size:10px;" onclick="App.initiatePress(1)">${nameA} PRESS</button>`;
-                    }
-                    if (diff2 < 0 && !hasP2) {
-                        const nameB = `${this.d.ps[t2[0]].substring(0, 3)}/${this.d.ps[t2[1]].substring(0, 3)}`;
-                        pressButtons += `<button class="g-btn g-btn-sm" style="background:#F59E0B; width:auto; margin-top:4px; padding:6px 10px; font-size:10px;" onclick="App.initiatePress(2)">${nameB} PRESS</button>`;
-                    }
+                    const hasP1 = this.d.press && this.d.press[m] && this.d.press[m].some(p => p.team === 1);
+                    const hasP2 = this.d.press && this.d.press[m] && this.d.press[m].some(p => p.team === 2);
+                    if (diff1 < 0 && !hasP1) pressButtons += `<button class="g-btn g-btn-sm" style="background:#EF4444; width:auto; margin-top:4px; margin-right:4px; padding:6px 10px; font-size:10px;" onclick="App.initiatePress(1)">${sn(t1[0])}/${sn(t1[1])} PRESS</button>`;
+                    if (diff2 < 0 && !hasP2) pressButtons += `<button class="g-btn g-btn-sm" style="background:#F59E0B; width:auto; margin-top:4px; padding:6px 10px; font-size:10px;" onclick="App.initiatePress(2)">${sn(t2[0])}/${sn(t2[1])} PRESS</button>`;
                 }
-                document.getElementById('d-status').innerHTML = statHTML + pressButtons;
+                const statusEl = document.getElementById('d-status');
+                if (statusEl) statusEl.innerHTML = statHTML + pressButtons;
 
-                // Total Exposure Calculation
+                // Exposure
                 const exposure = { 0: 0, 1: 0, 2: 0, 3: 0 };
                 [0, 1, 2].forEach(segIdx => {
                     const segRes = this.calcSegResults(segIdx);
                     segRes.forEach(r => {
-                        if (r.winner === 1) {
-                            r.seg.t1.forEach(p => exposure[p] += r.amt);
-                            r.seg.t2.forEach(p => exposure[p] -= r.amt);
-                        } else if (r.winner === 2) {
-                            r.seg.t2.forEach(p => exposure[p] += r.amt);
-                            r.seg.t1.forEach(p => exposure[p] -= r.amt);
-                        }
+                        if (r.winner === 1) { r.seg.t1.forEach(p => exposure[p] += r.amt); r.seg.t2.forEach(p => exposure[p] -= r.amt); }
+                        else if (r.winner === 2) { r.seg.t2.forEach(p => exposure[p] += r.amt); r.seg.t1.forEach(p => exposure[p] -= r.amt); }
                     });
                 });
 
                 const map = (id, pid) => {
                     this.slotMap[id] = pid;
                     const ec = document.getElementById('slot-' + id);
+                    if (!ec) return;
                     const jRow = ec.nextElementSibling;
-
-                    if (!this.d.ps[pid]) {
-                        ec.style.display = 'none';
-                        jRow.style.display = 'none';
-                        return;
-                    }
+                    if (!this.d.ps[pid]) { ec.style.display = 'none'; if (jRow) jRow.style.display = 'none'; return; }
                     ec.style.display = 'flex';
-                    jRow.style.display = 'flex';
+                    if (jRow) jRow.style.display = 'flex';
 
                     const nmEl = document.getElementById('nm-' + id);
-                    const pops = this.getPops(pid, this.d.h - 1);
+                    const pops = this.getPops(pid, hIdx);
                     const dots = " (H)".repeat(pops);
                     if (this.d.gameType === 'single') {
                         let relScore = 0;
                         for (let h = 1; h <= 18; h++) {
                             const sc = (this.d.s[h] && this.d.s[h][pid]);
-                            if (sc) relScore += (sc - c.p[h - 1]);
+                            if (sc) relScore += (sc - ((c && c.p) ? c.p[h-1] : 4));
                         }
                         const sStr = relScore === 0 ? 'E' : (relScore > 0 ? '+' + relScore : relScore);
                         nmEl.innerHTML = `${this.d.ps[pid]} <span style="color:#10B981; font-weight:900; margin-left:8px; font-size:16px;">${sStr}</span>`;
                     } else {
-                        const expVal = Math.round(exposure[pid]);
+                        const expVal = Math.round(exposure[pid] || 0);
                         const expTxt = (expVal >= 0 ? '+' : '') + expVal;
                         const expCol = expVal >= 0 ? '#10B981' : '#F87171';
                         const expBg = expVal >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(248, 113, 113, 0.1)';
-                        
-                        // JUNK BADGES FOR DASHBOARD
                         const jk = this.getJunkStats()[this.d.ps[pid]] || { G: 0, S: 0, P: 0 };
                         const junkStr = `<span style="font-size:9px; color:#94A3B8; margin-left:8px;">🟢${jk.G} 🏖️${jk.S} LP${jk.P}</span>`;
-
-                        // RABBIT HOLDER ICON (Requested v275.9)
                         let rabbitIcon = '';
-                        const lastH = this.d.h === 1 ? null : (this.d.h - 1);
-                        if (this.d.gameType === 'rabbit' && lastH && this.d.rabbitHistory && this.d.rabbitHistory[lastH] === pid) {
-                            rabbitIcon = ' <span style="font-size:18px;">🐇</span>';
-                        }
-
+                        const lastHNum = this.d.h === 1 ? null : (this.d.h - 1);
+                        if (this.d.gameType === 'rabbit' && lastHNum && this.d.rabbitHistory && this.d.rabbitHistory[lastHNum] === pid) rabbitIcon = ' <span style="font-size:18px;">🐇</span>';
                         nmEl.innerHTML = `${this.d.ps[pid]}${rabbitIcon}${dots} ${junkStr} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
                     }
                     nmEl.style.color = (pops > 0 && this.d.gameType !== 'single') ? '#F59E0B' : '#94A3B8';
-
-                    document.getElementById('gh-' + id).innerText = "PAR " + par;
+                    const ghEl = document.getElementById('gh-' + id);
+                    if (ghEl) ghEl.innerText = "PAR " + par;
                     const sc = this.d.s[this.d.h] && this.d.s[this.d.h][pid];
                     const es = document.getElementById('sc-' + id);
-                    if (sc) {
-                        ec.classList.add('has-score');
-                        es.innerText = sc;
+                    if (sc && es) {
+                        ec.classList.add('has-score'); es.innerText = sc;
                         const net = sc - pops;
                         es.style.color = net < par ? '#10B981' : (net > par ? '#F87171' : 'white');
-                    } else { ec.classList.remove('has-score'); }
+                    } else if (es) { ec.classList.remove('has-score'); es.innerText = ""; }
                 };
+
                 map(0, t1[0]); map(1, t1[1]);
                 const isSingle = (this.d.gameType === 'single');
                 
@@ -1739,7 +1741,7 @@ const App = {
                         } else {
                             rbBanner.innerText = '🐇 THE RABBIT IS FREE';
                             rbBanner.style.background = 'transparent';
-                            rbBanner.style.color = '#94A3B8';
+                            rbBanner.style.color = '#94A3B8'; 
                             rbBanner.style.border = '2px dashed #94A3B8';
                         }
                     } else {
@@ -1747,12 +1749,36 @@ const App = {
                     }
                 }
 
-                document.getElementById('lbl-t1').innerText = isSingle ? "PLAYERS" : ((this.d.gameType === 'stroke') ? "PARTNERS A" : `${this.d.ps[t1[0]]} & ${this.d.ps[t1[1]]}`);
-                document.getElementById('lbl-t1').style.display = (this.d.ps[t1[0]] || this.d.ps[t1[1]]) ? 'block' : 'none';
+                // 4. Update Team Names / Press Buttons
+                const getTeamLabel = (indices) => {
+                    const n1 = this.d.ps[indices[0]];
+                    const n2 = this.d.ps[indices[1]];
+                    if (n1 && n2) return `${n1} & ${n2}`;
+                    return n1 || n2 || "TEAM";
+                };
 
-                map(2, t2[0]); map(3, t2[1]);
-                document.getElementById('lbl-t2').innerText = isSingle ? "PLAYERS" : ((this.d.gameType === 'stroke') ? "PARTNERS B" : `${this.d.ps[t2[0]]} & ${this.d.ps[t2[1]]}`);
-                document.getElementById('lbl-t2').style.display = (this.d.ps[t2[0]] || this.d.ps[t2[1]]) ? 'block' : 'none';
+                const lbl1 = document.getElementById('lbl-t1');
+                const lbl2 = document.getElementById('lbl-t2');
+                const rh_calc = this.getRelHole(this.d.h);
+                const curSeg_calc = Math.floor((rh_calc - 1) / 6);
+                const main_calc = (this.d.gameType === 'cod' || this.d.gameType === 'scramble') ? this.calcSegResults(curSeg_calc)[0] : null;
+
+                if (isSingle) {
+                    lbl1.innerText = "PLAYERS";
+                    lbl1.style.display = 'block';
+                    lbl2.style.display = 'none';
+                } else if (this.d.gameType === 'stroke') {
+                    lbl1.innerText = "PARTNERS A";
+                    lbl1.style.display = 'block';
+                    lbl2.innerText = "PARTNERS B";
+                    lbl2.style.display = 'block';
+                } else if (main_calc) {
+                    const t1Arr = main_calc.seg.t1, t2Arr = main_calc.seg.t2;
+                    lbl1.innerText = getTeamLabel(t1Arr);
+                    lbl1.style.display = (this.d.ps[t1Arr[0]] || this.d.ps[t1Arr[1]]) ? 'block' : 'none';
+                    lbl2.innerText = getTeamLabel(t2Arr);
+                    lbl2.style.display = (this.d.ps[t2Arr[0]] || this.d.ps[t2Arr[1]]) ? 'block' : 'none';
+                }
                 this.updateCaddy();
                 this.updateJunkUI();
                 this.checkStandingsBtn();
