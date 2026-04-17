@@ -1,46 +1,35 @@
-# Session Resume: COD Golf App — v275.19
+# Session Resume: COD Golf App — v275.22 (GOLD)
 
 ## Current Status
-- **App Version:** v275.19 (latest on `main`)
-- **Last Gold Tag:** `gold-v275.17`
+- **App Version:** v275.22 - GOLD
 - **Branch:** `main` → `https://github.com/dvaugha/COD_APP`
-- **Last Updated:** 2026-04-12
+- **Last Updated:** 2026-04-17
 
 ---
 
-## What Was Built This Session (v275.18 → v275.19)
+## What Was Built This Session (v275.19 → v275.22)
 
-### v275.18 — Mid-Round Standings Feature
-- **📊 STANDINGS button** added to dashboard nav bar (between ⚙️ and RCP)
-- Button is **dimmed/disabled** until `holesPlayed % 3 === 0` (every 3 holes completed)
-- Button **glows green with pulsing animation** at each 3-hole checkpoint
-- Clicking opens a **full-screen scrollable popup modal** with sections:
-  - 🏌️ **COD Match** — segment status (leads/all square) for each started segment
-  - 🏆 **Nassau Match** — Front 9 / Back 9 / Total (only when game mode = Nassau)
-  - 💰 **Junk Earnings** — running $ net per player with item breakdown
-  - 🐇 **Rabbit Hunter** — current holder, holes held, pot at stake
-- Sections are **conditional** — only shown when relevant game mode is active
-- `checkStandingsBtn()` — called from `uDash()` on every render
-- `showStandings()` — builds dynamic popup content
-- `closeStandings()` — dismisses modal
+### 🐛 Critical UI & State Management Fixes (v275.20 - v275.22)
+- **The "Missing Names" Bug Resolved:** Fixed a critical data-binding regression in the `uDash` function and `App.init` where `this.d.chosen` (active player seats) was sometimes created as an Object instead of an Array. This caused `.filter()` crashes in the background, resulting in blank player lists.
+- **Robust Storage Migration:** Standardized the local browser storage key to `COD_GOLF_DATA_v275_22`. Added an aggressive "scavenging" fallback to recover names stored under legacy keys (`GOLF_241`, `GOLF_265`, `COD_GOLF_DATA_v273_0`).
+- **Code Deduplication:** Cleaned up over 80 lines of duplicated definitions in `app.js` (e.g., `renderRoster`, `restoreSet`) that were causing strange race conditions and breaking the "Tap Name to Seat" feature.
+- **"CLEAR ALL" Button Repaired:** Restored the `clearSeats` function which was accidentally removed during code cleanups, allowing instant reset of all four player spots.
+- **Syntax Error Protection:** Validated the application code via `Node.js` after a catastrophic syntax error (a missing closing brace) temporarily broke the entire app initialization during v275.21.
 
-### v275.19 — Nassau (18-Hole) Game Mode
-- **New game mode:** "Nassau (18-Hole)" in both game mode dropdowns
-- **Teams:** Cart A (slots 0 & 1) vs Cart B (slots 2 & 3) — fixed all 18 holes, no rotation
-- **Scoring:** Match play, hole by hole — best net score of each team wins the hole
-- **3 Bets:** Front 9, Back 9, Overall (total holes won)
-- **Default SEG BET:** $4/player/segment (auto-sets on mode selection)
-- **COD default SEG BET:** fixed to always force $5 (was conditional on 0 — bug)
-- Dashboard shows `NASSAU MATCH` label + Front / Back / Total live status
-- Scorecard shows 🏆 NASSAU RESULTS with winner + payout per segment
-- `calcNassau()` — engine function: returns front/back/overall wins + winner per team
-- No presses, no team rotation for Nassau
-- Standings popup shows Nassau Match section (only when game = Nassau)
-- Nassau section **removed from COD standings** (was showing incorrectly)
+### ⛳ Course Database Accuracy: Crow Creek CC Focus (v275.22)
+- Analyzed physical scorecard photos for **Crow Creek CC (Calabash, NC)** to establish absolute accuracy.
+- **Handicap Corrections:** Hole #2 is properly recorded as the #1 handicap, and Hole #1 is the #17 handicap.
+- **White and Gold Yardages:** Exact yardages for both White (6099 yds) and Gold (5628 yds) copied directly from the physical scorecard photos.
+- **Combo Tee Auto-Mapping:** Implemented the exact "Medalist/Combo" tee mapping (5882 yds) used by Crow Creek, accurately alternating between White and Gold tee yardages hole by hole. 
+- *Note:* The source scorecard images are now preserved directly inside the repository under the `/scorecards/` directory.
+
+### 🚀 Automation & Deployment
+- Consolidated all deployment commands into a single `SYNC.bat` file.
+- The sync script now automatically executes cache-busting (updating version tags in `index.html`), commits the changes to Git, and pushes to remote, ensuring quick, safe deployments of hotfixes.
 
 ---
 
-## Active Game Modes
+## Active Game Modes Summary
 
 | Mode | Players | SEG BET Default | Notes |
 |---|---|---|---|
@@ -53,62 +42,7 @@
 
 ---
 
-## Rabbit Hunter Rules (unchanged from v275.17)
-
-1. **Lone Low Net** → Captures or Knocks Loose the Rabbit
-2. **Lone Natural Birdie (Gross < Par)** → Super Capture (overrides standard rule)
-3. **Double Bogey Penalty (Gross ≥ Par + 2)** → Holder releases Rabbit automatically
-4. **Tie (2+ players tie low net)** → Rabbit holder defends / rabbit stays free
-5. **Payout Split:** Front 9 = **40%** | Back 9 = **60%**
-6. **BUY-IN** is per player (e.g. 3 players × $10 = $30 total pot)
-
----
-
-## Key Functions Reference
-
-| Function | Purpose |
-|---|---|
-| `checkStandingsBtn()` | Activates/deactivates 📊 STANDINGS button every 3 holes |
-| `showStandings()` | Builds and opens mid-round standings popup |
-| `closeStandings()` | Dismisses standings popup |
-| `calcNassau()` | Nassau engine — returns front/back/overall hole wins + winner |
-| `calcRabbit()` | Rabbit state machine (runs on every score save) |
-| `calcSegResults()` | COD segment results including presses |
-| `calcJunkRes()` | Junk payout calculation (6-hole segments) |
-| `getJunkStats()` | Raw junk item counts per player |
-| `uDash()` | Dashboard render — calls `checkStandingsBtn()` |
-| `getNetTotalsHTML()` | Financial net totals (all game modes) |
-| `onGameModeChange()` | POT/BET field visibility & defaults per mode |
-| `startRound()` | Round initialization & player validation |
-
----
-
-## Files Modified This Session
-- [`index.html`](index.html) — Nassau in dropdowns, Standings modal HTML, nav bar button
-- [`js/app.js`](js/app.js) — All logic changes
-- [`css/styles.css`](css/styles.css) — Standings button & modal styles
-
----
-
-## UI / Dashboard Features
-
-- 📊 **Standings Button** — nav bar, glows green at 3-hole checkpoints
-- 🐇 **Rabbit Holder Icon** — appears next to holder's name on dashboard
-- **Rabbit Tracker Grid** — Recap view, H1–H18 holder display
-- **POT Field Smart Labels:** COD/Scramble → hidden | Stroke → "TOTAL POT $" | Rabbit → "BUY-IN $"
-- **End Round** → Confirmation dialog, returns to Setup
-- **RCP Button** → Full scorecard + junk + stats recap
-
----
-
-## Git Reference
-- **Latest commit:** `7735024` — v275.19 hotfix (COD $5 default)
-- **Repo:** https://github.com/dvaugha/COD_APP
-- **Gold Tag:** `gold-v275.17` (last promoted Gold — consider promoting v275.19 when stable)
-
----
-
-## Potential Next Steps
-- Test Nassau full round end-to-end
-- Consider Nassau presses (currently none)
-- Promote v275.19 to GOLD STANDARD once confirmed stable
+## What to Focus on Next
+- **Test Nassau full round end-to-end:** Verify all pot distributions and F/B/Overall match play interactions check out under complete live play.
+- **Verify Crow Creek CC:** Ensure the newly added Combo Tee yardages correctly surface in the dashboard.
+- **Monitor Roster Stability:** Monitor if players report any further empty seat dropdowns upon app refresh.
