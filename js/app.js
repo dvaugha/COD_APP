@@ -1267,14 +1267,43 @@ const App = {
                     return;
                 }
 
-                const startH = rh; // Starts IMMEDIATELY on the CURRENT hole
+                const startH = rh;
+                const t1 = (m === 0) ? [0, 1] : (m === 1 ? [0, 3] : [0, 2]);
+                const t2 = (m === 0) ? [2, 3] : (m === 1 ? [1, 2] : [1, 3]);
+                const tNames = (team === 1 ? t1 : t2).map(idx => this.d.ps[idx]);
+                const nameStr = tNames.join(" & ");
 
-                if (!confirm(`Initiate PRESS starting on CURRENT hole (Hole ${this.ghl(this.getAbsHole(startH))})?`)) return;
+                const startThePress = () => {
+                    if (!this.d.press[m]) this.d.press[m] = [];
+                    this.d.press[m].push({ team, startH, initialDiff: diff });
+                    this.save();
+                    this.uDash();
+                    this.closePress();
+                };
 
-                if (!this.d.press[m]) this.d.press[m] = [];
-                this.d.press[m].push({ team, startH, initialDiff: diff });
-                this.save();
-                this.uDash();
+                const modal = document.getElementById('press-modal');
+                const msg = document.getElementById('pm-msg');
+                const btn = document.getElementById('pm-btn');
+
+                let warningHtml = `<div style="color:white; font-weight:700; margin-bottom:8px;">Initiate PRESS on Hole ${this.getAbsHole(startH)}?</div>`;
+                let voiceMsg = `Press initiated on hole ${this.getAbsHole(startH)}.`;
+
+                if (Math.abs(diff) >= 3) {
+                    warningHtml = `
+                        <div style="color:#EF4444; font-weight:900; font-size:18px; margin-bottom:12px;">⚠️ HIGH STAKES PRESS</div>
+                        <div style="color:white; margin-bottom:12px;">${nameStr} are trailing by ${Math.abs(diff)}.</div>
+                        <div style="color:#FCA5A5; font-weight:700; border:1px solid #EF4444; padding:8px; border-radius:4px;">
+                            NOTICE: A TIE on this hole will still cost ${nameStr} $3!
+                        </div>
+                    `;
+                    voiceMsg = `Attention! ${nameStr} are trailing by 3. A tie on this hole will still cost the pressing team 3 dollars. Accept the challenge?`;
+                }
+
+                msg.innerHTML = warningHtml;
+                this.speak(voiceMsg);
+                
+                btn.onclick = () => startThePress();
+                modal.classList.add('active');
             },
 
 
@@ -1631,7 +1660,7 @@ const App = {
 
                 // PRESS BUTTONS
                 let pressButtons = '';
-                if (main && this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'nassau' && (rh % 6 !== 0)) {
+                if (main && this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'nassau') {
                     const diff1 = main.w1 - main.w2;
                     const diff2 = main.w2 - main.w1;
                     const hasP1 = this.d.press && this.d.press[m] && this.d.press[m].some(p => p.team === 1);
