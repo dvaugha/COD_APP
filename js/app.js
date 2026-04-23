@@ -2389,8 +2389,14 @@ const App = {
                                 const h = this.getAbsHole(hRel);
                                 const s = this.d.s[h];
                                 if (!s || Object.keys(s).length < 4) continue;
-                                const best1 = Math.min(s[r.seg.t1[0]] - this.getPops(r.seg.t1[0], h - 1), s[r.seg.t1[1]] - this.getPops(r.seg.t1[1], h - 1));
-                                const best2 = Math.min(s[r.seg.t2[0]] - this.getPops(r.seg.t2[0], h - 1), s[r.seg.t2[1]] - this.getPops(r.seg.t2[1], h - 1));
+                                let best1, best2;
+                                if (this.d.gameType === 'scramble') {
+                                    best1 = Math.min(s[r.seg.t1[0]], s[r.seg.t1[1]]);
+                                    best2 = Math.min(s[r.seg.t2[0]], s[r.seg.t2[1]]);
+                                } else {
+                                    best1 = Math.min(s[r.seg.t1[0]] - this.getPops(r.seg.t1[0], h - 1), s[r.seg.t1[1]] - this.getPops(r.seg.t1[1], h - 1));
+                                    best2 = Math.min(s[r.seg.t2[0]] - this.getPops(r.seg.t2[0], h - 1), s[r.seg.t2[1]] - this.getPops(r.seg.t2[1], h - 1));
+                                }
                                 let bStyle = "background:#334155; color:#94A3B8;", bTxt = `H${h}`;
                                 if (best1 < best2) { bStyle = "background:#10B981; color:#064E3B;"; bTxt = `H${h}: ${best1}`; }
                                 else if (best2 < best1) { bStyle = "background:#F59E0B; color:#78350F;"; bTxt = `H${h}: ${best2}`; }
@@ -3524,7 +3530,8 @@ const App = {
                         html += `<div class="std-row"><span style="color:#94A3B8;">Holes Held</span><span style="color:white;">${holesHeld}</span></div>`;
                         const frontPot = pot * 0.40;
                         const backPot  = pot * 0.60;
-                        const curHalf  = (lastH || 0) <= 9 ? `Front Pot: $${frontPot.toFixed(0)} per player` : `Back Pot: $${backPot.toFixed(0)} per player`;
+                        const rhLastH = lastH ? this.getRelHole(lastH) : 0;
+                        const curHalf  = rhLastH <= 9 ? `Front Pot: $${frontPot.toFixed(0)} per player` : `Back Pot: $${backPot.toFixed(0)} per player`;
                         html += `<div class="std-row"><span style="color:#94A3B8;">Pot At Stake</span><span style="color:#F59E0B;font-weight:900;">${curHalf}</span></div>`;
                     } else {
                         html += `<div class="std-row" style="justify-content:center;"><span style="color:#94A3B8;font-style:italic;">🐇 RABBIT IS FREE — up for grabs!</span></div>`;
@@ -3560,7 +3567,8 @@ const App = {
                         (s[t2[0]] || 99) - this.getPops(t2[0], h - 1),
                         (s[t2[1]] || 99) - this.getPops(t2[1], h - 1)
                     );
-                    if (h <= 9) {
+                    const rh = this.getRelHole(h);
+                    if (rh <= 9) {
                         if (best1 < best2) fW1++; else if (best2 < best1) fW2++;
                     } else {
                         if (best1 < best2) bW1++; else if (best2 < best1) bW2++;
