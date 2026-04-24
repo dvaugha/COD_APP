@@ -21,9 +21,10 @@ const App = {
             init: function () {
                 const defR = [...this.d.roster];
                 try {
-                    let s = localStorage.getItem('COD_GOLF_DATA_v275_22');
+                    let s = localStorage.getItem('COD_GOLF_DATA_v276_0');
                     if (!s) {
-                        const old = localStorage.getItem('COD_GOLF_DATA_v275_21') ||
+                        const old = localStorage.getItem('COD_GOLF_DATA_v275_22') ||
+                                    localStorage.getItem('COD_GOLF_DATA_v275_21') ||
                                     localStorage.getItem('COD_GOLF_DATA_v275_20') || 
                                     localStorage.getItem('COD_GOLF_v275_20') || 
                                     localStorage.getItem('COD_GOLF_DATA_v273_0') || 
@@ -2861,7 +2862,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v273.0</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v276.0-GOLD</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
