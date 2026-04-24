@@ -2,3 +2,4 @@
 2026-04-24 12:33:00 - Added Blue, Red, and Teal tee options to the setup screen in index.html.
 2026-04-24 12:37:00 - Removed unused combo tee properties from Sea Trail courses in nc.json.
 2026-04-24 12:37:00 - Updated app.js logic to dynamically disable tee options (like Combo) if course data is missing.
+2026-04-24 12:38:00 - Restored Combo tee support for Sea Trail courses by adding 'cmb' mask (White/Gold mix).
