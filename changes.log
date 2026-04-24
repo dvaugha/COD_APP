@@ -1,0 +1,4 @@
+2026-04-24 12:32:00 - Updated Sea Trail courses (Byrd, Jones, Maples) in nc.json with post-renovation (2024/2025) yardages, par, and handicaps. Added Blue, Red, and Teal tees.
+2026-04-24 12:33:00 - Added Blue, Red, and Teal tee options to the setup screen in index.html.
+2026-04-24 12:37:00 - Removed unused combo tee properties from Sea Trail courses in nc.json.
+2026-04-24 12:37:00 - Updated app.js logic to dynamically disable tee options (like Combo) if course data is missing.

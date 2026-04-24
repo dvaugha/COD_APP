@@ -967,11 +967,32 @@ const App = {
 
             checkCourseOptions: function () {
                 const el = document.getElementById('s-course');
+                const teeSelect = document.getElementById('s-tee');
                 const optEl = document.getElementById('course-routing-opt');
                 const n1 = document.getElementById('s-n1');
                 const n2 = document.getElementById('s-n2');
                 const val = el.value;
                 const c = CS[val];
+
+                // Update Tee Dropdown (v275.24)
+                if (c && c.y) {
+                    Array.from(teeSelect.options).forEach(opt => {
+                        const t = opt.value;
+                        if (t === 'combo') {
+                            opt.disabled = !(c.y.combo || (c.cmb && c.cmb.length === 18));
+                        } else {
+                            opt.disabled = !c.y[t];
+                        }
+                    });
+                    if (teeSelect.selectedIndex >= 0 && teeSelect.options[teeSelect.selectedIndex].disabled) {
+                        for (let opt of teeSelect.options) {
+                            if (!opt.disabled) {
+                                teeSelect.value = opt.value;
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 if (!c || !c.nines) {
                     optEl.style.display = 'none';
