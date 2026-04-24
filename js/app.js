@@ -1,5 +1,5 @@
 const App = {
-            d: { roster: ["Dan", "Dave", "Eddie", "Muzzy", "Mark", "Tom", "TonyC", "JohnP", "MikeG", "Putt", "Rizzo", "Dante", "Steve", "Dom", "Lino", "BillB", "JohnT", "TonyS"], permHcps: { "Dan":13, "Dave":18, "Eddie":17, "Muzzy":14, "Mark":16, "Tom":15, "TonyC":22, "JohnP":22, "MikeG":18, "Putt":12, "Rizzo":18, "Dante":15, "Steve":12, "Dom":10, "Lino":20, "BillB":15, "TonyS":9, "JohnT":8 }, ps: ['', '', '', ''], chosen: ['', '', '', ''], bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false },
+            d: { roster: ["Dan", "Dave", "Eddie", "Muzzy", "Mark", "Tom", "TonyC", "JohnP", "MikeG", "Putt", "Rizzo", "Dante", "Steve", "Dom", "Lino", "BillB", "JohnT", "TonyS"], permHcps: { "Dan":13, "Dave":18, "Eddie":17, "Muzzy":14, "Mark":16, "Tom":15, "TonyC":22, "JohnP":22, "MikeG":18, "Putt":12, "Rizzo":18, "Dante":15, "Steve":12, "Dom":10, "Lino":20, "BillB":15, "TonyS":9, "JohnT":8 }, ps: ['', '', '', ''], chosen: ['', '', '', ''], bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false, roundEnded: false },
 
             ghl: function (h) {
                 if (this.d.nines && h > 9) return `${h - 9}/${h}`;
@@ -83,7 +83,7 @@ const App = {
                     }
                 }
 
-                if (Object.keys(this.d.s).length > 0 && this.d.ps[0]) {
+                if (!this.d.roundEnded && Object.keys(this.d.s).length > 0 && this.d.ps[0]) {
                     this.nav('v-dash');
                 } else {
                     this.nav('v-setup');
@@ -144,7 +144,7 @@ const App = {
                 this.d.ps = ['', '', '', ''];
                 this.d.chosen = ['', '', '', ''];
                 delete this.d.hcpEqualize;
-                delete this.d.gameId;
+                this.d.roundEnded = false;
                 this.save();
                 this.renderRoster();
                 this.refreshDrop();
@@ -830,6 +830,7 @@ const App = {
                     delete this.d.nines;
                 }
 
+                this.d.roundEnded = false;
                 this.save();
                 this.nav('v-dash');
                 this.keepAwake();
@@ -848,6 +849,8 @@ const App = {
 
             endRound: function () {
                 if (confirm("End this round and return to setup?")) {
+                    this.d.roundEnded = true;
+                    this.save();
                     this.nav('v-setup');
                 }
             },
