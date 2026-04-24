@@ -1,3 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
+    <title>COD Golf v277.0-GOLD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" href="COD_APP_ICON.png">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+:root {
+            --c1: #10B981;
+            --c1d: #059669;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --mut: #94A3B8;
+            --acc: #F59E0B;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: #F8FAFC;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .g-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg);
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            padding-bottom: 100px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .g-view.active {
+            display: flex;
+            z-index: 100;
+        }
+
+        .box {
+            background: var(--card);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .flex-r {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .g-btn {
+            background: var(--c1);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 16px;
+            padding: 16px;
+            text-transform: uppercase;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .g-btn-sm {
+            padding: 8px 16px;
+            font-size: 11px;
+            width: auto;
+            border-radius: 8px;
+        }
+
+        .g-btn-sec {
+            background: #334155;
+            border: 1px solid #475569;
+        }
+
+        .g-inp {
+            background: #0F172A;
+            border: 1px solid #334155;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            display: block;
+        }
+
+        .tx-xl {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+        }
+
+        .tx-sm {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--mut);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .chip {
+            display: inline-flex;
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            margin: 4px;
+            overflow: hidden;
+            transition: 0.2s;
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+
+        .chip-lbl {
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            pointer-events: none;
+        }
+
+        .del-mode .chip {
+            background: #EF4444;
+            border-color: #fff;
+            cursor: pointer;
+        }
+
+        .del-mode .chip-lbl {
+            color: white;
+            text-decoration: line-through;
+            font-weight: 900;
+        }
+
+        .role-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background: #0F172A;
+            border-radius: 12px;
+            padding: 8px 12px;
+            border: 1px solid #334155;
+        }
+
+        .role-lbl {
+            width: 80px;
+            font-size: 10px;
+            font-weight: 900;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .role-sel {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 14px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+        }
+
+        /* Course Search Autocomplete */
+        .search-results { position: absolute; top: 100%; left: 0; right: 0; background: #1e293b; border: 1px solid #334155; border-radius: 0 0 8px 8px; z-index: 1000; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
+        .search-results.active { display: block; }
+        .search-item { padding: 12px 16px; border-bottom: 1px solid #334155; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .search-item:hover { background: #334155; }
+        .search-item:last-child { border-bottom: none; }
+        .search-item .course-name { color: white; font-weight: 700; font-size: 14px; }
+        .search-item .course-region { color: #94A3B8; font-size: 11px; font-weight: 900; background: #0f172a; padding: 2px 6px; border-radius: 4px; }
+        
+        #course-search { margin-bottom: 0; border-radius: 8px; }
+        #course-search:focus { border-color: #10B981; outline: none; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+        
+        .active-course-ribbon { background: #10B981; color: white; padding: 10px 14px; border-radius: 10px; margin-top: 15px; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .active-course-ribbon .clear-btn { background: rgba(0,0,0,0.2); border: none; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: transform 0.2s; }
+        .active-course-ribbon .clear-btn:hover { transform: scale(1.1); background: rgba(0,0,0,0.3); }
+
+        .role-sel option {
+            background: #0F172A;
+            color: white;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--card);
+            margin: -20px -20px 20px -20px;
+            padding: 16px;
+            padding-top: max(20px, env(safe-area-inset-top));
+            border-bottom: 4px solid var(--c1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn {
+            width: 52px;
+            height: 52px;
+            background: #334155;
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            font-weight: 900;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .h-stat {
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .h-stat-lbl {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 900;
+            color: var(--mut);
+        }
+
+        .h-stat-val {
+            font-size: 15px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .match-stat {
+            font-size: 14px;
+            font-weight: 900;
+            color: white;
+            text-align: right;
+            text-transform: uppercase;
+        }
+
+        .match-stat em {
+            color: #10B981;
+            font-style: normal;
+        }
+
+        .p-card {
+            background: #0F172A;
+            border-radius: 24px;
+            border: 1px solid #334155;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .p-card.has-score {
+            border-color: var(--c1);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+
+        .btn-act {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            font-size: 28px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .btn-minus {
+            background: #1E293B;
+            border: 1px solid #334155;
+            color: #F87171;
+        }
+
+        .btn-minus:active {
+            background: #334155;
+        }
+
+        .btn-plus {
+            background: var(--c1);
+            border-bottom: 4px solid var(--c1d);
+            color: white;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-plus:active {
+            border-bottom: 0;
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .ctr-area {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 64px;
+        }
+
+        .p-name {
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: var(--mut);
+            text-transform: uppercase;
+        }
+
+        .p-ghost {
+            font-size: 10px;
+            color: #475569;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .p-score {
+            font-size: 42px;
+            font-weight: 900;
+            color: white;
+            line-height: 1;
+            display: none;
+        }
+
+        .p-card.has-score .p-score {
+            display: block;
+        }
+
+        .p-card.has-score .p-ghost {
+            display: none;
+        }
+
+        /* CARD SPECIFIC CSS */
+        .card-con {
+            margin: -20px;
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+
+        .card-table-wrap {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            -webkit-overflow-scrolling: touch;
+            display: block;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            margin-bottom: 0;
+            table-layout: fixed;
+            min-width: 320px;
+        }
+
+        th,
+        td {
+            border: 1px solid #334155;
+            padding: 4px 2px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            height: 34px;
+            box-sizing: border-box;
+        }
+
+        th {
+            background: #0F172A;
+            color: white;
+            border-top: none;
+            height: 24px;
+            font-size: 11px;
+            vertical-align: middle;
+            font-weight: 900;
+        }
+
+        .par-row td {
+            background: #0F172A !important;
+            color: #F59E0B !important;
+            font-weight: 900;
+            border-bottom: 3px solid #64748b !important;
+        }
+
+        td {
+            background: #1E293B;
+            color: white;
+            vertical-align: middle;
+        }
+
+        th:first-child,
+        td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            border-right: 2px solid #334155;
+            width: 45px;
+            min-width: 45px;
+            max-width: 45px;
+            text-align: center;
+            padding: 0;
+            background: #0F172A;
+        }
+
+        td:first-child {
+            background: #1E293B;
+            color: var(--c1);
+            font-weight: 900;
+        }
+
+        .sc-val {
+            display: flex;
+            width: 22px;
+            height: 22px;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            margin: 0 auto;
+            font-size: 10px;
+        }
+
+        .sc-bird {
+            border-radius: 50%;
+            border: 1px solid #10B981;
+            color: #10B981;
+        }
+
+        .sc-eagle {
+            border-radius: 50%;
+            border: 3px double #10B981;
+            color: #10B981;
+        }
+
+        .sc-bog {
+            border: 1px solid #F87171;
+            color: #F87171;
+        }
+
+        .sc-dbl {
+            border: 3px double #F87171;
+            color: #F87171;
+        }
+
+        #auto-adv-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 16px;
+            text-align: center;
+            font-weight: 800;
+            font-size: 16px;
+            z-index: 200;
+            transform: translateY(150px);
+            transition: transform 0.3s;
+            border-radius: 16px;
+            pointer-events: none;
+        }
+
+        #auto-adv-banner.show {
+            transform: translateY(0);
+        }
+
+        .hist-item {
+            padding: 8px;
+            border-bottom: 1px solid #334155;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+        }
+
+        .hist-chk {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            accent-color: #EF4444;
+            display: none;
+        }
+
+        .hist-edit-mode .hist-chk {
+            display: block;
+        }
+
+        /* RECAP CSS */
+        .rec-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .rec-p-lbl {
+            width: 40px;
+            font-size: 11px;
+            font-weight: 900;
+            color: #94A3B8;
+        }
+
+        .rec-bars {
+            flex: 1;
+            margin-left: 8px;
+            display: flex;
+            gap: 2px;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #334155;
+        }
+
+        .avg-card {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .avg-lbl {
+            font-size: 10px;
+            color: #94A3B8;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .avg-val {
+            font-size: 16px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .badge-box {
+            background: #1E293B;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .badge-icon {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+
+        .badge-tl {
+            font-size: 10px;
+            color: #10B981;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .badge-nm {
+            font-size: 14px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .badge-sub {
+            font-size: 10px;
+            color: #94A3B8;
+        }
+
+        /* CAPTURE NODE (FLEXBOX V2) */
+        #share-node {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 580px;
+            /* Slightly wider for comfort */
+            background: #0F172A;
+            color: white;
+            padding: 24px;
+            font-family: 'Outfit', sans-serif;
+            border: 2px solid #334155;
+            box-sizing: border-box;
+        }
+
+        .sn-head {
+            font-size: 24px;
+            font-weight: 900;
+            color: #10B981;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .sn-sub {
+            font-size: 13px;
+            font-weight: 700;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .sn-sect {
+            background: #1E293B;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #334155;
+        }
+
+        .sn-sect-tl {
+            color: #F59E0B;
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .sn-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px solid #334155;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .sn-row:last-child {
+            border-bottom: none;
+        }
+
+        .sn-hl {
+            color: #10B981;
+        }
+
+        .sn-neg {
+            color: #F87171;
+        }
+
+        /* FLEX SCORECARD GRID */
+        .sn-grid {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            border: 1px solid #334155;
+            border-bottom: none;
+            /* Rows have borders */
+        }
+
+        .sn-g-row {
+            display: flex;
+            align-items: stretch;
+            border-bottom: 1px solid #334155;
+            width: 100%;
+        }
+
+        .sn-g-row.head {
+            background: #0F172A;
+            height: 22px;
+        }
+
+        .sn-g-row.body {
+            background: #1E293B;
+            height: 26px;
+        }
+
+        .sn-col {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #334155;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .sn-col:last-child {
+            border-right: none;
+        }
+
+        .sn-col.nm {
+            width: 50px;
+            justify-content: flex-start;
+            padding-left: 6px;
+            text-align: left;
+            font-weight: 900;
+        }
+
+        .sn-col.h {
+            flex: 1;
+            color: #94A3B8;
+        }
+
+        .sn-col.sc {
+            flex: 1;
+            font-weight: 900;
+        }
+
+        .sn-col.tot {
+            width: 40px;
+            color: #F59E0B;
+            font-weight: 900;
+        }
+
+        .sn-col.rnd {
+            width: 40px;
+            color: #10B981;
+            font-weight: 900;
+        }
+
+        .sn-ball {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 9px;
+            /* Borders applied inline */
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-box {
+            background: #1E293B;
+            padding: 24px;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 340px;
+            text-align: center;
+            border: 1px solid #475569;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* JUNK BUTTONS */
+        .junk-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: -6px;
+            margin-bottom: 16px;
+        }
+
+        .junk-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #334155;
+            background: #0F172A;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .junk-btn.active-g {
+            background: #10B981;
+            color: white;
+            border-color: #10B981;
+        }
+
+        .junk-btn.active-s {
+            background: #F59E0B;
+            color: white;
+            border-color: #F59E0B;
+        }
+
+        .junk-btn.active-p {
+            background: #8B5CF6;
+            color: white;
+            border-color: #8B5CF6;
+        }
+
+        /* Switch CSS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #10B981;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+        }
+
+        /* ===== MID-ROUND STANDINGS BUTTON ===== */
+        #standings-btn {
+            position: relative;
+            background: #1E293B;
+            border: 1px solid #334155;
+            color: #475569;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 13px;
+            padding: 0 10px;
+            height: 52px;
+            width: auto;
+            flex: 1;
+            margin: 0 5px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            opacity: 0.4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        #standings-btn.active {
+            background: linear-gradient(135deg, #064E3B, #065F46);
+            border: 2px solid #10B981;
+            color: #10B981;
+            pointer-events: all;
+            opacity: 1;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+            animation: standingsPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes standingsPulse {
+            0%, 100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+            50%       { box-shadow: 0 0 24px rgba(16, 185, 129, 0.8); }
+        }
+
+        /* ===== STANDINGS MODAL OVERLAY ===== */
+        #standings-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 600;
+            display: none;
+            flex-direction: column;
+            backdrop-filter: blur(6px);
+        }
+
+        #standings-modal.active {
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        #standings-modal-inner {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px;
+            padding-bottom: 30px;
+        }
+
+        .std-header {
+            background: linear-gradient(135deg, #0F172A, #1E293B);
+            border-bottom: 3px solid #10B981;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .std-section {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .std-section-title {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .std-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #0F172A;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .std-row:last-child { border-bottom: none; }
+
+        .std-leader-badge {
+            display: inline-block;
+            background: #10B981;
+            color: #064E3B;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .std-close-bar {
+            padding: 12px 16px;
+            background: #0F172A;
+            border-top: 1px solid #334155;
+        }
+</style>
+</head>
+<body style="background:#0F172A; color:#F8FAFC;">
+    <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
+
+    <!-- Hidden Capture Node -->
+    <div id="share-node"></div>
+
+    <div id="press-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">PRESS OPTION</div>
+            <div id="pm-msg" style="margin-bottom:24px; color:#cbd5e1; font-size:16px; line-height:1.5;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closePress()">NO PRESS</button>
+                <button id="pm-btn" class="g-btn" style="background:#F59E0B; color:black;">YES, PRESS</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- HCP MODAL -->
+    <div id="hcp-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">ROUND HANDICAPS</div>
+            <div id="hcp-roster" style="margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closeHcpModal()">CANCEL</button>
+                <button class="g-btn" style="background:#10B981;" onclick="App.saveHcps()">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHARE PREVIEW MODAL -->
+    <div id="share-preview-modal" class="modal-overlay" style="z-index: 600;">
+        <div class="modal-box" style="max-width:400px; width:90%; padding:16px;">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">READY TO SHARE</div>
+            <img id="sp-img" style="width:100%; border-radius:8px; border:1px solid #334155; margin-bottom:16px;" />
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" style="flex:1;" onclick="App.closeSharePreview()">CLOSE ❌</button>
+                <button class="g-btn" style="background:#10B981; flex:2; font-weight:900;" onclick="App.doShareParams('both')">TXT+IMG 🚀</button>
+            </div>
+            <button class="g-btn" style="background:#F59E0B; width:100%; margin-top:12px; font-weight:900;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
+        </div>
+    </div>
+
+    <!-- === SETUP SCREEN === -->
+    <div id="v-setup" class="g-view active">
+        <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
+            <div class="tx-xl">COD Golf v277.0-GOLD</div>
+        </div>
+
+        <div class="box" style="text-align:center; padding:16px;">
+            <div class="tx-sm" style="color:#10B981; margin-bottom:6px;">GAME MODE</div>
+            <select id="g-mode-top" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;"
+                onchange="App.onGameModeChange(this)">
+                <option value="cod">COD (Match Play)</option>
+                <option value="nassau">Nassau (18-Hole)</option>
+                <option value="scramble">6-Hole Scramble (Points)</option>
+                <option value="stroke">Versus (Stroke Play)</option>
+                <option value="single">SCORECARD ONLY</option>
+                <option value="rabbit">RABBIT HUNTER</option>
+                        </select>
+
+            <div id="pot-container" class="flex-r" style="justify-content:center; gap:10px; align-items:center; margin-bottom:16px;">
+                <div class="tx-sm">POT / BUY-IN $</div>
+                <input type="number" id="s-pot" class="g-inp" value="20" style="width:80px; text-align:center;">
+            </div>
+
+        </div>
+        <div class="box">
+            <div class="tx-sm">ROSTER</div>
+            <div class="flex-r" style="gap:8px; margin-bottom:12px;">
+                <input type="text" id="new-p-name" class="g-inp" placeholder="Name..." style="margin:0;">
+                <button class="g-btn g-btn-sm" style="height:48px;" onclick="App.addRoster()">ADD</button>
+            </div>
+            <div id="roster-list" style="display:flex; flex-wrap:wrap;"></div>
+            <button id="del-mode-btn" class="g-btn g-btn-sm" style="background:#334155; width:100%; margin-top:10px;"
+                onclick="App.toggleDelMode()">ENABLE DELETE MODE</button>
+            <div id="del-status"
+                style="display:none; text-align:center; margin-top:5px; color:#EF4444; font-weight:bold; font-size:12px;">
+                TAP NAME TO DELETE (NO UNDO)</div>
+        </div>
+
+        <div class="box">
+            <div class="flex-r" style="justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div class="tx-sm" style="margin:0;">SEATS</div>
+                <button onclick="App.clearSeats()" style="background:transparent; border:1px solid #EF4444; color:#EF4444; font-size:10px; font-weight:900; letter-spacing:1px; cursor:pointer; padding:2px 8px; border-radius:4px; height:24px; line-height:1;">CLEAR ALL</button>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#10B981">CART A<br>DRIVER</div>
+                <select id="sel-0" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#10B981">CART A<br>PASS</div>
+                <select id="sel-1" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#F59E0B">CART B<br>DRIVER</div>
+                <select id="sel-2" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#F59E0B">CART B<br>PASS</div>
+                <select id="sel-3" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; width:100%; margin-top:10px; border:1px solid #475569;"
+                onclick="App.openHcpModal()">SET HANDICAPS ⛳</button>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm" style="color:#10B981">COURSE SELECTION</div>
+            <div style="position:relative;">
+                <input type="text" id="course-search" class="g-inp" placeholder="Search courses (NC, SC, FL)..." oninput="App.onSearchInput(this.value)" autocomplete="off">
+                <div id="course-results" class="search-results"></div>
+            </div>
+            <div id="active-course-indicator" style="display:none;"></div>
+            <select id="s-course" style="display:none;" onchange="App.checkCourseOptions()"></select>
+            
+            <div id="course-routing-opt" style="display:none; margin-top:20px; padding:15px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius:12px;">
+                <div class="tx-sm" style="color:#10B981; margin-bottom:12px;">9-HOLE ROUTING</div>
+                <div class="flex-r" style="gap:10px;">
+                    <div style="flex:1">
+                        <div class="tx-sm" style="font-size:10px; color:#94A3B8;">FRONT 9</div>
+                        <select id="s-n1" class="g-inp" style="margin-top:4px;"></select>
+                    </div>
+                    <div style="flex:1">
+                        <div class="tx-sm" style="font-size:10px; color:#94A3B8;">BACK 9</div>
+                        <select id="s-n2" class="g-inp" style="margin-top:4px;"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm">GAME SETTINGS</div>
+            <div class="flex-r" style="gap:10px; margin-bottom:10px;">
+                <div style="flex:1;">
+                    <div class="tx-sm">TEE</div>
+                    <select id="s-tee" class="g-inp">
+                        <option value="blue">Blue</option>
+                        <option value="white">White</option>
+                        <option value="gold">Gold</option>
+                        <option value="red">Red</option>
+                        <option value="teal">Teal</option>
+                        <option value="combo">Combo</option>
+                    </select>
+                </div>
+                <div style="width:80px;">
+                    <div class="tx-sm">START</div>
+                    <select id="s-start" class="g-inp">
+                        <option value="1">#1</option>
+                        <option value="10">#10</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex-r" style="gap:10px;">
+                <div style="flex:2;">
+                    <div class="tx-sm">HCP MODE</div>
+                    <select id="s-hcp-mode" class="g-inp" onchange="App.onHcpModeChange(this)">
+                        <option value="standard">Standard (Full List)</option>
+                        <option value="spread">COD Balanced (Spread)</option>
+                        <option value="team">Team Equalizer (Per Seg)</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm">SEG BET $</div>
+                    <input type="number" id="s-bet" class="g-inp" value="5">
+                </div>
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm" style="margin-bottom:8px;">SCORING MODE</div>
+            <div class="flex-r" style="gap:8px;">
+                <button id="sm-std" class="g-btn" style="flex:1; font-size:12px;" onclick="App.setScoringMode('std')">STANDARD</button>
+                <button id="sm-cc" class="g-btn g-btn-sec" style="flex:1; font-size:12px;" onclick="App.setScoringMode('cc')">CAPT. CHOICE ⚔️</button>
+            </div>
+            <div id="sm-desc" style="font-size:11px; color:#94A3B8; margin-top:6px; font-style:italic;">Enter individual scores for each player.</div>
+        </div>
+
+        <div class="box">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">VOICE ALERTS 🔊</div>
+                    <div style="font-size:10px; color:#94A3B8;">Announces partner swaps <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px;" onclick="App.testVoice()">[ TEST ]</span></div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-voice" onchange="App.toggleVoice(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <button id="start-btn" class="g-btn" style="margin-bottom:20px; background:#EF4444;" onclick="App.tryNewGame(this)">START NEW MATCH</button>
+        <button class="g-btn" style="margin-bottom:20px; background:#2563EB;" onclick="App.startRound(true)">RESUME MATCH</button>
+        <button class="g-btn g-btn-sec" style="margin-bottom:20px; border:1px solid #10B981; color:#10B981;" onclick="App.openJunkModal()">JUNK BETTING ⚙️</button>
+
+        <div class="box">
+            <div class="tx-sm" style="color:#F59E0B">CAREER EARNINGS</div>
+            <div id="career-earnings" style="font-size:12px; margin-top:8px;"></div>
+        </div>
+
+        <div class="box">
+            <div class="flex-r">
+                <div class="tx-sm">HISTORY</div>
+                <button id="hist-edit-btn" class="g-btn g-btn-sm" style="background:#334155; width:auto;" onclick="App.handleManageClick()">MANAGE</button>
+            </div>
+            <div id="hist-list" style="max-height:200px; overflow-y:auto; font-size:12px;"></div>
+        </div>
+
+        <div class="box" style="background:rgba(16, 185, 129, 0.1); border:1px dashed #10B981;">
+            <div class="tx-sm" style="color:#10B981">GITHUB SYNC SETUP</div>
+            <div style="font-size:10px; color:#cbd5e1; margin:8px 0;">Enter your Personal Access Token (PAT) to archive rounds directly to your repo.</div>
+            <input type="password" id="gh-token-input" class="g-input" placeholder="ghp_xxxxxxxxxxxx" style="width:100%; box-sizing:border-box; padding:10px; margin-bottom:10px;">
+            <div class="flex-r" style="gap:10px;">
+                <button class="g-btn g-btn-sm" style="background:#10B981; color:white; flex:2;" onclick="App.saveGH()">SAVE TOKEN</button>
+                <button class="g-btn g-btn-sm" style="background:#EF4444; color:white; flex:1;" onclick="App.deleteGH()">DELETE</button>
+            </div>
+        </div>
+
+        <div style="margin-top:24px; text-align:center;">
+            <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
+            <div style="font-size:10px; color:#475569; margin-top:8px;">v275.23 - GOLD</div>
+        </div>
+        <div style="height:50px;"></div>
+    </div>
+
+
+    <!-- JUNK CONFIG MODAL -->
+    <div id="junk-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">JUNK SETTINGS</div>
+            <div class="flex-r" style="margin-bottom:16px;">
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">FREQUENCY</div>
+                    <select id="j-freq" class="g-input"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                        <option value="6">Every 6 Holes (COD)</option>
+                        <option value="9">Every 9 Holes</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">BET / PLAYER / SEG</div>
+                    <input type="number" id="j-bet" class="g-input" value="1"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                </div>
+            </div>
+            <div class="tx-sm" style="text-align:left; margin-bottom:8px;">PLAYERS IN POT</div>
+            <div id="j-players-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec"
+                    onclick="document.getElementById('junk-modal').classList.remove('active')">CANCEL</button>
+                <button class="g-btn" onclick="App.saveJunkSettings()">SAVE SETTINGS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART CHECK MODAL -->
+    <div id="cart-check-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">CART CHECK</div>
+            <div style="margin-bottom:24px; color:#cbd5e1; font-size:18px; line-height:1.5; font-weight:700;">
+                Double check the drivers and passengers of each cart!
+            </div>
+            <button class="g-btn" style="background:#10B981;" onclick="App.closeCartCheck()">OK, LETS GO!</button>
+        </div>
+    </div>
+
+    <!-- SEGMENT JUNK PAYOUT MODAL -->
+    <div id="junk-payout-modal" class="modal-overlay">
+        <div class="modal-box" style="border:1px solid #F59E0B; background:#0F172A;">
+            <div id="junk-payout-title" class="tx-xl" style="color:#F59E0B; margin-bottom:12px;">SEGMENT PAYOUT</div>
+            <div id="junk-payout-body" style="color:white; font-size:16px; margin-bottom:20px; text-align:left;"></div>
+            <button class="g-btn" style="background:#F59E0B;"
+                onclick="document.getElementById('junk-payout-modal').classList.remove('active')">CONTINUE</button>
+        </div>
+    </div>
+
+    <!-- === MID-ROUND STANDINGS MODAL === -->
+    <div id="standings-modal">
+        <div class="std-header">
+            <div>
+                <div style="font-size:11px; font-weight:900; color:#10B981; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px;">📊 MID-ROUND STANDINGS</div>
+                <div id="std-subtitle" style="font-size:18px; font-weight:900; color:white;">Through Hole -</div>
+            </div>
+            <div style="text-align:right; font-size:10px; color:#64748B; font-weight:700;">LIVE<br>SNAPSHOT</div>
+        </div>
+        <div id="standings-modal-inner"></div>
+        <div class="std-close-bar">
+            <button class="g-btn" style="background:#10B981; font-size:15px;" onclick="App.closeStandings()">✕ CLOSE</button>
+        </div>
+    </div>
+
+    <!-- === DASHBOARD === -->
+    <div id="v-dash" class="g-view">
+        <div class="top-bar">
+            <div class="flex-r" style="margin-bottom:12px;">
+                <button class="nav-btn" style="background:#334155; border:1px solid #475569;" onclick="App.nav('v-setup')">⚙️</button>
+                <button id="standings-btn" onclick="App.showStandings()">📊 STANDINGS</button>
+                <button class="nav-btn" style="background:#F59E0B; width:52px; font-size:14px; font-weight:900; color:black;" onclick="App.nav('v-recap')">RCP</button>
+                <button class="nav-btn" style="background:#334155; border:1px solid #475569;" onclick="App.nav('v-card')">📄</button>
+            </div>
+            <div class="flex-r" style="margin-bottom:8px;">
+                <button class="nav-btn" onclick="App.navH(-1)">←</button>
+                <div style="flex:1; text-align:center;">
+                    <div id="d-h-num" class="tx-sm" style="letter-spacing:2px; color:#94A3B8; margin:0;">HOLE 1</div>
+                    <div id="d-par" style="font-size:44px; font-weight:900; line-height:1; color:white;">4</div>
+                    <div id="d-tee-ind"
+                        style="font-size:10px; font-weight:900; color:#F59E0B; margin-top:-2px; text-transform:uppercase;">
+                        WHITE TEE</div>
+                </div>
+                <button class="nav-btn" style="background:#10B981;" onclick="App.navH(1)">>→</button>
+            </div>
+            <div class="flex-r">
+                <div class="h-stat">
+                    <div class="h-stat-lbl">YARDS</div>
+                    <div id="d-dist" class="h-stat-val">-</div>
+                </div>
+                <div class="h-stat">
+                    <div class="h-stat-lbl">HCP</div>
+                    <div id="d-hcp" class="h-stat-val">-</div>
+                </div>
+                <div style="flex:1; padding-right:10px;">
+                    <div id="d-fmt" class="h-stat-lbl" style="text-align:right; color:#F59E0B;">CARTS</div>
+                    <div id="d-status" class="match-stat">ALL SQUARE</div>
+                </div>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; margin-top:8px; width:100%; border:1px solid #475569;"
+                onclick="App.testFill()">TEST: FILL 5 HOLES</button>
+            <div id="rabbit-banner" style="display:none; transition:0.3s; padding:10px; margin-top:10px; text-align:center; font-weight:900; font-size:14px; border-radius:8px; border:2px dashed #94A3B8; color:#94A3B8;">🐇 THE RABBIT IS FREE</div>
+        </div>
+
+        <!-- === CADDY INSIGHT === -->
+        <div id="caddy-box" class="box"
+            style="display:none; transition:0.3s; padding:24px 12px; margin-top:10px; background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border:1px solid #334155; position:relative;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="font-size:20px;">💡</div>
+                <div style="flex:1;">
+                    <div id="caddy-msg" style="font-size:12px; font-weight:700; color:white; line-height:1.6;">Eddie
+                        gets a
+                        stroke here—Big chance to flip the segment!</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="lbl-t1"
+            style="font-size:13px; font-weight:800; color:#10B981; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
+        </div>
+        <div id="slot-0" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(0,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(0)">
+                <div id="nm-0" class="p-name">P1</div>
+                <div id="gh-0" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-0" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(0,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j0-g" class="junk-btn" onclick="App.tJ(0, 'G')">G</button>
+            <button id="j0-s" class="junk-btn" onclick="App.tJ(0, 'S')">S</button>
+            <button id="j0-p" class="junk-btn" onclick="App.tJ(0, 'P')">LP</button>
+        </div>
+
+        <div id="slot-1" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(1,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(1)">
+                <div id="nm-1" class="p-name">P2</div>
+                <div id="gh-1" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-1" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(1,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j1-g" class="junk-btn" onclick="App.tJ(1, 'G')">G</button>
+            <button id="j1-s" class="junk-btn" onclick="App.tJ(1, 'S')">S</button>
+            <button id="j1-p" class="junk-btn" onclick="App.tJ(1, 'P')">LP</button>
+        </div>
+
+        <div id="lbl-t2"
+            style="font-size:13px; font-weight:800; color:#F59E0B; margin:16px 0 8px 4px; text-transform:uppercase;">
+            TEAM B</div>
+        <div id="slot-2" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(2,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(2)">
+                <div id="nm-2" class="p-name">P3</div>
+                <div id="gh-2" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-2" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(2,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j2-g" class="junk-btn" onclick="App.tJ(2, 'G')">G</button>
+            <button id="j2-s" class="junk-btn" onclick="App.tJ(2, 'S')">S</button>
+            <button id="j2-p" class="junk-btn" onclick="App.tJ(2, 'P')">LP</button>
+        </div>
+
+        <div id="slot-3" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(3,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(3)">
+                <div id="nm-3" class="p-name">P4</div>
+                <div id="gh-3" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-3" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(3,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j3-g" class="junk-btn" onclick="App.tJ(3, 'G')">G</button>
+            <button id="j3-s" class="junk-btn" onclick="App.tJ(3, 'S')">S</button>
+            <button id="j3-p" class="junk-btn" onclick="App.tJ(3, 'P')">LP</button>
+        </div>
+        <div style="height:30px;"></div>
+        <div class="flex-r" style="gap:10px;"><button class="g-btn" style="background:#334155;"
+                onclick="App.nav('v-setup')">MENU</button><button class="g-btn" style="background:#334155; flex:1;"
+                onclick="App.nav('v-card')">SCORECARD</button><button class="g-btn" style="background:#EF4444;"
+                onclick="App.endRound()">END</button></div>
+    </div>
+
+    <!-- === CARD/SUMMARY SCREENS === -->
+    <div id="v-card" class="g-view">
+        <div class="flex-r" style="margin-bottom:10px;">
+            <div class="tx-xl">CARD</div><button class="g-btn g-btn-sm" style="width:auto;"
+                onclick="App.nav('v-dash')">BACK TO GAME</button>
+        </div>
+
+        <!-- Scorecard Container -->
+        <div id="card-con-body" class="card-con"></div>
+
+        <!-- === SPACER AND RESULTS === -->
+        <div style="height:20px; width:100%;"></div>
+
+        <div class="box" style="margin-top:0;">
+            <div class="tx-sm" style="color:#10B981">SEGMENT RESULTS</div>
+            <div id="res-txt" style="font-family:monospace; margin-top:10px; font-size:14px; line-height:1.5;"></div>
+        </div>
+
+        <div class="box" style="background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3);">
+            <div style="font-size:11px; color:#F59E0B; font-weight:700;">ℹ️ IPHONE TIP</div>
+            <div style="font-size:10px; color:#cbd5e1; margin-top:4px;">If tapping SEND doesn't open messages, the
+                scorecard is already copied. Just open Messages and Paste.</div>
+        </div>
+
+        <button class="g-btn" style="background:#334155; border:1px solid #F59E0B; color:#F59E0B; margin-bottom:12px;"
+            onclick="App.nav('v-recap')">📊 ROUND RECAP</button>
+
+        <button id="sms-btn" class="g-btn" style="margin-bottom:12px;" onclick="App.share()">TXT+IMG 🚀</button>
+        
+        <button id="gh-sync-btn" class="g-btn" style="background:#0F172A; border:1px solid #10B981; color:#10B981; margin-bottom:12px;"
+            onclick="App.ghSync()">🚀 SYNC TO GITHUB</button>
+
+        <button class="g-btn" style="background:#F59E0B; color:black; margin-bottom:20px;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
+    </div>
+
+    <!-- === ROUND RECAP === -->
+    <div id="v-recap" class="g-view">
+        <div class="flex-r" style="margin-bottom:16px;">
+            <div class="tx-xl">ROUND RECAP</div>
+            <button class="g-btn g-btn-sm" style="width:auto; background:#334155;"
+                onclick="App.nav('v-card')">CLOSE</button>
+        </div>
+        <div id="recap-body"></div>
+    </div>
+
+    <script>
+/**
+ * COURSE DATABASE INDEX (v275.20)
+ * This index is used for searching. Full data is lazy-loaded from regional files.
+ */
+const CS_INDEX = {
+    // FLORIDA (FL)
+    "belle": { n: "Belle Glade", r: "FL" },
+    "bonifay": { n: "Bonifay", r: "FL" },
+    "havana": { n: "Havana CC", r: "FL" },
+    "lopez": { n: "Nancy Lopez", r: "FL" },
+    "palmer": { n: "Palmer Legends", r: "FL" },
+    "sc": { n: "Shallow Creek", r: "FL" },
+    "so": { n: "Southern Oaks", r: "FL" },
+    "wl": { n: "Woodlands", r: "FL" },
+    
+    // NORTH CAROLINA (NC)
+    "byrd": { n: "Byrd (Sea Trail)", r: "NC" },
+    "cc": { n: "Crow Creek CC", r: "NC" },
+    "jones": { n: "Jones (Sea Trail)", r: "NC" },
+    "lp": { n: "Lonnie Poole", r: "NC" },
+    "maples": { n: "Maples (Sea Trail)", r: "NC" },
+    "re": { n: "Rivers Edge", r: "NC" },
+    "sandpiper": { n: "Sandpiper Bay", r: "NC" },
+    
+    // SOUTH CAROLINA (SC)
+    "prestwick": { n: "Prestwick CC", r: "SC" },
+    "blackmoor": { n: "Blackmoor GC", r: "SC" }
+};
+
+/**
+ * CS stores the full course detail objects once loaded.
+ * Backwards compatibility: initialized with a few essential defaults if needed.
+ */
+let CS = {};
+</script>
+    <script>
 const App = {
             d: { roster: ["Dan", "Dave", "Eddie", "Muzzy", "Mark", "Tom", "TonyC", "JohnP", "MikeG", "Putt", "Rizzo", "Dante", "Steve", "Dom", "Lino", "BillB", "JohnT", "TonyS"], permHcps: { "Dan":13, "Dave":18, "Eddie":17, "Muzzy":14, "Mark":16, "Tom":15, "TonyC":22, "JohnP":22, "MikeG":18, "Putt":12, "Rizzo":18, "Dante":15, "Steve":12, "Dom":10, "Lino":20, "BillB":15, "TonyS":9, "JohnT":8 }, ps: ['', '', '', ''], chosen: ['', '', '', ''], bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false, roundEnded: false },
 
@@ -2928,7 +4421,9 @@ const App = {
                 if (this.d.h >= 18) this.saveToHistory();
                 const { bets, summary } = this.calcBets();
                 const jRes = this.calcJunkRes();
-                let txt = "⛳ ROUND SUMMARY\n\n" + summary;
+                let txt = "⛳ ROUND SUMMARY
+
+" + summary;
 
                 // Add Junk in simple terms
                 if (jRes && jRes.net) {
@@ -2937,10 +4432,14 @@ const App = {
                         const v = Math.round(jRes.net[i]);
                         if (v !== 0) jStr += `${this.d.ps[i]} ($${v >= 0 ? '+' : ''}${v}), `;
                     });
-                    if (jStr) txt += "\n💰 JUNK: " + jStr.slice(0, -2) + "\n";
+                    if (jStr) txt += "
+💰 JUNK: " + jStr.slice(0, -2) + "
+";
                 }
 
-                txt += "\n---\n" + this.getSettleStr(bets);
+                txt += "
+---
+" + this.getSettleStr(bets);
                 if (navigator.share) {
                     navigator.share({ text: txt }).catch((e) => {
                         if (e.name !== 'AbortError') this.copyToClipboard(txt);
@@ -2976,7 +4475,8 @@ const App = {
                     const winner = totals[0], pot = this.d.pot || 0, active = this.d.ps.filter(x => x).length;
                     const buyIn = active > 0 ? Math.round(pot / active) : 0;
                     if (winner) {
-                        summary += `TROPHY: ${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' : '') + winner.score} NET)\n`;
+                        summary += `TROPHY: ${winner.name} (${winner.score === 0 ? 'E' : (winner.score > 0 ? '+' : '') + winner.score} NET)
+`;
                         if (pot > 0) {
                             this.d.ps.forEach((p, i) => {
                                 if (!p) return;
@@ -2998,14 +4498,17 @@ const App = {
                         }
                         if (gross > 0 && gross < bestGross) { bestGross = gross; bestPlayerIdx = pIdx; }
                         const par = c.p.slice(0, 18).reduce((a, b) => a + b, 0), rel = net - par;
-                        summary += `${p}: ${gross} (${rel === 0 ? 'E' : (rel > 0 ? '+' : '') + rel} NET)\n`;
+                        summary += `${p}: ${gross} (${rel === 0 ? 'E' : (rel > 0 ? '+' : '') + rel} NET)
+`;
                     });
                 } else if (this.d.gameType === 'rabbit') {
                     const h9 = this.d.rabbitHistory[9];
                     const h18 = this.d.rabbitHistory[18];
                     const p9 = (h9 !== null && h9 !== undefined && this.d.ps[h9]) ? this.d.ps[h9] : "NOBODY";
                     const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? this.d.ps[h18] : "NOBODY";
-                    summary += `FRONT 9: ${p9}\nBACK 18: ${p18}\n`;
+                    summary += `FRONT 9: ${p9}
+BACK 18: ${p18}
+`;
                     
                     const pot = this.d.pot || 0;
                     const hP = pot * 0.25;
@@ -3039,7 +4542,8 @@ const App = {
                                 r.seg.t1.forEach(p => { bets[p] -= r.amt; logs[p].push(`${mName}: ($-${r.amt})`); });
                             }
                             let w = (r.winner === 1) ? `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})` : (r.winner === 2 ? `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})` : 'PUSH');
-                            summary += `${mName}: ${w}\n`;
+                            summary += `${mName}: ${w}
+`;
                         });
                     });
                     // Birdie stats for COD
@@ -3062,19 +4566,24 @@ const App = {
                 }
 
                 if (this.d.gameType === 'rabbit') {
-                    summary += '---\nTOTAL NET (Incl. Junk):\n';
+                    summary += '---
+TOTAL NET (Incl. Junk):
+';
                     [0, 1, 2, 3].forEach(i => {
                         if (this.d.ps[i]) {
                             const val = Math.round(bets[i]);
-                            summary += `${this.d.ps[i]}: ${val >= 0 ? '+' : ''}$${val}\n`;
+                            summary += `${this.d.ps[i]}: ${val >= 0 ? '+' : ''}$${val}
+`;
                         }
                     });
                 }
 
                 let statsStr = "";
-                if (bestPlayerIdx !== -1) statsStr += `Low Round: ${this.d.ps[bestPlayerIdx]} (${bestGross})\n`;
+                if (bestPlayerIdx !== -1) statsStr += `Low Round: ${this.d.ps[bestPlayerIdx]} (${bestGross})
+`;
                 const fireballers = [0, 1, 2, 3].filter(i => birdCounts[i] >= 2).map(i => `${this.d.ps[i]} (${birdCounts[i]})`);
-                if (fireballers.length > 0) statsStr += `🔥 Birds: ${fireballers.join(', ')}\n`;
+                if (fireballers.length > 0) statsStr += `🔥 Birds: ${fireballers.join(', ')}
+`;
 
                 return { bets, logs, summary, statsStr };
             },
@@ -3089,7 +4598,8 @@ const App = {
                 debtors.forEach(d => {
                     while (d.val > 0 && creditors.length > 0) {
                         let c = creditors[0], amt = Math.min(d.val, c.val);
-                        txt += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${amt}\n`;
+                        txt += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${amt}
+`;
                         d.val -= amt; c.val -= amt; if (c.val === 0) creditors.shift();
                     }
                 });
@@ -3131,8 +4641,11 @@ const App = {
                 const jRes = this.calcJunkRes();
 
                 // Build a clean, non-redundant text summary
-                let sett = "⛳ COD GOLF SUMMARY\n\n" + summary;
-                if (statsStr) sett += "\n" + statsStr;
+                let sett = "⛳ COD GOLF SUMMARY
+
+" + summary;
+                if (statsStr) sett += "
+" + statsStr;
 
                 // Add Junk in simple terms
                 if (jRes && jRes.net) {
@@ -3141,10 +4654,15 @@ const App = {
                         const v = Math.round(jRes.net[i]);
                         if (v !== 0) jStr += `${this.d.ps[i]} ($${v >= 0 ? '+' : ''}${v}), `;
                     });
-                    if (jStr) sett += "\n💰 JUNK: " + jStr.slice(0, -2) + "\n";
+                    if (jStr) sett += "
+💰 JUNK: " + jStr.slice(0, -2) + "
+";
                 }
 
-                sett += "\n---\nPAYOUTS:\n" + this.getSettleStr(bets);
+                sett += "
+---
+PAYOUTS:
+" + this.getSettleStr(bets);
 
                 if (type === 'both' || type === 'image') {
                     if (!this.shareBlob) { alert("Preview still loading..."); return; }
@@ -3653,3 +5171,7 @@ const App = {
         };
         window.addEventListener('load', () => App.init());
         window.App = App;
+</script>
+</body>
+
+</html>
