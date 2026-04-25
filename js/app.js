@@ -931,16 +931,26 @@ const App = {
                 }
                 sel.value = id;
 
-                // Fixup course data: Generate 'combo' yards if cmb is present but combo yards are missing
+                // Fixup course data: Generate 'smart' combo yards
                 const c = CS[id];
-                if (c && c.cmb && c.cmb.length === 18 && (!c.y.combo || c.y.combo.length === 0)) {
-                    c.y.combo = [];
-                    for (let i = 0; i < 18; i++) {
-                        const useGold = c.cmb[i] === 1;
-                        if (c.y.gold && c.y.white) {
-                            c.y.combo[i] = useGold ? (c.y.gold[i] || 0) : (c.y.white[i] || 0);
-                        } else {
-                            c.y.combo[i] = 0;
+                if (c && (!c.y.combo || c.y.combo.length === 0)) {
+                    const hasCmb = (c.cmb && c.cmb.length === 18);
+                    const hasHcp = (c.hcp && c.hcp.length === 18);
+                    
+                    if (hasCmb || hasHcp) {
+                        c.y.combo = [];
+                        for (let i = 0; i < 18; i++) {
+                            let useGold = false;
+                            // Priority: 1. Crow Creek official cmb, 2. HCP 1-9 Logic, 3. Manual cmb fallback
+                            if (id === 'cc' && hasCmb) useGold = (c.cmb[i] === 1);
+                            else if (hasHcp) useGold = (c.hcp[i] <= 9);
+                            else if (hasCmb) useGold = (c.cmb[i] === 1);
+                            
+                            if (c.y.gold && c.y.white) {
+                                c.y.combo[i] = useGold ? (c.y.gold[i] || 0) : (c.y.white[i] || 0);
+                            } else {
+                                c.y.combo[i] = 0;
+                            }
                         }
                     }
                 }
@@ -1098,9 +1108,13 @@ const App = {
                 pushY('white');
                 pushY('gold');
 
-                // Build Combo Yards
+                // Build Smart Combo Yards
                 for (let i = 0; i < 18; i++) {
-                    const useGold = c.cmb[i] === 1;
+                    let useGold = false;
+                    // For composite courses, we always use the HCP logic (1-9 = Gold)
+                    if (c.hcp && c.hcp[i] <= 9) useGold = true;
+                    else if (c.cmb && c.cmb[i] === 1) useGold = true;
+                    
                     c.y.combo[i] = useGold ? c.y.gold[i] : c.y.white[i];
                 }
             },
@@ -1585,13 +1599,20 @@ const App = {
                 
                 let tT = (this.d.tee || 'white').toUpperCase() + " TEE";
                 if (this.d.tee === 'combo' && c) { 
-                    const isGold = (c.cmb && c.cmb[hIdx] === 1); 
-                    tT = isGold ? "GOLD TEE" : "WHITE TEE"; 
+                    let useGold = false;
+                    const hasCmb = (c.cmb && c.cmb.length === 18);
+                    const hasHcp = (c.hcp && c.hcp.length === 18);
+
+                    if (this.d.crs === 'cc' && hasCmb) useGold = (c.cmb[hIdx] === 1);
+                    else if (hasHcp) useGold = (c.hcp[hIdx] <= 9);
+                    else if (hasCmb) useGold = (c.cmb[hIdx] === 1);
+
+                    tT = useGold ? "GOLD TEE" : "WHITE TEE"; 
                 }
                 const teeInd = document.getElementById('d-tee-ind');
                 if (teeInd) {
                     teeInd.innerText = tT;
-                    teeInd.style.color = (tT.includes('GOLD') ? '#F59E0B' : 'white');
+                    teeInd.style.color = (tT.includes('GOLD') ? '#FFD700' : '#FFFFFF');
                 }
 
                 // Helper for safe name substrings
