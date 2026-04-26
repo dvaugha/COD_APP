@@ -3771,12 +3771,22 @@ const App = {
 
                     // Add a small delay to ensure DOM is rendered before capture
                     await new Promise(r => setTimeout(r, 300));
+                    await document.fonts.ready;
 
-                    await this.doShareParams('both');
-                    btn.innerText = "SHARE SCORECARD ONLY 📄";
+                    const canvas = await html2canvas(node, { backgroundColor: '#0F172A', scale: 2, scrollY: 0 });
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) throw new Error("Canvas Blob Failed");
+                        this.shareBlob = blob;
+                        const url = URL.createObjectURL(blob);
+                        document.getElementById('sp-img').src = url;
+                        document.getElementById('share-preview-modal').classList.add('active');
+                        
+                        await this.doShareParams('both');
+                        btn.innerText = "SHARE SCORECARD ONLY 📄";
+                    }, 'image/png');
                 } catch (e) {
-                    console.error(e);
-                    btn.innerText = "SHARE SCORECARD ONLY 📄";
+                    console.error("Scorecard Share Error: ", e);
+                    btn.innerText = "SHARE ERROR";
                 }
             },
 
