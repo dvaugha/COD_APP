@@ -258,10 +258,11 @@ const App = {
                 if (val) this.speak("Voice alerts enabled");
             },
 
-            speak: function (text) {
+            speak: function (text, callback) {
                 if (!this.d.voiceEnabled || !window.speechSynthesis) return;
                 window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(text);
+                if (callback) u.onend = callback;
                 u.rate = 0.9;
                 u.pitch = 1.0;
 
@@ -486,7 +487,7 @@ const App = {
                     const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
                     if (lastH === 6 || lastH === 12 || lastH === 18) {
                         const sIdx = (lastH === 6) ? 0 : (lastH === 12 ? 1 : 2);
-                        setTimeout(() => this.announceSegmentWinner(sIdx), 20000);
+                        setTimeout(() => this.announceSegmentWinner(sIdx), 30000);
                         this.showJunkPayout(sIdx);
                         if (lastH === 12) this.showStandings();
                     }
@@ -533,30 +534,42 @@ const App = {
                 const n1 = `${this.d.ps[team.t1[0]]} and ${this.d.ps[team.t1[1]]}`;
                 const n2 = `${this.d.ps[team.t2[0]]} and ${this.d.ps[team.t2[1]]}`;
 
-                let msg = "";
+                let winnerMsg = "";
                 if (res.winner === 1) {
-                    msg = `Attention! Team ${n1} have won Segment ${sIdx + 1}!`;
+                    winnerMsg = `Attention! Team ${n1} have won Segment ${sIdx + 1}!`;
                 } else if (res.winner === 2) {
-                    msg = `Attention! Team ${n2} have won Segment ${sIdx + 1}!`;
+                    winnerMsg = `Attention! Team ${n2} have won Segment ${sIdx + 1}!`;
                 } else {
-                    msg = `Segment ${sIdx + 1} has ended in a push. All square!`;
+                    winnerMsg = `Segment ${sIdx + 1} has ended in a push. All square!`;
                 }
 
-                this.speak(msg);
-
-                // If moving to a next segment, add a delay then announce partnerships
+                // If moving to a next segment, we need to sequence the partnership announcement
                 if (sIdx < 2 && this.d.gameType === 'cod') {
-                    setTimeout(() => {
-                        const ps = this.d.ps;
-                        let nextMsg = "";
-                        if (sIdx === 0) { // Moving to Seg 2
-                            nextMsg = `Attention! Segment Two: Opposites. ${ps[0]} and ${ps[3]} are now partners, versus ${ps[1]} and ${ps[2]}.`;
-                        } else if (sIdx === 1) { // Moving to Seg 3
-                            nextMsg = `Attention! Final Segment: Drivers. ${ps[0]} and ${ps[2]} are now partners, versus ${ps[1]} and ${ps[3]}.`;
-                        }
-                        if (nextMsg) this.speak(nextMsg);
-                    }, 2000);
+                    const ps = this.d.ps;
+                    let nextMsg = "";
+                    if (sIdx === 0) { // Moving to Seg 2
+                        nextMsg = `Attention! Segment Two: Opposites. ${ps[0]} and ${ps[3]} are now partners, versus ${ps[1]} and ${ps[2]}.`;
+                    } else if (sIdx === 1) { // Moving to Seg 3
+                        nextMsg = `Attention! Final Segment: Drivers. ${ps[0]} and ${ps[2]} are now partners, versus ${ps[1]} and ${ps[3]}.`;
+                    }
+                    
+                    // Sequence them: Winner then Partnership
+                    this.speakSequence([winnerMsg, nextMsg]);
+                } else {
+                    this.speak(winnerMsg);
                 }
+            },
+
+            speakSequence: function (messages) {
+                if (!messages || messages.length === 0) return;
+                const msg = messages.shift();
+                
+                // We use a custom version of speak that returns a promise or uses a callback
+                this.speak(msg, () => {
+                    if (messages.length > 0) {
+                        setTimeout(() => this.speakSequence(messages), 2000);
+                    }
+                });
             },
 
 
@@ -2926,7 +2939,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.2</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.3</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
