@@ -487,6 +487,7 @@ const App = {
                     if (lastH === 6 || lastH === 12 || lastH === 18) {
                         const sIdx = (lastH === 6) ? 0 : (lastH === 12 ? 1 : 2);
                         this.showJunkPayout(sIdx);
+                        if (lastH === 12) this.showStandings();
                     }
                 }
 
@@ -1402,7 +1403,7 @@ const App = {
                 }
 
                 const con = document.getElementById('recap-body');
-                if (completedHoles === 0) { con.innerHTML = '<div style="padding:20px; text-align:center; color:#94A3B8;">No scores yet.</div>'; return; }
+                if (completedHoles === 0) { con.innerHTML = '<div style="padding:20px; text-align:center; color:#FFFFFF;">No scores yet.</div>'; return; }
 
                 let html = '';
                 // 0. FULL SCORECARD (Requested v275.5)
@@ -1436,7 +1437,7 @@ const App = {
                 html += `<div class="box" style="margin-top:20px;">
                     <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (GROSS)</div>
                     <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
-                        <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
+                        <div style="flex:2; color:#FFFFFF; font-size:10px; font-weight:700;">PLAYER</div>
                         <div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div>
                         <div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div>
                         <div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div>
@@ -1458,7 +1459,7 @@ const App = {
                 html += `<div class="box" style="margin-top:12px;">
                     <div class="tx-sm" style="color:white; margin-bottom:12px;">SCORING BREAKDOWN (NET)</div>
                     <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
-                        <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
+                        <div style="flex:2; color:#FFFFFF; font-size:10px; font-weight:700;">PLAYER</div>
                         <div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div>
                         <div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div>
                         <div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div>
@@ -1497,12 +1498,12 @@ const App = {
                 if (strokeHoles.length > 0) {
                     strokeHoles.forEach(item => {
                         html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px;">
-                            <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${item.h} <span style="color:#94A3B8; font-weight:400;">(HCP ${item.hcp})</span></span>
+                            <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${item.h} <span style="color:#FFFFFF; font-weight:400;">(HCP ${item.hcp})</span></span>
                             <span style="color:#F59E0B; font-size:11px; font-weight:700; text-align:right;">${item.list.join(', ')}</span>
                           </div>`;
                     });
                 } else {
-                    html += `<div style="color:#94A3B8; font-size:12px; padding:6px;">No strokes given.</div>`;
+                    html += `<div style="color:#FFFFFF; font-size:12px; padding:6px;">No strokes given.</div>`;
                 }
                 html += `</div></div>`;
 
@@ -1511,7 +1512,7 @@ const App = {
                 html += `<div class="box" style="margin-top:12px;">
                     <div class="tx-sm" style="color:white; margin-bottom:12px;">THE JUNK DRAWER</div>
                     <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
-                        <div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLAYER</div>
+                        <div style="flex:2; color:#FFFFFF; font-size:10px; font-weight:700;">PLAYER</div>
                         <div style="flex:1; text-align:center; color:#10B981; font-size:14px;">🟢</div>
                         <div style="flex:1; text-align:center; color:#F59E0B; font-size:14px;">🏖️</div>
                         <div style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; color:#8B5CF6; font-size:11px; font-weight:900;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v13" /><rect x="9" y="16" width="8" height="4" rx="1" /><ellipse cx="5" cy="18" rx="3" ry="1.5" /></svg> LP</div>
@@ -1555,7 +1556,7 @@ const App = {
                         </div>`;
                     });
                 } else {
-                    html += `<div style="color:#94A3B8; font-size:12px; text-align:center; padding:8px;">No Fireballs Yet.</div>`;
+                    html += `<div style="color:#FFFFFF; font-size:12px; text-align:center; padding:8px;">No Fireballs Yet.</div>`;
                 }
                 html += `</div></div>`;
 
@@ -1647,7 +1648,7 @@ const App = {
                         if (d > 0) s = `${sn(rt1[0])}/${sn(rt1[1])} <em style="color:#10B981">${d} UP</em>`;
                         else if (d < 0) s = `${sn(rt2[0])}/${sn(rt2[1])} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
                     }
-                    return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#94A3B8; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${s}</div>`;
+                    return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#FFFFFF; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${s}</div>`;
                 };
 
                 let statHTML = "";
@@ -1699,7 +1700,7 @@ const App = {
                         let val = 'ALL SQUARE';
                         if (d > 0) val = `${tn1} <em style="color:#10B981">${d} UP</em>`;
                         else if (d < 0) val = `${tn2} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
-                        return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#94A3B8; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${val}</div>`;
+                        return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#FFFFFF; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${val}</div>`;
                     };
                     statHTML = nassauLine('Front', nr.front) + nassauLine('Back', nr.back) + nassauLine('Total', nr.overall);
                 } else if (main) {
@@ -1761,13 +1762,13 @@ const App = {
                         const expCol = expVal >= 0 ? '#10B981' : '#F87171';
                         const expBg = expVal >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(248, 113, 113, 0.1)';
                         const jk = this.getJunkStats()[this.d.ps[pid]] || { G: 0, S: 0, P: 0 };
-                        const junkStr = `<span style="font-size:9px; color:#94A3B8; margin-left:8px;">🟢${jk.G} 🏖️${jk.S} LP${jk.P}</span>`;
+                        const junkStr = `<span style="font-size:9px; color:#FFFFFF; margin-left:8px;">🟢${jk.G} 🏖️${jk.S} LP${jk.P}</span>`;
                         let rabbitIcon = '';
                         const lastHNum = this.d.h === 1 ? null : (this.d.h - 1);
                         if (this.d.gameType === 'rabbit' && lastHNum && this.d.rabbitHistory && this.d.rabbitHistory[lastHNum] === pid) rabbitIcon = ' <span style="font-size:18px;">🐇</span>';
                         nmEl.innerHTML = `${this.d.ps[pid]}${rabbitIcon}${dots} ${junkStr} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
                     }
-                    nmEl.style.color = (pops > 0 && this.d.gameType !== 'single') ? '#F59E0B' : '#94A3B8';
+                    nmEl.style.color = (pops > 0 && this.d.gameType !== 'single') ? '#F59E0B' : '#FFFFFF';
                     const ghEl = document.getElementById('gh-' + id);
                     if (ghEl) ghEl.innerText = "PAR " + par;
                     const sc = this.d.s[this.d.h] && this.d.s[this.d.h][pid];
@@ -1798,8 +1799,8 @@ const App = {
                         } else {
                             rbBanner.innerText = '🐇 THE RABBIT IS FREE';
                             rbBanner.style.background = 'transparent';
-                            rbBanner.style.color = '#94A3B8'; 
-                            rbBanner.style.border = '2px dashed #94A3B8';
+                            rbBanner.style.color = '#FFFFFF'; 
+                            rbBanner.style.border = '2px dashed #FFFFFF';
                         }
                     } else {
                         rbBanner.style.display = 'none';
@@ -2050,7 +2051,7 @@ const App = {
                             </div>`;
                         }
                     });
-                    if (!winners) h += `<div style="color:#94A3B8; font-style:italic;">No payouts this segment.</div>`;
+                    if (!winners) h += `<div style="color:#FFFFFF; font-style:italic;">No payouts this segment.</div>`;
                 }
 
                 if (r.voided && r.voided.length > 0) {
@@ -2260,7 +2261,7 @@ const App = {
                     if (!p) return;
                     let t = 0;
                     for (let h = 1; h <= 18; h++) if (this.d.s[h] && this.d.s[h][i]) t += this.d.s[h][i];
-                    totHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#94A3B8; text-transform:uppercase;">${p.substring(0, 8)}</span><span style="font-size:15px; font-weight:900; color:white;">${t || '-'}</span></div>`;
+                    totHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#FFFFFF; text-transform:uppercase;">${p.substring(0, 8)}</span><span style="font-size:15px; font-weight:900; color:white;">${t || '-'}</span></div>`;
                 });
                 totHTML += '</div></div>';
                 return totHTML;
@@ -2350,7 +2351,7 @@ const App = {
                         const val = bets[i];
                         const color = val >= 0 ? '#10B981' : '#EF4444';
                         html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155; margin-bottom:6px;">
-                            <span style="font-size:13px; font-weight:700; color:#94A3B8;">${this.d.ps[i]}</span>
+                            <span style="font-size:13px; font-weight:700; color:#FFFFFF;">${this.d.ps[i]}</span>
                             <span style="font-size:15px; font-weight:900; color:${color};">${val >= 0 ? '+' : ''}$${val}</span>
                         </div>`;
                     }
@@ -2422,8 +2423,8 @@ const App = {
                         const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? `${this.d.ps[h18]} (+$${(fP * n).toFixed(2)})` : "NOBODY (PUSHED)";
                         resHTML += '<div style="margin-bottom:16px; background:rgba(16, 185, 129, 0.1); padding:10px; border-radius:8px;">' +
                             '<div style="font-weight:900; color:#10B981; font-size:14px; text-transform:uppercase; margin-bottom:8px; text-align:center;">🐇 RABBIT HUNTER PAYOUTS</div>' +
-                            '<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; font-weight:700;"><span style="color:#94A3B8;">FRONT 9:</span><span style="color:white;">' + p9 + '</span></div>' +
-                            '<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#94A3B8;">BACK 18:</span><span style="color:white;">' + p18 + '</span></div>' +
+                            '<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; font-weight:700;"><span style="color:#FFFFFF;">FRONT 9:</span><span style="color:white;">' + p9 + '</span></div>' +
+                            '<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#FFFFFF;">BACK 18:</span><span style="color:white;">' + p18 + '</span></div>' +
                             '</div>';
                     }
                 } else if (this.d.gameType === 'nassau') {
@@ -2436,9 +2437,9 @@ const App = {
                         else if (seg.winner === 2) { nr.t2.forEach(p => bets[p] += bet); nr.t1.forEach(p => bets[p] -= bet); }
                     });
                     const segLine = (label, seg) => {
-                        if (seg.winner === 1) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#94A3B8;">${label}:</span><span style="color:#10B981;">${tn1} wins +$${bet}</span></div>`;
-                        if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#94A3B8;">${label}:</span><span style="color:#F59E0B;">${tn2} wins +$${bet}</span></div>`;
-                        return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#94A3B8;">${label}:</span><span style="color:#94A3B8;">All Square</span></div>`;
+                        if (seg.winner === 1) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#10B981;">${tn1} wins +$${bet}</span></div>`;
+                        if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#F59E0B;">${tn2} wins +$${bet}</span></div>`;
+                        return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#FFFFFF;">All Square</span></div>`;
                     };
                     resHTML += `<div style="margin-bottom:16px;background:rgba(96,165,250,0.1);padding:10px;border-radius:8px;">`
                         + `<div style="font-weight:900;color:#60A5FA;font-size:14px;text-align:center;margin-bottom:10px;">🏆 NASSAU RESULTS</div>`
@@ -2463,7 +2464,7 @@ const App = {
                             else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})`; wCol = "#F59E0B"; }
 
                             resHTML += `<div style="margin-bottom:16px;">
-                                <div style="font-weight:900; color:#94A3B8; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${matchName}</div>
+                                <div style="font-weight:900; color:#FFFFFF; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${matchName}</div>
                                 <div style="font-size:14px; font-weight:900; color:${wCol}; margin-bottom:8px; border-bottom:1px solid #334155; padding-bottom:4px;">${wTxt}</div>
                                 <div style="display:flex; flex-wrap:wrap; gap:6px;">`;
                             const start = rIdx === 0 ? (idx * 6) + 1 : r.startRh;
@@ -2480,7 +2481,7 @@ const App = {
                                     best1 = Math.min(s[r.seg.t1[0]] - this.getPops(r.seg.t1[0], h - 1), s[r.seg.t1[1]] - this.getPops(r.seg.t1[1], h - 1));
                                     best2 = Math.min(s[r.seg.t2[0]] - this.getPops(r.seg.t2[0], h - 1), s[r.seg.t2[1]] - this.getPops(r.seg.t2[1], h - 1));
                                 }
-                                let bStyle = "background:#334155; color:#94A3B8;", bTxt = `H${h}`;
+                                let bStyle = "background:#334155; color:#FFFFFF;", bTxt = `H${h}`;
                                 if (best1 < best2) { bStyle = "background:#10B981; color:#064E3B;"; bTxt = `H${h}: ${best1}`; }
                                 else if (best2 < best1) { bStyle = "background:#F59E0B; color:#78350F;"; bTxt = `H${h}: ${best2}`; }
                                 else { bTxt = `H${h}: -`; }
@@ -2505,7 +2506,7 @@ const App = {
                         });
                         resHTML += `<div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#cbd5e1; margin-bottom:4px; border-bottom:1px solid #1e293b; padding-bottom:2px;">
                             <div style="font-weight:700;">${r.name} (${r.totalItems} items)</div>
-                            <div>${r.refunded ? '<span style="color:#F59E0B;">(REFUNDED)</span>' : ''} ${inner || '<span style="color:#94A3B8;">-</span>'}</div>
+                            <div>${r.refunded ? '<span style="color:#F59E0B;">(REFUNDED)</span>' : ''} ${inner || '<span style="color:#FFFFFF;">-</span>'}</div>
                         </div>`;
                         
                         if (r.voided && r.voided.length > 0) {
@@ -2518,7 +2519,7 @@ const App = {
                             resHTML += `<div style="text-align:right; font-size:10px; color:#F59E0B; margin-top:-2px; margin-bottom:6px;">$${r.carryover} carries over</div>`;
                         }
                     });
-                    resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:4px;"><div style="font-size:11px; font-weight:900; color:#94A3B8; text-transform:uppercase;">Junk Round Totals</div>`;
+                    resHTML += `<div style="margin-top:12px; border-top:1px solid #334155; padding-top:4px;"><div style="font-size:11px; font-weight:900; color:#FFFFFF; text-transform:uppercase;">Junk Round Totals</div>`;
                     jRes.players.forEach(i => {
                         const v = Math.round(jRes.net[i]);
                         resHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; color:#cbd5e1; padding:2px 0;"><span>${this.d.ps[i]}</span><span style="color:${v >= 0 ? '#10B981' : '#F87171'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
@@ -2705,11 +2706,11 @@ const App = {
                             </div>`;
                         });
                     } else {
-                        recapHTML += `<div style="color:#94A3B8; font-size:10px; text-align:center;">No Fireballs.</div>`;
+                        recapHTML += `<div style="color:#FFFFFF; font-size:10px; text-align:center;">No Fireballs.</div>`;
                     }
                     recapHTML += `</div></div>`;
 
-                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING BREAKDOWN</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div><div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div><div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div></div>`;
+                    recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;"><div class="tx-sm" style="color:white; margin-bottom:8px;">SCORING BREAKDOWN</div><div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;"><div style="flex:2; color:#FFFFFF; font-size:10px; font-weight:700;">PLY</div><div style="flex:1; text-align:center; color:#10B981; font-size:10px; font-weight:900;">BIRD</div><div style="flex:1; text-align:center; color:#cbd5e1; font-size:10px; font-weight:900;">PAR</div><div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">BOG</div><div style="flex:1; text-align:center; color:#EF4444; font-size:10px; font-weight:900;">DBL+</div></div>`;
                     pRecap.forEach(p => { if (p.totalStrokes === 0) return; recapHTML += `<div style="display:flex; align-items:center; padding:4px 0; border-bottom:1px solid #334155;"><div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.name.substring(0, 6)}</div><div style="flex:1; text-align:center; color:#10B981; font-weight:700;">${p.dist.bird}</div><div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.dist.par}</div><div style="flex:1; text-align:center; color:#F59E0B; font-weight:700;">${p.dist.bog}</div><div style="flex:1; text-align:center; color:#EF4444; font-weight:700;">${p.dist.dbl}</div></div>`; });
                     recapHTML += `</div>`;
 
@@ -2731,12 +2732,12 @@ const App = {
                     if (sHoles.length > 0) {
                         sHoles.forEach(item => {
                             recapHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:4px 8px; border-radius:6px; border:1px solid #334155;">
-                                <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${this.ghl(item.h)} <span style="color:#94A3B8; font-weight:400;">(HCP ${item.hcp})</span></span>
+                                <span style="color:#cbd5e1; font-size:12px; font-weight:700;">HOLE ${this.ghl(item.h)} <span style="color:#FFFFFF; font-weight:400;">(HCP ${item.hcp})</span></span>
                                 <span style="color:#F59E0B; font-size:10px; font-weight:700; text-align:right;">${item.list.join(', ')}</span>
                             </div>`;
                         });
                     } else {
-                        recapHTML += `<div style="color:#94A3B8; font-size:10px; padding:4px;">No strokes given.</div>`;
+                        recapHTML += `<div style="color:#FFFFFF; font-size:10px; padding:4px;">No strokes given.</div>`;
                     }
                     recapHTML += `</div></div>`;
 
@@ -2746,7 +2747,7 @@ const App = {
                         recapHTML += `<div class="box" style="margin-top:12px; border:1px solid #334155; padding:8px; border-radius:12px; background:#1E293B;">
                             <div class="tx-sm" style="color:white; margin-bottom:8px;">THE JUNK DRAWER</div>
                             <div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:6px;">
-                                <div style="flex:1.5; color:#94A3B8; font-size:10px; font-weight:700;">PLY</div>
+                                <div style="flex:1.5; color:#FFFFFF; font-size:10px; font-weight:700;">PLY</div>
                                 <div style="flex:1; text-align:center; color:#10B981; font-size:11px;">🟢</div>
                                 <div style="flex:1; text-align:center; color:#F59E0B; font-size:11px;">🏖️</div>
                                 <div style="flex:1; text-align:center; color:#8B5CF6; font-size:11px;">LP</div>
@@ -2788,7 +2789,7 @@ const App = {
                     let segHTML = '';
                     segRes.forEach(s => {
                         segHTML += `<div class="sn-row" style="font-size:13px; margin-bottom:4px;">
-                            <span style="color:#94A3B8; font-weight:700; width:80px;">${s.name}</span>
+                            <span style="color:#FFFFFF; font-weight:700; width:80px;">${s.name}</span>
                             <span style="color:${s.color || 'white'}; font-weight:700;">${s.val}</span>
                         </div>`;
                     });
@@ -2805,11 +2806,11 @@ const App = {
                             });
                             segHTML += `<div class="sn-row" style="margin-bottom:2px; font-size:11px;">
                                 <span>${r.name} (${r.totalItems} items)</span>
-                                <span>${inner || '<span style="color:#94A3B8;">-</span>'}</span>
+                                <span>${inner || '<span style="color:#FFFFFF;">-</span>'}</span>
                             </div>`;
                         });
 
-                        segHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px; font-size:11px; color:#94A3B8; font-weight:900; text-transform:uppercase;">Junk Round Totals</div>`;
+                        segHTML += `<div style="margin-top:8px; border-top:1px solid #334155; padding-top:4px; font-size:11px; color:#FFFFFF; font-weight:900; text-transform:uppercase;">Junk Round Totals</div>`;
                         jRes.players.forEach(i => {
                             const v = Math.round(jRes.net[i]);
                             segHTML += `<div class="sn-row"><span>${ps[i]}</span><span class="${v >= 0 ? 'sn-hl' : 'sn-neg'}">${v >= 0 ? '+' : ''}$${v}</span></div>`;
@@ -2894,7 +2895,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v278.2-GOLD</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v278.3-GOLD</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -3462,10 +3463,10 @@ const App = {
                         let statusTxt, statusCol;
                         if (d > 0)       { statusTxt = `${n1} leads ${d} UP`; statusCol = '#10B981'; }
                         else if (d < 0)  { statusTxt = `${n2} leads ${Math.abs(d)} UP`; statusCol = '#F59E0B'; }
-                        else             { statusTxt = 'All Square'; statusCol = '#94A3B8'; }
+                        else             { statusTxt = 'All Square'; statusCol = '#FFFFFF'; }
 
                         html += `<div class="std-row">`;
-                        html += `<span style="color:#94A3B8; font-size:12px;">${seg.label}</span>`;
+                        html += `<span style="color:#FFFFFF; font-size:12px;">${seg.label}</span>`;
                         html += `<span style="color:${statusCol}; font-weight:900;">${statusTxt}</span>`;
                         html += `</div>`;
                     }
@@ -3482,8 +3483,8 @@ const App = {
                         let txt, col;
                         if (d > 0)      { txt = `${tn1} leads ${d} UP`; col = '#10B981'; }
                         else if (d < 0) { txt = `${tn2} leads ${Math.abs(d)} UP`; col = '#F59E0B'; }
-                        else            { txt = 'All Square'; col = '#94A3B8'; }
-                        return `<div class="std-row"><span style="color:#94A3B8;font-size:12px;">${label}</span><span style="color:${col};font-weight:900;">${txt}</span></div>`;
+                        else            { txt = 'All Square'; col = '#FFFFFF'; }
+                        return `<div class="std-row"><span style="color:#FFFFFF;font-size:12px;">${label}</span><span style="color:${col};font-weight:900;">${txt}</span></div>`;
                     };
                     html += `<div class="std-section" style="border-color:#60A5FA;">`;
                     html += `<div class="std-section-title" style="color:#60A5FA;">🏆 Nassau Match</div>`;
@@ -3577,7 +3578,7 @@ const App = {
 
                     jRows.forEach(row => {
                         const valStr = (row.net >= 0 ? '+$' : '-$') + Math.abs(row.net);
-                        const valCol = row.net > 0 ? '#10B981' : row.net < 0 ? '#F87171' : '#94A3B8';
+                        const valCol = row.net > 0 ? '#10B981' : row.net < 0 ? '#F87171' : '#FFFFFF';
                         const itemStr = `<span style="font-size:10px;color:#64748B;margin-left:6px;">🟢${row.g} 🏖️${row.s} LP${row.p}</span>`;
                         html += `<div class="std-row">`;
                         html += `<span style="color:white;">${row.name}${itemStr}</span>`;
@@ -3609,15 +3610,15 @@ const App = {
                     html += `<div class="std-section" style="border-color:#F97316;">`;
                     html += `<div class="std-section-title" style="color:#F97316;">🐇 Rabbit Hunter</div>`;
                     if (holder !== null && holder !== undefined && this.d.ps[holder]) {
-                        html += `<div class="std-row"><span style="color:#94A3B8;">Current Holder</span><span style="color:#F97316;font-size:16px;font-weight:900;">${this.d.ps[holder]}</span></div>`;
-                        html += `<div class="std-row"><span style="color:#94A3B8;">Holes Held</span><span style="color:white;">${holesHeld}</span></div>`;
+                        html += `<div class="std-row"><span style="color:#FFFFFF;">Current Holder</span><span style="color:#F97316;font-size:16px;font-weight:900;">${this.d.ps[holder]}</span></div>`;
+                        html += `<div class="std-row"><span style="color:#FFFFFF;">Holes Held</span><span style="color:white;">${holesHeld}</span></div>`;
                         const frontPot = pot * 0.40;
                         const backPot  = pot * 0.60;
                         const rhLastH = lastH ? this.getRelHole(lastH) : 0;
                         const curHalf  = rhLastH <= 9 ? `Front Pot: $${frontPot.toFixed(0)} per player` : `Back Pot: $${backPot.toFixed(0)} per player`;
-                        html += `<div class="std-row"><span style="color:#94A3B8;">Pot At Stake</span><span style="color:#F59E0B;font-weight:900;">${curHalf}</span></div>`;
+                        html += `<div class="std-row"><span style="color:#FFFFFF;">Pot At Stake</span><span style="color:#F59E0B;font-weight:900;">${curHalf}</span></div>`;
                     } else {
-                        html += `<div class="std-row" style="justify-content:center;"><span style="color:#94A3B8;font-style:italic;">🐇 RABBIT IS FREE — up for grabs!</span></div>`;
+                        html += `<div class="std-row" style="justify-content:center;"><span style="color:#FFFFFF;font-style:italic;">🐇 RABBIT IS FREE — up for grabs!</span></div>`;
                     }
                     html += `</div>`;
                 }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v278.2-GOLD</title>
+    <title>COD Golf v278.3-GOLD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -22,7 +22,7 @@
     <div id="press-modal" class="modal-overlay">
         <div class="modal-box">
             <div class="tx-xl" style="margin-bottom:12px; color:white;">PRESS OPTION</div>
-            <div id="pm-msg" style="margin-bottom:24px; color:#cbd5e1; font-size:16px; line-height:1.5;"></div>
+            <div id="pm-msg" style="margin-bottom:24px; color:#FFFFFF; font-size:16px; line-height:1.5;"></div>
             <div class="flex-r" style="gap:12px;">
                 <button class="g-btn g-btn-sec" onclick="App.closePress()">NO PRESS</button>
                 <button id="pm-btn" class="g-btn" style="background:#F59E0B; color:black;">YES, PRESS</button>
@@ -59,7 +59,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v278.2-GOLD</div>
+            <div class="tx-xl">COD Golf v278.3-GOLD</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -116,7 +116,7 @@
                 <select id="sel-3" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <button class="g-btn g-btn-sm"
-                style="background:#334155; width:100%; margin-top:10px; border:1px solid #475569;"
+                style="background:#334155; width:100%; margin-top:10px; border:1px solid #FFFFFF;"
                 onclick="App.openHcpModal()">SET HANDICAPS ⛳</button>
         </div>
 
@@ -133,11 +133,11 @@
                 <div class="tx-sm" style="color:#10B981; margin-bottom:12px;">9-HOLE ROUTING</div>
                 <div class="flex-r" style="gap:10px;">
                     <div style="flex:1">
-                        <div class="tx-sm" style="font-size:10px; color:#94A3B8;">FRONT 9</div>
+                        <div class="tx-sm" style="font-size:10px; color:#FFFFFF;">FRONT 9</div>
                         <select id="s-n1" class="g-inp" style="margin-top:4px;"></select>
                     </div>
                     <div style="flex:1">
-                        <div class="tx-sm" style="font-size:10px; color:#94A3B8;">BACK 9</div>
+                        <div class="tx-sm" style="font-size:10px; color:#FFFFFF;">BACK 9</div>
                         <select id="s-n2" class="g-inp" style="margin-top:4px;"></select>
                     </div>
                 </div>
@@ -188,14 +188,14 @@
                 <button id="sm-std" class="g-btn" style="flex:1; font-size:12px;" onclick="App.setScoringMode('std')">STANDARD</button>
                 <button id="sm-cc" class="g-btn g-btn-sec" style="flex:1; font-size:12px;" onclick="App.setScoringMode('cc')">CAPT. CHOICE ⚔️</button>
             </div>
-            <div id="sm-desc" style="font-size:11px; color:#94A3B8; margin-top:6px; font-style:italic;">Enter individual scores for each player.</div>
+            <div id="sm-desc" style="font-size:11px; color:#FFFFFF; margin-top:6px; font-style:italic;">Enter individual scores for each player.</div>
         </div>
 
         <div class="box">
             <div style="display:flex; align-items:center; justify-content:space-between;">
                 <div>
                     <div class="tx-sm" style="margin-bottom:0;">VOICE ALERTS 🔊</div>
-                    <div style="font-size:10px; color:#94A3B8;">Announces partner swaps <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px;" onclick="App.testVoice()">[ TEST ]</span></div>
+                    <div style="font-size:10px; color:#FFFFFF;">Announces partner swaps <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px;" onclick="App.testVoice()">[ TEST ]</span></div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="s-voice" onchange="App.toggleVoice(this.checked)">
@@ -223,7 +223,7 @@
 
         <div class="box" style="background:rgba(16, 185, 129, 0.1); border:1px dashed #10B981;">
             <div class="tx-sm" style="color:#10B981">GITHUB SYNC SETUP</div>
-            <div style="font-size:10px; color:#cbd5e1; margin:8px 0;">Enter your Personal Access Token (PAT) to archive rounds directly to your repo.</div>
+            <div style="font-size:10px; color:#FFFFFF; margin:8px 0;">Enter your Personal Access Token (PAT) to archive rounds directly to your repo.</div>
             <input type="password" id="gh-token-input" class="g-input" placeholder="ghp_xxxxxxxxxxxx" style="width:100%; box-sizing:border-box; padding:10px; margin-bottom:10px;">
             <div class="flex-r" style="gap:10px;">
                 <button class="g-btn g-btn-sm" style="background:#10B981; color:white; flex:2;" onclick="App.saveGH()">SAVE TOKEN</button>
@@ -233,7 +233,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#475569; margin-top:8px;">v275.23 - GOLD</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v275.23 - GOLD</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -272,7 +272,7 @@
     <div id="cart-check-modal" class="modal-overlay">
         <div class="modal-box">
             <div class="tx-xl" style="margin-bottom:12px; color:white;">CART CHECK</div>
-            <div style="margin-bottom:24px; color:#cbd5e1; font-size:18px; line-height:1.5; font-weight:700;">
+            <div style="margin-bottom:24px; color:#FFFFFF; font-size:18px; line-height:1.5; font-weight:700;">
                 Double check the drivers and passengers of each cart!
             </div>
             <button class="g-btn" style="background:#10B981;" onclick="App.closeCartCheck()">OK, LETS GO!</button>
@@ -296,7 +296,7 @@
                 <div style="font-size:11px; font-weight:900; color:#10B981; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px;">📊 MID-ROUND STANDINGS</div>
                 <div id="std-subtitle" style="font-size:18px; font-weight:900; color:white;">Through Hole -</div>
             </div>
-            <div style="text-align:right; font-size:10px; color:#64748B; font-weight:700;">LIVE<br>SNAPSHOT</div>
+            <div style="text-align:right; font-size:10px; color:#FFFFFF; font-weight:700;">LIVE<br>SNAPSHOT</div>
         </div>
         <div id="standings-modal-inner"></div>
         <div class="std-close-bar">
@@ -308,10 +308,10 @@
     <div id="v-dash" class="g-view">
         <div class="top-bar">
             <div class="flex-r" style="margin-bottom:12px;">
-                <button class="nav-btn" style="background:#334155; border:1px solid #475569;" onclick="App.nav('v-setup')">⚙️</button>
+                <button class="nav-btn" style="background:#334155; border:1px solid #FFFFFF;" onclick="App.nav('v-setup')">⚙️</button>
                 <button id="standings-btn" onclick="App.showStandings()">📊 STANDINGS</button>
                 <button class="nav-btn" style="background:#F59E0B; width:52px; font-size:14px; font-weight:900; color:black;" onclick="App.nav('v-recap')">RCP</button>
-                <button class="nav-btn" style="background:#334155; border:1px solid #475569;" onclick="App.nav('v-card')">📄</button>
+                <button class="nav-btn" style="background:#334155; border:1px solid #FFFFFF;" onclick="App.nav('v-card')">📄</button>
             </div>
             <div class="flex-r" style="margin-bottom:8px;">
                 <button class="nav-btn" onclick="App.navH(-1)">←</button>
@@ -339,9 +339,9 @@
                 </div>
             </div>
             <button class="g-btn g-btn-sm"
-                style="background:#334155; margin-top:8px; width:100%; border:1px solid #475569;"
+                style="background:#334155; margin-top:8px; width:100%; border:1px solid #FFFFFF;"
                 onclick="App.testFill()">TEST: FILL 5 HOLES</button>
-            <div id="rabbit-banner" style="display:none; transition:0.3s; padding:10px; margin-top:10px; text-align:center; font-weight:900; font-size:14px; border-radius:8px; border:2px dashed #94A3B8; color:#94A3B8;">🐇 THE RABBIT IS FREE</div>
+            <div id="rabbit-banner" style="display:none; transition:0.3s; padding:10px; margin-top:10px; text-align:center; font-weight:900; font-size:14px; border-radius:8px; border:2px dashed #FFFFFF; color:#FFFFFF;">🐇 THE RABBIT IS FREE</div>
         </div>
 
         <!-- === CADDY INSIGHT === -->
@@ -449,7 +449,7 @@
 
         <div class="box" style="background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3);">
             <div style="font-size:11px; color:#F59E0B; font-weight:700;">ℹ️ IPHONE TIP</div>
-            <div style="font-size:10px; color:#cbd5e1; margin-top:4px;">If tapping SEND doesn't open messages, the
+            <div style="font-size:10px; color:#FFFFFF; margin-top:4px;">If tapping SEND doesn't open messages, the
                 scorecard is already copied. Just open Messages and Paste.</div>
         </div>
 

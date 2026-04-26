@@ -3,7 +3,7 @@
             --c1d: #059669;
             --bg: #0F172A;
             --card: #1E293B;
-            --mut: #94A3B8;
+            --mut: #FFFFFF;
             --acc: #F59E0B;
         }
 
@@ -322,7 +322,7 @@
 
         .p-ghost {
             font-size: 10px;
-            color: #475569;
+            color: #FFFFFF;
             font-weight: 700;
             margin-top: 2px;
         }
@@ -393,7 +393,7 @@
             background: #0F172A !important;
             color: #F59E0B !important;
             font-weight: 900;
-            border-bottom: 3px solid #64748b !important;
+            border-bottom: 3px solid #FFFFFF !important;
         }
 
         td {
@@ -480,7 +480,7 @@
         .hist-item {
             padding: 8px;
             border-bottom: 1px solid #334155;
-            color: #cbd5e1;
+            color: #FFFFFF;
             display: flex;
             align-items: center;
         }
@@ -509,7 +509,7 @@
             width: 40px;
             font-size: 11px;
             font-weight: 900;
-            color: #94A3B8;
+            color: #FFFFFF;
         }
 
         .rec-bars {
@@ -534,7 +534,7 @@
 
         .avg-lbl {
             font-size: 10px;
-            color: #94A3B8;
+            color: #FFFFFF;
             font-weight: 700;
             margin-bottom: 4px;
         }
@@ -575,7 +575,7 @@
 
         .badge-sub {
             font-size: 10px;
-            color: #94A3B8;
+            color: #FFFFFF;
         }
 
         /* CAPTURE NODE (FLEXBOX V2) */
@@ -604,7 +604,7 @@
         .sn-sub {
             font-size: 13px;
             font-weight: 700;
-            color: #cbd5e1;
+            color: #FFFFFF;
             margin-bottom: 16px;
         }
 
@@ -698,7 +698,7 @@
 
         .sn-col.h {
             flex: 1;
-            color: #94A3B8;
+            color: #FFFFFF;
         }
 
         .sn-col.sc {
@@ -785,7 +785,7 @@
             border-radius: 50%;
             border: 1px solid #334155;
             background: #0F172A;
-            color: #64748b;
+            color: #FFFFFF;
             font-size: 10px;
             font-weight: 900;
             display: flex;
@@ -862,7 +862,7 @@
             position: relative;
             background: #1E293B;
             border: 1px solid #334155;
-            color: #475569;
+            color: #FFFFFF;
             border-radius: 12px;
             font-weight: 900;
             font-size: 13px;
