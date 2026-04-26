@@ -486,6 +486,7 @@ const App = {
                     const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
                     if (lastH === 6 || lastH === 12 || lastH === 18) {
                         const sIdx = (lastH === 6) ? 0 : (lastH === 12 ? 1 : 2);
+                        this.announceSegmentWinner(sIdx);
                         this.showJunkPayout(sIdx);
                         if (lastH === 12) this.showStandings();
                     }
@@ -526,6 +527,31 @@ const App = {
                 }
 
                 this.corr = false;
+            },
+
+            announceSegmentWinner: function (sIdx) {
+                if (!this.d.voiceEnabled) return;
+                
+                const res = this.calcSegResults(sIdx)[0]; // Main match
+                const segs = [
+                    { t1: [0, 1], t2: [2, 3] },
+                    { t1: [0, 3], t2: [1, 2] },
+                    { t1: [0, 2], t2: [1, 3] }
+                ];
+                const team = segs[sIdx];
+                const n1 = `${this.d.ps[team.t1[0]]} and ${this.d.ps[team.t1[1]]}`;
+                const n2 = `${this.d.ps[team.t2[0]]} and ${this.d.ps[team.t2[1]]}`;
+
+                let msg = "";
+                if (res.winner === 1) {
+                    msg = `Attention! Team ${n1} have won Segment ${sIdx + 1}!`;
+                } else if (res.winner === 2) {
+                    msg = `Attention! Team ${n2} have won Segment ${sIdx + 1}!`;
+                } else {
+                    msg = `Segment ${sIdx + 1} has ended in a push. All square!`;
+                }
+
+                this.speak(msg);
             },
 
 
@@ -2895,7 +2921,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.0</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.1</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
