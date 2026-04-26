@@ -486,7 +486,7 @@ const App = {
                     const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
                     if (lastH === 6 || lastH === 12 || lastH === 18) {
                         const sIdx = (lastH === 6) ? 0 : (lastH === 12 ? 1 : 2);
-                        this.announceSegmentWinner(sIdx);
+                        setTimeout(() => this.announceSegmentWinner(sIdx), 20000);
                         this.showJunkPayout(sIdx);
                         if (lastH === 12) this.showStandings();
                     }
@@ -499,15 +499,6 @@ const App = {
                     this.announceRabbit(lastH);
                 }
 
-                // VOICE ANNOUNCEMENT FOR COD SEGMENTS
-                if (this.d.gameType === 'cod' && !this.corr) {
-                    const ps = this.d.ps;
-                    if (this.d.h === 7) {
-                        this.speak(`Attention! Segment Two: Opposites. ${ps[0]} and ${ps[3]} are now partners, versus ${ps[1]} and ${ps[2]}.`);
-                    } else if (this.d.h === 13) {
-                        this.speak(`Attention! Final Segment: Drivers. ${ps[0]} and ${ps[2]} are now partners, versus ${ps[1]} and ${ps[3]}.`);
-                    }
-                }
 
                 // HDCP STROKES ALERT
                 if (d === 1 && !this.corr) {
@@ -552,6 +543,20 @@ const App = {
                 }
 
                 this.speak(msg);
+
+                // If moving to a next segment, add a delay then announce partnerships
+                if (sIdx < 2 && this.d.gameType === 'cod') {
+                    setTimeout(() => {
+                        const ps = this.d.ps;
+                        let nextMsg = "";
+                        if (sIdx === 0) { // Moving to Seg 2
+                            nextMsg = `Attention! Segment Two: Opposites. ${ps[0]} and ${ps[3]} are now partners, versus ${ps[1]} and ${ps[2]}.`;
+                        } else if (sIdx === 1) { // Moving to Seg 3
+                            nextMsg = `Attention! Final Segment: Drivers. ${ps[0]} and ${ps[2]} are now partners, versus ${ps[1]} and ${ps[3]}.`;
+                        }
+                        if (nextMsg) this.speak(nextMsg);
+                    }, 2000);
+                }
             },
 
 
@@ -2921,7 +2926,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.1</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.2</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
