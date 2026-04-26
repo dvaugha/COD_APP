@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v279.3</title>
+    <title>COD Golf v279.4</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -1040,7 +1040,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v279.3</div>
+            <div class="tx-xl">COD Golf v279.4</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1214,7 +1214,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.3</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.4</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1976,6 +1976,11 @@ const App = {
                 this.uDash();
                 this.updateJunkUI();
 
+                // NEXT TEE ANNOUNCEMENT (COMBO)
+                if (d === 1 && !this.corr && this.d.tee === 'combo') {
+                    setTimeout(() => this.announceNextTee(), 3000);
+                }
+
                 // SEGMENT JUNK PAYOUT MODAL TRIGGER
                 if (d === 1 && !this.corr) {
                     const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
@@ -2064,6 +2069,25 @@ const App = {
                         setTimeout(() => this.speakSequence(messages), 2000);
                     }
                 });
+            },
+
+            announceNextTee: function() {
+                if (!this.d.voiceEnabled || this.d.tee !== 'combo') return;
+                const c = CS[this.d.crs];
+                if (!c) return;
+
+                const hIdx = this.d.h - 1; // Current hole (which was just incremented in navH)
+                let isGold = false;
+                const hasCmb = (c.cmb && c.cmb.length === 18);
+                const hasHcp = (c.hcp && c.hcp.length === 18);
+
+                if (this.d.crs === 'cc' && hasCmb) isGold = (c.cmb[hIdx] === 1);
+                else if (hasHcp) isGold = (c.hcp[hIdx] <= 9);
+                else if (hasCmb) isGold = (c.cmb[hIdx] === 1);
+
+                if (isGold) {
+                    this.speak("Attention! Next hole is a Gold tee. Move to the gold markers.");
+                }
             },
 
 
@@ -4433,7 +4457,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.3</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.4</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}

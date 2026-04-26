@@ -482,6 +482,11 @@ const App = {
                 this.uDash();
                 this.updateJunkUI();
 
+                // NEXT TEE ANNOUNCEMENT (COMBO)
+                if (d === 1 && !this.corr && this.d.tee === 'combo') {
+                    setTimeout(() => this.announceNextTee(), 3000);
+                }
+
                 // SEGMENT JUNK PAYOUT MODAL TRIGGER
                 if (d === 1 && !this.corr) {
                     const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
@@ -570,6 +575,25 @@ const App = {
                         setTimeout(() => this.speakSequence(messages), 2000);
                     }
                 });
+            },
+
+            announceNextTee: function() {
+                if (!this.d.voiceEnabled || this.d.tee !== 'combo') return;
+                const c = CS[this.d.crs];
+                if (!c) return;
+
+                const hIdx = this.d.h - 1; // Current hole (which was just incremented in navH)
+                let isGold = false;
+                const hasCmb = (c.cmb && c.cmb.length === 18);
+                const hasHcp = (c.hcp && c.hcp.length === 18);
+
+                if (this.d.crs === 'cc' && hasCmb) isGold = (c.cmb[hIdx] === 1);
+                else if (hasHcp) isGold = (c.hcp[hIdx] <= 9);
+                else if (hasCmb) isGold = (c.cmb[hIdx] === 1);
+
+                if (isGold) {
+                    this.speak("Attention! Next hole is a Gold tee. Move to the gold markers.");
+                }
             },
 
 
@@ -2939,7 +2963,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.3</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.4</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
