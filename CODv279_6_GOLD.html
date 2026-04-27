@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v279.7</title>
+    <title>COD Golf v279.8</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -1040,7 +1040,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v279.7</div>
+            <div class="tx-xl">COD Golf v279.8</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1214,7 +1214,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.7</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.8</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1325,17 +1325,10 @@
             <div id="rabbit-banner" style="display:none; transition:0.3s; padding:10px; margin-top:10px; text-align:center; font-weight:900; font-size:14px; border-radius:8px; border:2px dashed #FFFFFF; color:#FFFFFF;">🐇 THE RABBIT IS FREE</div>
         </div>
 
-        <!-- === CADDY INSIGHT === -->
-        <div id="caddy-box" class="box"
-            style="display:none; transition:0.3s; padding:24px 12px; margin-top:10px; background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border:1px solid #334155; position:relative;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div style="font-size:20px;">💡</div>
-                <div style="flex:1;">
-                    <div id="caddy-msg" style="font-size:12px; font-weight:700; color:white; line-height:1.6;">Eddie
-                        gets a
-                        stroke here—Big chance to flip the segment!</div>
-                </div>
-            </div>
+        <!-- === STROKE ALERT === -->
+        <div id="stroke-alert-box" class="box"
+            style="display:none; transition:0.3s; padding:12px; margin-top:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #F59E0B; text-align:center;">
+            <div id="stroke-alert-msg" style="font-size:14px; font-weight:900; color:#F59E0B; text-transform:uppercase; letter-spacing:0.5px;"></div>
         </div>
 
         <div id="lbl-t1"
@@ -3407,75 +3400,32 @@ const App = {
                     lbl2.innerText = getTeamLabel(t2Arr);
                     lbl2.style.display = (this.d.ps[t2Arr[0]] || this.d.ps[t2Arr[1]]) ? 'block' : 'none';
                 }
-                this.updateCaddy();
+                this.updateStrokeAlert();
                 this.updateJunkUI();
                 this.checkStandingsBtn();
             },
 
-            updateCaddy: function () {
-                const el = document.getElementById('caddy-box');
-                const msgEl = document.getElementById('caddy-msg');
+            updateStrokeAlert: function () {
+                const el = document.getElementById('stroke-alert-box');
+                const msgEl = document.getElementById('stroke-alert-msg');
                 if (!el || !msgEl) return;
 
-                const h = this.d.h;
-                const hIdx = h - 1;
-                const c = CS[this.d.crs];
-                if (!c) return;
-                const par = c.p[hIdx];
-                const hcp = (c.hcp && c.hcp[hIdx]) ? c.hcp[hIdx] : 0;
-
-                let msgs = [];
-
-                // 1. Handicap Insights
-                const hitters = [];
-                [0, 1, 2, 3].forEach(i => {
-                    if (this.d.ps[i] && this.getPops(i, hIdx) > 0) hitters.push(this.d.ps[i]);
-                });
-
-                if (hitters.length > 0 && this.d.gameType !== 'single') {
-                    if (hitters.length === 1) {
-                        msgs.push(`Strategy: **${hitters[0]}** gets a stroke here—huge strategic advantage!`);
-                    } else if (hitters.length === 2) {
-                        msgs.push(`Strategy: **${hitters[1]}** & **${hitters[0]}** both get strokes. Team effort needed!`);
-                    } else {
-                        msgs.push(`This is a high-hcp hole for the field. Grinding pars will win it.`);
+                const hIdx = this.d.h - 1;
+                let strokedPlayers = [];
+                for (let i = 0; i < 4; i++) {
+                    if (this.d.ps[i] && this.getPops(i, hIdx) > 0) {
+                        strokedPlayers.push(this.d.ps[i].trim());
                     }
                 }
 
-                // 2. COD Segment Context
-                if (this.d.gameType === 'cod') {
-                    const rh = this.getRelHole(h);
-                    const m = Math.floor((rh - 1) / 6);
-                    const holesLeft = (m + 1) * 6 - rh + 1;
-                    const results = this.calcSegResults(m);
-                    const main = results[0];
-
-                    if (main) {
-                        const d = main.w1 - main.w2;
-                        if (d !== 0) {
-                            const teamDown = d < 0 ? 1 : 2;
-                            const tIdx = teamDown === 1 ? main.seg.t1 : main.seg.t2;
-                            const teamName = `${this.d.ps[tIdx[0]]}/${this.d.ps[tIdx[1]]}`;
-                            const diff = Math.abs(d);
-
-                            if (holesLeft <= 2 && holesLeft > 0) {
-                                msgs.push(`⚠️ Segment Alert: **${teamName}** is down ${diff} with ${holesLeft} left—Win needed!`);
-                            } else if (diff >= 2) {
-                                msgs.push(`📈 Momentum: **${teamName}** needs a strong finish to stabilize this segment.`);
-                            }
-                        } else if (holesLeft === 1) {
-                            msgs.push(`🎯 All Square on the final hole of the segment! Pure pressure.`);
-                        }
-                    }
-                }
-
-                // 3. Technical Tips
-                if (par === 3) msgs.push("⛳ Par 3: Greenies are active! Aim for the fat of the green and secure the par.");
-                if (hcp <= 3 && hcp > 0) msgs.push(`⛰️ Difficulty: Hole Rank ${hcp}. This is the hardest stretch on the course.`);
-                if (par === 5 && hcp >= 15) msgs.push("🦅 Scoring Opportunity: Short par 5. Aggressive play could pay off here.");
-
-                if (msgs.length > 0) {
-                    msgEl.innerHTML = msgs[0];
+                if (strokedPlayers.length > 0 && this.d.gameType !== 'single' && this.d.gameType !== 'scramble') {
+                    let namesStr = "";
+                    if (strokedPlayers.length === 1) namesStr = strokedPlayers[0] + " has a stroke";
+                    else if (strokedPlayers.length === 2) namesStr = strokedPlayers[0] + " and " + strokedPlayers[1] + " have strokes";
+                    else if (strokedPlayers.length === 3) namesStr = strokedPlayers[0] + ", " + strokedPlayers[1] + " and " + strokedPlayers[2] + " have strokes";
+                    else if (strokedPlayers.length === 4) namesStr = "Everyone has strokes";
+                    
+                    msgEl.innerText = namesStr + " on this hole";
                     el.style.display = 'block';
                 } else {
                     el.style.display = 'none';
@@ -4465,7 +4415,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.7</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.8</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -5277,7 +5227,7 @@ PAYOUTS:
                         <div style="background:#0F172A; border-radius:12px; border:1px solid #334155; padding:16px;">
                             ${this.getScorecardHTML()}
                         </div>
-                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v279.7</div>
+                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v279.8</div>
                     `;
 
                     // Inject necessary table styles for the snapshot

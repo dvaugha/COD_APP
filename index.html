@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v279.7</title>
+    <title>COD Golf v279.8</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
     <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="css/styles.css?v=202604270923">
+    <link rel="stylesheet" href="css/styles.css?v=202604271035">
     <!-- Deployment Nudge: 2026-04-26 01:48 PM -->
 </head>
 <body style="background:#0F172A; color:#F8FAFC;">
@@ -59,7 +59,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v279.7</div>
+            <div class="tx-xl">COD Golf v279.8</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -233,7 +233,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.7</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.8</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -344,17 +344,10 @@
             <div id="rabbit-banner" style="display:none; transition:0.3s; padding:10px; margin-top:10px; text-align:center; font-weight:900; font-size:14px; border-radius:8px; border:2px dashed #FFFFFF; color:#FFFFFF;">🐇 THE RABBIT IS FREE</div>
         </div>
 
-        <!-- === CADDY INSIGHT === -->
-        <div id="caddy-box" class="box"
-            style="display:none; transition:0.3s; padding:24px 12px; margin-top:10px; background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border:1px solid #334155; position:relative;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div style="font-size:20px;">💡</div>
-                <div style="flex:1;">
-                    <div id="caddy-msg" style="font-size:12px; font-weight:700; color:white; line-height:1.6;">Eddie
-                        gets a
-                        stroke here—Big chance to flip the segment!</div>
-                </div>
-            </div>
+        <!-- === STROKE ALERT === -->
+        <div id="stroke-alert-box" class="box"
+            style="display:none; transition:0.3s; padding:12px; margin-top:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #F59E0B; text-align:center;">
+            <div id="stroke-alert-msg" style="font-size:14px; font-weight:900; color:#F59E0B; text-transform:uppercase; letter-spacing:0.5px;"></div>
         </div>
 
         <div id="lbl-t1"
@@ -477,8 +470,8 @@
         <div id="recap-body"></div>
     </div>
 
-    <script src="data/courses.js?v=202604270923"></script>
-    <script src="js/app.js?v=202604270923"></script>
+    <script src="data/courses.js?v=202604271035"></script>
+    <script src="js/app.js?v=202604271035"></script>
 </body>
 
 </html>

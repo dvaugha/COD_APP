@@ -1910,75 +1910,32 @@ const App = {
                     lbl2.innerText = getTeamLabel(t2Arr);
                     lbl2.style.display = (this.d.ps[t2Arr[0]] || this.d.ps[t2Arr[1]]) ? 'block' : 'none';
                 }
-                this.updateCaddy();
+                this.updateStrokeAlert();
                 this.updateJunkUI();
                 this.checkStandingsBtn();
             },
 
-            updateCaddy: function () {
-                const el = document.getElementById('caddy-box');
-                const msgEl = document.getElementById('caddy-msg');
+            updateStrokeAlert: function () {
+                const el = document.getElementById('stroke-alert-box');
+                const msgEl = document.getElementById('stroke-alert-msg');
                 if (!el || !msgEl) return;
 
-                const h = this.d.h;
-                const hIdx = h - 1;
-                const c = CS[this.d.crs];
-                if (!c) return;
-                const par = c.p[hIdx];
-                const hcp = (c.hcp && c.hcp[hIdx]) ? c.hcp[hIdx] : 0;
-
-                let msgs = [];
-
-                // 1. Handicap Insights
-                const hitters = [];
-                [0, 1, 2, 3].forEach(i => {
-                    if (this.d.ps[i] && this.getPops(i, hIdx) > 0) hitters.push(this.d.ps[i]);
-                });
-
-                if (hitters.length > 0 && this.d.gameType !== 'single') {
-                    if (hitters.length === 1) {
-                        msgs.push(`Strategy: **${hitters[0]}** gets a stroke here—huge strategic advantage!`);
-                    } else if (hitters.length === 2) {
-                        msgs.push(`Strategy: **${hitters[1]}** & **${hitters[0]}** both get strokes. Team effort needed!`);
-                    } else {
-                        msgs.push(`This is a high-hcp hole for the field. Grinding pars will win it.`);
+                const hIdx = this.d.h - 1;
+                let strokedPlayers = [];
+                for (let i = 0; i < 4; i++) {
+                    if (this.d.ps[i] && this.getPops(i, hIdx) > 0) {
+                        strokedPlayers.push(this.d.ps[i].trim());
                     }
                 }
 
-                // 2. COD Segment Context
-                if (this.d.gameType === 'cod') {
-                    const rh = this.getRelHole(h);
-                    const m = Math.floor((rh - 1) / 6);
-                    const holesLeft = (m + 1) * 6 - rh + 1;
-                    const results = this.calcSegResults(m);
-                    const main = results[0];
-
-                    if (main) {
-                        const d = main.w1 - main.w2;
-                        if (d !== 0) {
-                            const teamDown = d < 0 ? 1 : 2;
-                            const tIdx = teamDown === 1 ? main.seg.t1 : main.seg.t2;
-                            const teamName = `${this.d.ps[tIdx[0]]}/${this.d.ps[tIdx[1]]}`;
-                            const diff = Math.abs(d);
-
-                            if (holesLeft <= 2 && holesLeft > 0) {
-                                msgs.push(`⚠️ Segment Alert: **${teamName}** is down ${diff} with ${holesLeft} left—Win needed!`);
-                            } else if (diff >= 2) {
-                                msgs.push(`📈 Momentum: **${teamName}** needs a strong finish to stabilize this segment.`);
-                            }
-                        } else if (holesLeft === 1) {
-                            msgs.push(`🎯 All Square on the final hole of the segment! Pure pressure.`);
-                        }
-                    }
-                }
-
-                // 3. Technical Tips
-                if (par === 3) msgs.push("⛳ Par 3: Greenies are active! Aim for the fat of the green and secure the par.");
-                if (hcp <= 3 && hcp > 0) msgs.push(`⛰️ Difficulty: Hole Rank ${hcp}. This is the hardest stretch on the course.`);
-                if (par === 5 && hcp >= 15) msgs.push("🦅 Scoring Opportunity: Short par 5. Aggressive play could pay off here.");
-
-                if (msgs.length > 0) {
-                    msgEl.innerHTML = msgs[0];
+                if (strokedPlayers.length > 0 && this.d.gameType !== 'single' && this.d.gameType !== 'scramble') {
+                    let namesStr = "";
+                    if (strokedPlayers.length === 1) namesStr = strokedPlayers[0] + " has a stroke";
+                    else if (strokedPlayers.length === 2) namesStr = strokedPlayers[0] + " and " + strokedPlayers[1] + " have strokes";
+                    else if (strokedPlayers.length === 3) namesStr = strokedPlayers[0] + ", " + strokedPlayers[1] + " and " + strokedPlayers[2] + " have strokes";
+                    else if (strokedPlayers.length === 4) namesStr = "Everyone has strokes";
+                    
+                    msgEl.innerText = namesStr + " on this hole";
                     el.style.display = 'block';
                 } else {
                     el.style.display = 'none';
@@ -2968,7 +2925,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.7</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.8</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -3755,7 +3712,7 @@ const App = {
                         <div style="background:#0F172A; border-radius:12px; border:1px solid #334155; padding:16px;">
                             ${this.getScorecardHTML()}
                         </div>
-                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v279.7</div>
+                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v279.8</div>
                     `;
 
                     // Inject necessary table styles for the snapshot
