@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v279.9</title>
+    <title>COD Golf v280.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
     <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="css/styles.css?v=202604271048">
+    <link rel="stylesheet" href="css/styles.css?v=202604271056">
     <!-- Deployment Nudge: 2026-04-26 01:48 PM -->
 </head>
 <body style="background:#0F172A; color:#F8FAFC;">
@@ -59,7 +59,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v279.9</div>
+            <div class="tx-xl">COD Golf v280.0</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -100,11 +100,11 @@
                 <button onclick="App.clearSeats()" style="background:transparent; border:1px solid #EF4444; color:#EF4444; font-size:10px; font-weight:900; letter-spacing:1px; cursor:pointer; padding:2px 8px; border-radius:4px; height:24px; line-height:1;">CLEAR ALL</button>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#10B981">CART A<br>DRIVER</div>
+                <div class="role-lbl" style="color:#EC4899">CART A<br>DRIVER</div>
                 <select id="sel-0" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#10B981">CART A<br>PASS</div>
+                <div class="role-lbl" style="color:#EC4899">CART A<br>PASS</div>
                 <select id="sel-1" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
@@ -233,7 +233,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.9</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v280.0</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -351,7 +351,7 @@
         </div>
 
         <div id="lbl-t1"
-            style="font-size:13px; font-weight:800; color:#10B981; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
+            style="font-size:13px; font-weight:800; color:#EC4899; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
         </div>
         <div id="slot-0" class="p-card">
             <div class="btn-act btn-minus" onclick="App.mod(0,-1)">-</div>
@@ -470,8 +470,8 @@
         <div id="recap-body"></div>
     </div>
 
-    <script src="data/courses.js?v=202604271048"></script>
-    <script src="js/app.js?v=202604271048"></script>
+    <script src="data/courses.js?v=202604271056"></script>
+    <script src="js/app.js?v=202604271056"></script>
 </body>
 
 </html>

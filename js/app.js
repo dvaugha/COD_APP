@@ -1718,8 +1718,8 @@ const App = {
                         return "";
                     } else {
                         let d = res.w1 - res.w2;
-                        if (d > 0) s = `${sn(rt1[0])}/${sn(rt1[1])} <em style="color:#10B981">${d} UP</em>`;
-                        else if (d < 0) s = `${sn(rt2[0])}/${sn(rt2[1])} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
+                        if (d > 0) s = `${sn(rt1[0])}/${sn(rt1[1])} <em style="color:#EC4899">${d} UP</em>`;
+                        else if (d < 0) s = `${sn(rt2[0])}/${sn(rt2[1])} <em style="color:#22D3EE">${Math.abs(d)} UP</em>`;
                     }
                     return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#FFFFFF; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${s}</div>`;
                 };
@@ -1771,8 +1771,8 @@ const App = {
                     const nassauLine = (label, seg) => {
                         const d = seg.w1 - seg.w2;
                         let val = 'ALL SQUARE';
-                        if (d > 0) val = `${tn1} <em style="color:#10B981">${d} UP</em>`;
-                        else if (d < 0) val = `${tn2} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
+                        if (d > 0) val = `${tn1} <em style="color:#EC4899">${d} UP</em>`;
+                        else if (d < 0) val = `${tn2} <em style="color:#22D3EE">${Math.abs(d)} UP</em>`;
                         return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#FFFFFF; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${val}</div>`;
                     };
                     statHTML = nassauLine('Front', nr.front) + nassauLine('Back', nr.back) + nassauLine('Total', nr.overall);
@@ -2467,7 +2467,7 @@ const App = {
                         else if (seg.winner === 2) { nr.t2.forEach(p => bets[p] += bet); nr.t1.forEach(p => bets[p] -= bet); }
                     });
                     const segLine = (label, seg) => {
-                        if (seg.winner === 1) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#10B981;">${tn1} wins +$${bet}</span></div>`;
+                        if (seg.winner === 1) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#EC4899;">${tn1} wins +$${bet}</span></div>`;
                         if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#22D3EE;">${tn2} wins +$${bet}</span></div>`;
                         return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#FFFFFF;">All Square</span></div>`;
                     };
@@ -2490,7 +2490,7 @@ const App = {
                             }
                             const matchName = (rIdx === 0) ? lbl : `PRESS (H${this.getAbsHole(r.startRh)}-${this.getAbsHole(r.endRh)})`;
                             let wTxt = "ALL SQUARE", wCol = "white";
-                            if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})`; wCol = "#10B981"; }
+                            if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})`; wCol = "#EC4899"; }
                             else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})`; wCol = "#22D3EE"; }
 
                             resHTML += `<div style="margin-bottom:16px;">
@@ -2512,7 +2512,7 @@ const App = {
                                     best2 = Math.min(s[r.seg.t2[0]] - this.getPops(r.seg.t2[0], h - 1), s[r.seg.t2[1]] - this.getPops(r.seg.t2[1], h - 1));
                                 }
                                 let bStyle = "background:#334155; color:#FFFFFF;", bTxt = `H${h}`;
-                                if (best1 < best2) { bStyle = "background:#10B981; color:#064E3B;"; bTxt = `H${h}: ${best1}`; }
+                                if (best1 < best2) { bStyle = "background:#EC4899; color:#FFFFFF;"; bTxt = `H${h}: ${best1}`; }
                                 else if (best2 < best1) { bStyle = "background:#22D3EE; color:#082F49;"; bTxt = `H${h}: ${best2}`; }
                                 else { bTxt = `H${h}: -`; }
                                 resHTML += `<div style="${bStyle} padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">${bTxt}</div>`;
@@ -2925,7 +2925,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.9</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v280.0</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -3491,7 +3491,7 @@ const App = {
                         const n2 = `${this.d.ps[seg.t2[0]] || '?'}/${this.d.ps[seg.t2[1]] || '?'}`;
                         const d = res.w1 - res.w2;
                         let statusTxt, statusCol;
-                        if (d > 0)       { statusTxt = `${n1} leads ${d} UP`; statusCol = '#10B981'; }
+                        if (d > 0)       { statusTxt = `${n1} leads ${d} UP`; statusCol = '#EC4899'; }
                         else if (d < 0)  { statusTxt = `${n2} leads ${Math.abs(d)} UP`; statusCol = '#22D3EE'; }
                         else             { statusTxt = 'All Square'; statusCol = '#FFFFFF'; }
 
@@ -3511,7 +3511,7 @@ const App = {
                     const nassauStdRow = (label, seg) => {
                         const d = seg.w1 - seg.w2;
                         let txt, col;
-                        if (d > 0)      { txt = `${tn1} leads ${d} UP`; col = '#10B981'; }
+                        if (d > 0)      { txt = `${tn1} leads ${d} UP`; col = '#EC4899'; }
                         else if (d < 0) { txt = `${tn2} leads ${Math.abs(d)} UP`; col = '#22D3EE'; }
                         else            { txt = 'All Square'; col = '#FFFFFF'; }
                         return `<div class="std-row"><span style="color:#FFFFFF;font-size:12px;">${label}</span><span style="color:${col};font-weight:900;">${txt}</span></div>`;
@@ -3712,7 +3712,7 @@ const App = {
                         <div style="background:#0F172A; border-radius:12px; border:1px solid #334155; padding:16px;">
                             ${this.getScorecardHTML()}
                         </div>
-                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v279.9</div>
+                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v280.0</div>
                     `;
 
                     // Inject necessary table styles for the snapshot
