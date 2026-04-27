@@ -1,31 +1,35 @@
-# Session Resume: COD Golf App — v275.22 (GOLD)
+# Session Resume: COD Golf App — v280.1 (GOLD)
 
 ## Current Status
-- **App Version:** v275.22 - GOLD
+- **App Version:** v280.1 - GOLD
 - **Branch:** `main` → `https://github.com/dvaugha/COD_APP`
-- **Last Updated:** 2026-04-17
+- **Last Updated:** 2026-04-27
+- **Gold Standard File:** `CODv280_1_GOLD.html`
 
 ---
 
-## What Was Built This Session (v275.19 → v275.22)
+## What Was Built This Session (v279.3 → v280.1)
 
-### 🐛 Critical UI & State Management Fixes (v275.20 - v275.22)
-- **The "Missing Names" Bug Resolved:** Fixed a critical data-binding regression in the `uDash` function and `App.init` where `this.d.chosen` (active player seats) was sometimes created as an Object instead of an Array. This caused `.filter()` crashes in the background, resulting in blank player lists.
-- **Robust Storage Migration:** Standardized the local browser storage key to `COD_GOLF_DATA_v275_22`. Added an aggressive "scavenging" fallback to recover names stored under legacy keys (`GOLF_241`, `GOLF_265`, `COD_GOLF_DATA_v273_0`).
-- **Code Deduplication:** Cleaned up over 80 lines of duplicated definitions in `app.js` (e.g., `renderRoster`, `restoreSet`) that were causing strange race conditions and breaking the "Tap Name to Seat" feature.
-- **"CLEAR ALL" Button Repaired:** Restored the `clearSeats` function which was accidentally removed during code cleanups, allowing instant reset of all four player spots.
-- **Syntax Error Protection:** Validated the application code via `Node.js` after a catastrophic syntax error (a missing closing brace) temporarily broke the entire app initialization during v275.21.
+### 🔊 Enhanced Voice Announcements
+- **Bullhorn Delay & Sequencing:** Prevented audio overlap ("stepping") by implementing sequential callbacks (`onend`). Added a mandatory 30-second delay for segment-end announcements to allow post-hole chatter to settle.
+- **Personalized Stroke Alerts:** The voice alert now explicitly speaks the *names* of the players receiving strokes on the upcoming hole (e.g., "Dan and Doug have strokes on this next hole") instead of a generic warning.
+- **Combo Tee Navigation:** If playing "Combo" tees, the app intelligently scans ahead and announces: "Attention! Next hole is a Gold tee. Move to the gold markers" 3 seconds after the previous score is entered.
 
-### ⛳ Course Database Accuracy: Crow Creek CC Focus (v275.22)
-- Analyzed physical scorecard photos for **Crow Creek CC (Calabash, NC)** to establish absolute accuracy.
-- **Handicap Corrections:** Hole #2 is properly recorded as the #1 handicap, and Hole #1 is the #17 handicap.
-- **White and Gold Yardages:** Exact yardages for both White (6099 yds) and Gold (5628 yds) copied directly from the physical scorecard photos.
-- **Combo Tee Auto-Mapping:** Implemented the exact "Medalist/Combo" tee mapping (5882 yds) used by Crow Creek, accurately alternating between White and Gold tee yardages hole by hole. 
-- *Note:* The source scorecard images are now preserved directly inside the repository under the `/scorecards/` directory.
+### 🖼️ Simplified "Share Scorecard Only"
+- Added a dedicated "SHARE SCORECARD ONLY" button on the Recap view.
+- Generates a completely clean, "financials-free" snapshot of just the Front 9 and Back 9 Gross and Net scorecards.
+- Fixed a bug where `html2canvas` was hanging on "Preview still loading" by explicitly waiting 300ms for DOM rendering and actively generating the canvas blob before sharing.
+
+### 🎨 High-Contrast "Neon" UI Overhaul
+To ensure maximum visibility outdoors and prevent functional color clashes (like green '+' buttons bleeding into green team colors):
+- **Team A:** Changed to Bright Cobalt Blue (`#60A5FA`).
+- **Team B:** Changed to Bright Cyan (`#22D3EE`).
+- **Stroke Alert Banner:** Replaced the old "Caddy Insights" banner with a bright Gold/Amber (`#F59E0B`) "Stroke Alert" banner that actively displays exactly who receives a stroke on the *current* hole. 
+- All muted gray text was previously converted to Pure White (`#FFFFFF`) to survive harsh sunlight on mobile screens.
 
 ### 🚀 Automation & Deployment
-- Consolidated all deployment commands into a single `SYNC.bat` file.
-- The sync script now automatically executes cache-busting (updating version tags in `index.html`), commits the changes to Git, and pushes to remote, ensuring quick, safe deployments of hotfixes.
+- Relied on `bundle_gold.py` to create a new `CODv280_1_GOLD.html` standalone artifact.
+- Extremely aggressive cache-busting required (`?v=202604271058`) to force iOS Safari to dump stale javascript.
 
 ---
 
@@ -43,6 +47,5 @@
 ---
 
 ## What to Focus on Next
-- **Test Nassau full round end-to-end:** Verify all pot distributions and F/B/Overall match play interactions check out under complete live play.
-- **Verify Crow Creek CC:** Ensure the newly added Combo Tee yardages correctly surface in the dashboard.
-- **Monitor Roster Stability:** Monitor if players report any further empty seat dropdowns upon app refresh.
+- **Test Scorecard Snapshot:** Verify the 300ms rendering delay works consistently across older mobile devices when taking the new Scorecard-Only photo.
+- **Test Voice Sequencing:** Monitor the 30-second delay for segment-end announcements to ensure it triggers correctly alongside "Combo" tee alerts without crashing.
