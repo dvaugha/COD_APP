@@ -7,7 +7,7 @@ def bundle():
     styles_path = os.path.join(repo_root, "css", "styles.css")
     courses_path = os.path.join(repo_root, "data", "courses.js")
     app_path = os.path.join(repo_root, "js", "app.js")
-    gold_path = os.path.join(repo_root, "CODv279_6_GOLD.html")
+    gold_path = os.path.join(repo_root, "CODv280_1_GOLD.html")
 
     with open(index_path, 'r', encoding='utf-8') as f:
         html = f.read()
