@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v279.8</title>
+    <title>COD Golf v279.9</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -1040,7 +1040,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v279.8</div>
+            <div class="tx-xl">COD Golf v279.9</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1089,11 +1089,11 @@
                 <select id="sel-1" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#F59E0B">CART B<br>DRIVER</div>
+                <div class="role-lbl" style="color:#22D3EE">CART B<br>DRIVER</div>
                 <select id="sel-2" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#F59E0B">CART B<br>PASS</div>
+                <div class="role-lbl" style="color:#22D3EE">CART B<br>PASS</div>
                 <select id="sel-3" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <button class="g-btn g-btn-sm"
@@ -1214,7 +1214,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.8</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v279.9</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1365,7 +1365,7 @@
         </div>
 
         <div id="lbl-t2"
-            style="font-size:13px; font-weight:800; color:#F59E0B; margin:16px 0 8px 4px; text-transform:uppercase;">
+            style="font-size:13px; font-weight:800; color:#22D3EE; margin:16px 0 8px 4px; text-transform:uppercase;">
             TEAM B</div>
         <div id="slot-2" class="p-card">
             <div class="btn-act btn-minus" onclick="App.mod(2,-1)">-</div>
@@ -3958,7 +3958,7 @@ const App = {
                     });
                     const segLine = (label, seg) => {
                         if (seg.winner === 1) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#10B981;">${tn1} wins +$${bet}</span></div>`;
-                        if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#F59E0B;">${tn2} wins +$${bet}</span></div>`;
+                        if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#22D3EE;">${tn2} wins +$${bet}</span></div>`;
                         return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#FFFFFF;">All Square</span></div>`;
                     };
                     resHTML += `<div style="margin-bottom:16px;background:rgba(96,165,250,0.1);padding:10px;border-radius:8px;">`
@@ -3981,7 +3981,7 @@ const App = {
                             const matchName = (rIdx === 0) ? lbl : `PRESS (H${this.getAbsHole(r.startRh)}-${this.getAbsHole(r.endRh)})`;
                             let wTxt = "ALL SQUARE", wCol = "white";
                             if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})`; wCol = "#10B981"; }
-                            else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})`; wCol = "#F59E0B"; }
+                            else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})`; wCol = "#22D3EE"; }
 
                             resHTML += `<div style="margin-bottom:16px;">
                                 <div style="font-weight:900; color:#FFFFFF; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${matchName}</div>
@@ -4003,7 +4003,7 @@ const App = {
                                 }
                                 let bStyle = "background:#334155; color:#FFFFFF;", bTxt = `H${h}`;
                                 if (best1 < best2) { bStyle = "background:#10B981; color:#064E3B;"; bTxt = `H${h}: ${best1}`; }
-                                else if (best2 < best1) { bStyle = "background:#F59E0B; color:#78350F;"; bTxt = `H${h}: ${best2}`; }
+                                else if (best2 < best1) { bStyle = "background:#22D3EE; color:#082F49;"; bTxt = `H${h}: ${best2}`; }
                                 else { bTxt = `H${h}: -`; }
                                 resHTML += `<div style="${bStyle} padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">${bTxt}</div>`;
                             }
@@ -4415,7 +4415,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.8</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v279.9</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -5007,7 +5007,7 @@ PAYOUTS:
                         const d = res.w1 - res.w2;
                         let statusTxt, statusCol;
                         if (d > 0)       { statusTxt = `${n1} leads ${d} UP`; statusCol = '#10B981'; }
-                        else if (d < 0)  { statusTxt = `${n2} leads ${Math.abs(d)} UP`; statusCol = '#F59E0B'; }
+                        else if (d < 0)  { statusTxt = `${n2} leads ${Math.abs(d)} UP`; statusCol = '#22D3EE'; }
                         else             { statusTxt = 'All Square'; statusCol = '#FFFFFF'; }
 
                         html += `<div class="std-row">`;
@@ -5027,7 +5027,7 @@ PAYOUTS:
                         const d = seg.w1 - seg.w2;
                         let txt, col;
                         if (d > 0)      { txt = `${tn1} leads ${d} UP`; col = '#10B981'; }
-                        else if (d < 0) { txt = `${tn2} leads ${Math.abs(d)} UP`; col = '#F59E0B'; }
+                        else if (d < 0) { txt = `${tn2} leads ${Math.abs(d)} UP`; col = '#22D3EE'; }
                         else            { txt = 'All Square'; col = '#FFFFFF'; }
                         return `<div class="std-row"><span style="color:#FFFFFF;font-size:12px;">${label}</span><span style="color:${col};font-weight:900;">${txt}</span></div>`;
                     };
@@ -5227,7 +5227,7 @@ PAYOUTS:
                         <div style="background:#0F172A; border-radius:12px; border:1px solid #334155; padding:16px;">
                             ${this.getScorecardHTML()}
                         </div>
-                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v279.8</div>
+                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v279.9</div>
                     `;
 
                     // Inject necessary table styles for the snapshot
