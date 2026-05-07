@@ -667,8 +667,7 @@ const App = {
                 [0, 1, 2, 3].forEach(i => {
                     if (this.d.ps[i]) {
                         activeCount++;
-                        const pid = this.slotMap[i];
-                        if (s[pid] === undefined || s[pid] <= 0) {
+                        if (s[i] === undefined || s[i] <= 0) {
                             allPositive = false;
                         } else {
                             enteredCount++;
@@ -733,16 +732,18 @@ const App = {
                             });
                         });
 
+                        // Navigate Forward correctly matching the back 9 nav logic
                         let nextH;
-                        if (this.d.start === 10) {
-                            if (this.d.h === 18) nextH = 1;
-                            else if (this.d.h === 9) nextH = 99;
-                            else nextH = this.d.h + 1;
+                        let curH = parseInt(this.d.h);
+                        let startH = parseInt(this.d.start);
+                        if (startH === 10) {
+                            if (curH === 18) nextH = 1;
+                            else if (curH === 9) nextH = 99;
+                            else nextH = curH + 1;
                         } else {
-                            if (this.d.h === 18) nextH = 99;
-                            else nextH = this.d.h + 1;
+                            if (curH === 18) nextH = 99;
+                            else nextH = curH + 1;
                         }
-
                         if (nextH === 99) {
                             this.save();
                             this.nav('v-card');
