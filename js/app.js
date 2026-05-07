@@ -351,7 +351,8 @@ const App = {
                 this.d.rabbitHistory = {};
                 let currentRabbit = null;
                 const c = CS[this.d.crs];
-                for (let i = 1; i <= 18; i++) {
+                for (let rh = 1; rh <= 18; rh++) {
+                    const i = this.getAbsHole(rh);
                     if (!this.d.s[i]) break;
                     let lowestNet = 999;
                     let lowestPlayers = [];
@@ -394,18 +395,20 @@ const App = {
             },
             
             announceRabbit: function(finishedHole) {
-                const prev = (finishedHole === 1) ? null : this.d.rabbitHistory[finishedHole - 1];
+                const rh = this.getRelHole(finishedHole);
+                const prevH = rh === 1 ? null : this.getAbsHole(rh - 1);
+                const prev = prevH === null ? null : this.d.rabbitHistory[prevH];
                 const curr = this.d.rabbitHistory[finishedHole];
                 const activeCount = this.d.ps.filter(x=>x).length;
                 if (activeCount < 2) return;
                 
-                if (finishedHole === 9) {
+                if (rh === 9) {
                     if (curr !== null && curr !== undefined) {
                         this.speak('Front nine complete. ' + this.d.ps[curr] + ' wins the rabbit pot.');
                     } else {
                         this.speak('Front nine complete. The rabbit is free, pot pushes to the back nine.');
                     }
-                } else if (finishedHole === 18) {
+                } else if (rh === 18) {
                     if (curr !== null && curr !== undefined) {
                         this.speak('Round complete. ' + this.d.ps[curr] + ' wins the final rabbit pot. Excellent playing.');
                     } else {
@@ -490,13 +493,14 @@ const App = {
                 // SEGMENT JUNK PAYOUT MODAL TRIGGER
                 if (d === 1 && !this.corr) {
                     const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
-                    if (lastH === 6 || lastH === 12 || lastH === 18) {
-                        const sIdx = (lastH === 6) ? 0 : (lastH === 12 ? 1 : 2);
+                    const rhLastH = this.getRelHole(lastH);
+                    if (rhLastH === 6 || rhLastH === 12 || rhLastH === 18) {
+                        const sIdx = (rhLastH === 6) ? 0 : (rhLastH === 12 ? 1 : 2);
                         if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                             setTimeout(() => this.announceSegmentWinner(sIdx), 30000);
                         }
                         this.showJunkPayout(sIdx);
-                        if (lastH === 12 && (this.d.gameType === 'cod' || this.d.gameType === 'scramble')) {
+                        if (rhLastH === 12 && (this.d.gameType === 'cod' || this.d.gameType === 'scramble')) {
                             this.showStandings();
                         }
                     }
