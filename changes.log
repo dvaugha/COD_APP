@@ -8,3 +8,10 @@
 - Verified stable Sea Trail scorecard yardages and handicaps.
 2026-04-24 12:37:00 - Updated app.js logic to dynamically disable tee options (like Combo) if course data is missing.
 2026-04-24 12:38:00 - Restored Combo tee support for Sea Trail courses by adding 'cmb' mask (White/Gold mix).
+[2026-05-07] v280.7 Release
+- Fixed navigation and auto-forward logic for rounds starting on Hole 10.
+- Corrected junk scoring hole mapping (getAbsHole) in calcJunkRes.
+- Added defensive NaN checks and course data fallbacks in getPops and junk calculations.
+- Ensured hole state persistence as integers.
+- Verified fixes with automated logic test harness.
+
