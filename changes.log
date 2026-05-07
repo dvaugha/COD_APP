@@ -15,3 +15,8 @@
 - Ensured hole state persistence as integers.
 - Verified fixes with automated logic test harness.
 
+[2026-05-07] v280.8 Release
+- Fixed a critical crash in navH caused by missing auto-adv-banner element in some UI states.
+- Added defensive DOM checks to prevent script termination during hole transitions.
+- Strengthened course data lookups in junk scoring.
+
