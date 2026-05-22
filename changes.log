@@ -20,3 +20,4 @@
 - Added defensive DOM checks to prevent script termination during hole transitions.
 - Strengthened course data lookups in junk scoring.
 
+2026-05-21 21:05:00 - Updated Rivers Edge (re) in nc.json with scorecard yardages, par, and handicaps. Added Gold, Black, White, Green, and Blue tees.
