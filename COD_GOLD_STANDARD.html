@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v278.3-GOLD</title>
+    <title>COD Golf v280.11</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -992,7 +992,7 @@
             border-top: 1px solid #334155;
         }
 </style>
-    <!-- Deployment Nudge: 2026-04-26 01:48 PM -->
+    <!-- Deployment Nudge: 2026-05-21 10:03 PM
 </head>
 <body style="background:#0F172A; color:#F8FAFC;">
     <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
@@ -1040,7 +1040,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v278.3-GOLD</div>
+            <div class="tx-xl">COD Golf v280.11</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1081,19 +1081,19 @@
                 <button onclick="App.clearSeats()" style="background:transparent; border:1px solid #EF4444; color:#EF4444; font-size:10px; font-weight:900; letter-spacing:1px; cursor:pointer; padding:2px 8px; border-radius:4px; height:24px; line-height:1;">CLEAR ALL</button>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#10B981">CART A<br>DRIVER</div>
+                <div class="role-lbl" style="color:#60A5FA">CART A<br>DRIVER</div>
                 <select id="sel-0" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#10B981">CART A<br>PASS</div>
+                <div class="role-lbl" style="color:#60A5FA">CART A<br>PASS</div>
                 <select id="sel-1" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#F59E0B">CART B<br>DRIVER</div>
+                <div class="role-lbl" style="color:#22D3EE">CART B<br>DRIVER</div>
                 <select id="sel-2" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <div class="role-row">
-                <div class="role-lbl" style="color:#F59E0B">CART B<br>PASS</div>
+                <div class="role-lbl" style="color:#22D3EE">CART B<br>PASS</div>
                 <select id="sel-3" class="role-sel" onchange="App.onRole()"></select>
             </div>
             <button class="g-btn g-btn-sm"
@@ -1214,7 +1214,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v275.23 - GOLD</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v280.11</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1297,7 +1297,7 @@
             <div class="flex-r" style="margin-bottom:8px;">
                 <button class="nav-btn" onclick="App.navH(-1)">←</button>
                 <div style="flex:1; text-align:center;">
-                    <div id="d-h-num" style="font-size:14px; font-weight:900; color:#FFFFFF; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">HOLE 1</div>
+                    <div id="d-h-num" style="font-size:18px; font-weight:900; color:#FFFFFF; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">HOLE 1</div>
                     <div id="d-par" style="font-size:44px; font-weight:900; line-height:1; color:white;">4</div>
                     <div id="d-tee-ind"
                         style="font-size:14px; font-weight:900; color:#FFD700; margin-top:2px; text-transform:uppercase; letter-spacing:1px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">
@@ -1325,21 +1325,14 @@
             <div id="rabbit-banner" style="display:none; transition:0.3s; padding:10px; margin-top:10px; text-align:center; font-weight:900; font-size:14px; border-radius:8px; border:2px dashed #FFFFFF; color:#FFFFFF;">🐇 THE RABBIT IS FREE</div>
         </div>
 
-        <!-- === CADDY INSIGHT === -->
-        <div id="caddy-box" class="box"
-            style="display:none; transition:0.3s; padding:24px 12px; margin-top:10px; background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border:1px solid #334155; position:relative;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div style="font-size:20px;">💡</div>
-                <div style="flex:1;">
-                    <div id="caddy-msg" style="font-size:12px; font-weight:700; color:white; line-height:1.6;">Eddie
-                        gets a
-                        stroke here—Big chance to flip the segment!</div>
-                </div>
-            </div>
+        <!-- === STROKE ALERT === -->
+        <div id="stroke-alert-box" class="box"
+            style="display:none; transition:0.3s; padding:12px; margin-top:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #F59E0B; text-align:center;">
+            <div id="stroke-alert-msg" style="font-size:14px; font-weight:900; color:#F59E0B; text-transform:uppercase; letter-spacing:0.5px;"></div>
         </div>
 
         <div id="lbl-t1"
-            style="font-size:13px; font-weight:800; color:#10B981; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
+            style="font-size:13px; font-weight:800; color:#60A5FA; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
         </div>
         <div id="slot-0" class="p-card">
             <div class="btn-act btn-minus" onclick="App.mod(0,-1)">-</div>
@@ -1372,7 +1365,7 @@
         </div>
 
         <div id="lbl-t2"
-            style="font-size:13px; font-weight:800; color:#F59E0B; margin:16px 0 8px 4px; text-transform:uppercase;">
+            style="font-size:13px; font-weight:800; color:#22D3EE; margin:16px 0 8px 4px; text-transform:uppercase;">
             TEAM B</div>
         <div id="slot-2" class="p-card">
             <div class="btn-act btn-minus" onclick="App.mod(2,-1)">-</div>
@@ -1438,6 +1431,9 @@
             onclick="App.nav('v-recap')">📊 ROUND RECAP</button>
 
         <button id="sms-btn" class="g-btn" style="margin-bottom:12px;" onclick="App.share()">TXT+IMG 🚀</button>
+        
+        <button id="sms-score-btn" class="g-btn" style="background:#0F172A; border:1px solid #FFFFFF; color:#FFFFFF; margin-bottom:12px;"
+            onclick="App.shareSimpleScorecard()">SHARE SCORECARD ONLY 📄</button>
         
         <button id="gh-sync-btn" class="g-btn" style="background:#0F172A; border:1px solid #10B981; color:#10B981; margin-bottom:12px;"
             onclick="App.ghSync()">🚀 SYNC TO GITHUB</button>
@@ -1752,10 +1748,11 @@ const App = {
                 if (val) this.speak("Voice alerts enabled");
             },
 
-            speak: function (text) {
+            speak: function (text, callback) {
                 if (!this.d.voiceEnabled || !window.speechSynthesis) return;
                 window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(text);
+                if (callback) u.onend = callback;
                 u.rate = 0.9;
                 u.pitch = 1.0;
 
@@ -1844,7 +1841,8 @@ const App = {
                 this.d.rabbitHistory = {};
                 let currentRabbit = null;
                 const c = CS[this.d.crs];
-                for (let i = 1; i <= 18; i++) {
+                for (let rh = 1; rh <= 18; rh++) {
+                    const i = this.getAbsHole(rh);
                     if (!this.d.s[i]) break;
                     let lowestNet = 999;
                     let lowestPlayers = [];
@@ -1887,18 +1885,20 @@ const App = {
             },
             
             announceRabbit: function(finishedHole) {
-                const prev = (finishedHole === 1) ? null : this.d.rabbitHistory[finishedHole - 1];
+                const rh = this.getRelHole(finishedHole);
+                const prevH = rh === 1 ? null : this.getAbsHole(rh - 1);
+                const prev = prevH === null ? null : this.d.rabbitHistory[prevH];
                 const curr = this.d.rabbitHistory[finishedHole];
                 const activeCount = this.d.ps.filter(x=>x).length;
                 if (activeCount < 2) return;
                 
-                if (finishedHole === 9) {
+                if (rh === 9) {
                     if (curr !== null && curr !== undefined) {
                         this.speak('Front nine complete. ' + this.d.ps[curr] + ' wins the rabbit pot.');
                     } else {
                         this.speak('Front nine complete. The rabbit is free, pot pushes to the back nine.');
                     }
-                } else if (finishedHole === 18) {
+                } else if (rh === 18) {
                     if (curr !== null && curr !== undefined) {
                         this.speak('Round complete. ' + this.d.ps[curr] + ' wins the final rabbit pot. Excellent playing.');
                     } else {
@@ -1939,27 +1939,36 @@ const App = {
             navH: function (d) {
                 if (this.tmr) clearTimeout(this.tmr);
                 if (this.strokesTmr) clearTimeout(this.strokesTmr);
-                document.getElementById('auto-adv-banner').classList.remove('show');
+                const banner = document.getElementById('auto-adv-banner');
+                if (banner) banner.classList.remove('show');
 
                 let n;
+                let curH = parseInt(this.d.h);
+                let startH = parseInt(this.d.start);
+
+                if (isNaN(curH) || isNaN(startH)) {
+                    console.error("Navigation Error: curH or startH is NaN", {h: this.d.h, start: this.d.start});
+                    return;
+                }
+
                 if (d === 1) {
-                    if (this.d.start === 10) {
-                        if (this.d.h === 18) n = 1;
-                        else if (this.d.h === 9) n = 19; // Done
-                        else n = this.d.h + 1;
+                    if (startH === 10) {
+                        if (curH === 18) n = 1;
+                        else if (curH === 9) n = 19; // Done
+                        else n = curH + 1;
                     } else {
-                        n = this.d.h + 1;
+                        n = curH + 1;
                     }
                 }
                 else {
                     this.corr = true;
-                    if (this.d.start === 10) {
-                        if (this.d.h === 1) n = 18;
-                        else if (this.d.h === 10) n = 10;
-                        else n = this.d.h - 1;
+                    if (startH === 10) {
+                        if (curH === 1) n = 18;
+                        else if (curH === 10) n = 10;
+                        else n = curH - 1;
                     } else {
-                        if (this.d.h === 1) n = 1;
-                        else n = this.d.h - 1;
+                        if (curH === 1) n = 1;
+                        else n = curH - 1;
                     }
                 }
 
@@ -1970,18 +1979,34 @@ const App = {
                     this.nav('v-card'); 
                     return; 
                 }
+                
+                if (d === 1 && (!this.d.s[n] || Object.keys(this.d.s[n]).length === 0)) {
+                    this.corr = false;
+                }
+
                 this.d.h = n;
                 this.save();
                 this.uDash();
                 this.updateJunkUI();
 
+                // NEXT TEE ANNOUNCEMENT (COMBO)
+                if (d === 1 && !this.corr && this.d.tee === 'combo') {
+                    setTimeout(() => this.announceNextTee(), 3000);
+                }
+
                 // SEGMENT JUNK PAYOUT MODAL TRIGGER
                 if (d === 1 && !this.corr) {
                     const lastH = (n === 1) ? 18 : (n === 19 ? (this.d.start === 10 ? 9 : 18) : n - 1);
-                    if (lastH === 6 || lastH === 12 || lastH === 18) {
-                        const sIdx = (lastH === 6) ? 0 : (lastH === 12 ? 1 : 2);
+                    const rhLastH = this.getRelHole(lastH);
+                    if (rhLastH === 6 || rhLastH === 12 || rhLastH === 18) {
+                        const sIdx = (rhLastH === 6) ? 0 : (rhLastH === 12 ? 1 : 2);
+                        if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
+                            setTimeout(() => this.announceSegmentWinner(sIdx), 30000);
+                        }
                         this.showJunkPayout(sIdx);
-                        if (lastH === 12) this.showStandings();
+                        if (rhLastH === 12 && (this.d.gameType === 'cod' || this.d.gameType === 'scramble')) {
+                            this.showStandings();
+                        }
                     }
                 }
 
@@ -1992,34 +2017,104 @@ const App = {
                     this.announceRabbit(lastH);
                 }
 
-                // VOICE ANNOUNCEMENT FOR COD SEGMENTS
-                if (this.d.gameType === 'cod' && !this.corr) {
-                    const ps = this.d.ps;
-                    if (this.d.h === 7) {
-                        this.speak(`Attention! Segment Two: Opposites. ${ps[0]} and ${ps[3]} are now partners, versus ${ps[1]} and ${ps[2]}.`);
-                    } else if (this.d.h === 13) {
-                        this.speak(`Attention! Final Segment: Drivers. ${ps[0]} and ${ps[2]} are now partners, versus ${ps[1]} and ${ps[3]}.`);
-                    }
-                }
 
                 // HDCP STROKES ALERT
                 if (d === 1 && !this.corr) {
                     this.strokesTmr = setTimeout(() => {
                         const hIdx = this.d.h - 1;
-                        let hasStrokes = false;
+                        let strokedPlayers = [];
                         for (let i = 0; i < 4; i++) {
                             if (this.d.ps[i] && this.getPops(i, hIdx) > 0) {
-                                hasStrokes = true;
-                                break;
+                                strokedPlayers.push(this.d.ps[i].trim());
                             }
                         }
-                        if (hasStrokes) {
-                            this.speak("Handicap strokes coming on this next hole. Be sure everyone knows!");
+                        if (strokedPlayers.length > 0) {
+                            let namesStr = "";
+                            if (strokedPlayers.length === 1) namesStr = strokedPlayers[0] + " has";
+                            else if (strokedPlayers.length === 2) namesStr = strokedPlayers[0] + " and " + strokedPlayers[1] + " have";
+                            else if (strokedPlayers.length === 3) namesStr = strokedPlayers[0] + ", " + strokedPlayers[1] + " and " + strokedPlayers[2] + " have";
+                            else if (strokedPlayers.length === 4) namesStr = "Everyone has";
+                            
+                            this.speak(namesStr + " strokes on this next hole. Be sure everyone knows!");
                         }
                     }, 15000);
                 }
 
                 this.corr = false;
+            },
+
+            announceSegmentWinner: function (sIdx) {
+                if (!this.d.voiceEnabled) return;
+                
+                const res = this.calcSegResults(sIdx)[0]; // Main match
+                const segs = [
+                    { t1: [0, 1], t2: [2, 3] },
+                    { t1: [0, 3], t2: [1, 2] },
+                    { t1: [0, 2], t2: [1, 3] }
+                ];
+                const team = segs[sIdx];
+                const n1 = `${this.d.ps[team.t1[0]]} and ${this.d.ps[team.t1[1]]}`;
+                const n2 = `${this.d.ps[team.t2[0]]} and ${this.d.ps[team.t2[1]]}`;
+
+                let winnerMsg = "";
+                if (res.winner === 1) {
+                    winnerMsg = `Attention! Team ${n1} have won Segment ${sIdx + 1}!`;
+                } else if (res.winner === 2) {
+                    winnerMsg = `Attention! Team ${n2} have won Segment ${sIdx + 1}!`;
+                } else {
+                    winnerMsg = `Segment ${sIdx + 1} has ended in a push. All square!`;
+                }
+
+                // If moving to a next segment, we need to sequence the partnership announcement
+                if (sIdx < 2 && this.d.gameType === 'cod') {
+                    const ps = this.d.ps;
+                    let nextMsg = "";
+                    if (sIdx === 0) { // Moving to Seg 2
+                        nextMsg = `Attention! Segment Two: Opposites. ${ps[0]} and ${ps[3]} are now partners, versus ${ps[1]} and ${ps[2]}.`;
+                    } else if (sIdx === 1) { // Moving to Seg 3
+                        nextMsg = `Attention! Final Segment: Drivers. ${ps[0]} and ${ps[2]} are now partners, versus ${ps[1]} and ${ps[3]}.`;
+                    }
+                    
+                    // Sequence them: Winner then Partnership
+                    this.speakSequence([winnerMsg, nextMsg]);
+                } else {
+                    this.speak(winnerMsg);
+                }
+            },
+
+            speakSequence: function (messages) {
+                if (!messages || messages.length === 0) return;
+                const msg = messages.shift();
+                
+                // We use a custom version of speak that returns a promise or uses a callback
+                this.speak(msg, () => {
+                    if (messages.length > 0) {
+                        setTimeout(() => this.speakSequence(messages), 2000);
+                    }
+                });
+            },
+
+            announceNextTee: function() {
+                if (!this.d.voiceEnabled || this.d.tee !== 'combo') return;
+                const c = CS[this.d.crs];
+                if (!c) return;
+
+                const hIdx = this.d.h - 1; // Current hole (which was just incremented in navH)
+                let isGold = false;
+                const hasCmb = (c.cmb && c.cmb.length === 18);
+                const hasHcp = (c.hcp && c.hcp.length === 18);
+
+                if (this.d.crs === 'cc' && hasCmb) isGold = (c.cmb[hIdx] === 1);
+                else if (hasHcp) isGold = (c.hcp[hIdx] <= 9);
+                else if (hasCmb) isGold = (c.cmb[hIdx] === 1);
+
+                if (isGold) {
+                    if (this.d.crs === 're') {
+                        this.speak("Attention! Next hole is a Green tee. Move to the green markers.");
+                    } else {
+                        this.speak("Attention! Next hole is a Gold tee. Move to the gold markers.");
+                    }
+                }
             },
 
 
@@ -2063,11 +2158,38 @@ const App = {
             },
             checkAuto: function () {
                 const s = this.d.s[this.d.h];
-                const activeCount = this.d.ps.filter(x => x).length;
-                if (s && Object.keys(s).length === activeCount && Object.values(s).every(v => v > 0)) {
-                    document.getElementById('auto-adv-banner').classList.add('show');
+                if (!s) return;
+                
+                let enteredCount = 0;
+                let allPositive = true;
+                let activeCount = 0;
+                
+                [0, 1, 2, 3].forEach(i => {
+                    if (this.d.ps[i]) {
+                        activeCount++;
+                        if (s[i] === undefined || s[i] <= 0) {
+                            allPositive = false;
+                        } else {
+                            enteredCount++;
+                        }
+                    }
+                });
+
+                if (activeCount > 0 && enteredCount === activeCount && allPositive) {
+                    const banner = document.getElementById('auto-adv-banner');
+                    if (banner) banner.classList.add('show');
                     if (this.tmr) clearTimeout(this.tmr);
-                    this.tmr = setTimeout(() => { this.navH(1); }, 3000);
+                    this.tmr = setTimeout(() => { 
+                        try {
+                            this.navH(1); 
+                        } catch (e) {
+                            console.error("Auto-Forward Error:", e);
+                        }
+                    }, 3000);
+                } else {
+                    const banner = document.getElementById('auto-adv-banner');
+                    if (banner) banner.classList.remove('show');
+                    if (this.tmr) clearTimeout(this.tmr);
                 }
             },
 
@@ -2121,16 +2243,18 @@ const App = {
                             });
                         });
 
+                        // Navigate Forward correctly matching the back 9 nav logic
                         let nextH;
-                        if (this.d.start === 10) {
-                            if (this.d.h === 18) nextH = 1;
-                            else if (this.d.h === 9) nextH = 99;
-                            else nextH = this.d.h + 1;
+                        let curH = parseInt(this.d.h);
+                        let startH = parseInt(this.d.start);
+                        if (startH === 10) {
+                            if (curH === 18) nextH = 1;
+                            else if (curH === 9) nextH = 99;
+                            else nextH = curH + 1;
                         } else {
-                            if (this.d.h === 18) nextH = 99;
-                            else nextH = this.d.h + 1;
+                            if (curH === 18) nextH = 99;
+                            else nextH = curH + 1;
                         }
-
                         if (nextH === 99) {
                             this.save();
                             this.nav('v-card');
@@ -2319,7 +2443,7 @@ const App = {
                     this.d.junk = {};
                     this.d.press = { 0: [], 1: [], 2: [] };
                     this.d.rabbitHistory = {};
-                    this.d.h = this.d.start;
+                    this.d.h = parseInt(this.d.start);
                 }
 
                 // Composite Course Logic
@@ -2441,7 +2565,9 @@ const App = {
                             else if (hasHcp) useGold = (c.hcp[i] <= 9);
                             else if (hasCmb) useGold = (c.cmb[i] === 1);
                             
-                            if (c.y.gold && c.y.white) {
+                            if (id === 're' && c.y.green && c.y.white) {
+                                c.y.combo[i] = useGold ? (c.y.green[i] || 0) : (c.y.white[i] || 0);
+                            } else if (c.y.gold && c.y.white) {
                                 c.y.combo[i] = useGold ? (c.y.gold[i] || 0) : (c.y.white[i] || 0);
                             } else {
                                 c.y.combo[i] = 0;
@@ -2619,7 +2745,7 @@ const App = {
                 const mode = this.d.hcpMode || 'standard';
                 const rh = this.getRelHole(hIdx + 1);
                 const segIdx = Math.floor((rh - 1) / 6);
-                const course = CS[this.d.crs];
+                const course = CS[this.d.crs] || CS['cc'];
                 const holeAlloc = course.hcp[hIdx];
 
                 // 1. Calculate Base Handicap Difference
@@ -3102,12 +3228,16 @@ const App = {
                     else if (hasHcp) useGold = (c.hcp[hIdx] <= 9);
                     else if (hasCmb) useGold = (c.cmb[hIdx] === 1);
 
-                    tT = useGold ? "GOLD TEE" : "WHITE TEE"; 
+                    if (this.d.crs === 're') {
+                        tT = useGold ? "GREEN TEE" : "WHITE TEE"; 
+                    } else {
+                        tT = useGold ? "GOLD TEE" : "WHITE TEE"; 
+                    }
                 }
                 const teeInd = document.getElementById('d-tee-ind');
                 if (teeInd) {
                     teeInd.innerText = tT;
-                    teeInd.style.color = (tT.includes('GOLD') ? '#FFD700' : '#FFFFFF');
+                    teeInd.style.color = (tT.includes('GOLD') ? '#FFD700' : tT.includes('GREEN') ? '#4ade80' : '#FFFFFF');
                 }
 
                 // Helper for safe name substrings
@@ -3124,6 +3254,7 @@ const App = {
                 let fmt = "COD (1-18)";
                 if (this.d.gameType === 'single') fmt = "SCORECARD ONLY";
                 else if (this.d.gameType === 'nassau') fmt = "NASSAU MATCH";
+                else if (this.d.gameType === 'rabbit') fmt = "RABBIT HUNTER";
                 else if (m === 0) fmt = "CARTS (1-6)";
                 else if (m === 1) fmt = "OPPOSITES (7-12)";
                 else fmt = "DRIVERS (13-18)";
@@ -3139,8 +3270,8 @@ const App = {
                         return "";
                     } else {
                         let d = res.w1 - res.w2;
-                        if (d > 0) s = `${sn(rt1[0])}/${sn(rt1[1])} <em style="color:#10B981">${d} UP</em>`;
-                        else if (d < 0) s = `${sn(rt2[0])}/${sn(rt2[1])} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
+                        if (d > 0) s = `${sn(rt1[0])}/${sn(rt1[1])} <em style="color:#60A5FA">${d} UP</em>`;
+                        else if (d < 0) s = `${sn(rt2[0])}/${sn(rt2[1])} <em style="color:#22D3EE">${Math.abs(d)} UP</em>`;
                     }
                     return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#FFFFFF; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${s}</div>`;
                 };
@@ -3192,11 +3323,13 @@ const App = {
                     const nassauLine = (label, seg) => {
                         const d = seg.w1 - seg.w2;
                         let val = 'ALL SQUARE';
-                        if (d > 0) val = `${tn1} <em style="color:#10B981">${d} UP</em>`;
-                        else if (d < 0) val = `${tn2} <em style="color:#10B981">${Math.abs(d)} UP</em>`;
+                        if (d > 0) val = `${tn1} <em style="color:#60A5FA">${d} UP</em>`;
+                        else if (d < 0) val = `${tn2} <em style="color:#22D3EE">${Math.abs(d)} UP</em>`;
                         return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#FFFFFF; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${val}</div>`;
                     };
                     statHTML = nassauLine('Front', nr.front) + nassauLine('Back', nr.back) + nassauLine('Total', nr.overall);
+                } else if (this.d.gameType === 'rabbit') {
+                    statHTML = ""; // Rabbit banner is displayed independently above.
                 } else if (main) {
                     statHTML = getStatStr(main, "Main Match");
                     results.slice(1).forEach((pR, pIdx) => {
@@ -3209,7 +3342,7 @@ const App = {
 
                 // PRESS BUTTONS
                 let pressButtons = '';
-                if (main && this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'nassau') {
+                if (main && this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'nassau' && this.d.gameType !== 'rabbit') {
                     const diff1 = main.w1 - main.w2;
                     const diff2 = main.w2 - main.w1;
                     const hasP1 = this.d.press && this.d.press[m] && this.d.press[m].some(p => p.team === 1);
@@ -3331,75 +3464,32 @@ const App = {
                     lbl2.innerText = getTeamLabel(t2Arr);
                     lbl2.style.display = (this.d.ps[t2Arr[0]] || this.d.ps[t2Arr[1]]) ? 'block' : 'none';
                 }
-                this.updateCaddy();
+                this.updateStrokeAlert();
                 this.updateJunkUI();
                 this.checkStandingsBtn();
             },
 
-            updateCaddy: function () {
-                const el = document.getElementById('caddy-box');
-                const msgEl = document.getElementById('caddy-msg');
+            updateStrokeAlert: function () {
+                const el = document.getElementById('stroke-alert-box');
+                const msgEl = document.getElementById('stroke-alert-msg');
                 if (!el || !msgEl) return;
 
-                const h = this.d.h;
-                const hIdx = h - 1;
-                const c = CS[this.d.crs];
-                if (!c) return;
-                const par = c.p[hIdx];
-                const hcp = (c.hcp && c.hcp[hIdx]) ? c.hcp[hIdx] : 0;
-
-                let msgs = [];
-
-                // 1. Handicap Insights
-                const hitters = [];
-                [0, 1, 2, 3].forEach(i => {
-                    if (this.d.ps[i] && this.getPops(i, hIdx) > 0) hitters.push(this.d.ps[i]);
-                });
-
-                if (hitters.length > 0 && this.d.gameType !== 'single') {
-                    if (hitters.length === 1) {
-                        msgs.push(`Strategy: **${hitters[0]}** gets a stroke here—huge strategic advantage!`);
-                    } else if (hitters.length === 2) {
-                        msgs.push(`Strategy: **${hitters[1]}** & **${hitters[0]}** both get strokes. Team effort needed!`);
-                    } else {
-                        msgs.push(`This is a high-hcp hole for the field. Grinding pars will win it.`);
+                const hIdx = this.d.h - 1;
+                let strokedPlayers = [];
+                for (let i = 0; i < 4; i++) {
+                    if (this.d.ps[i] && this.getPops(i, hIdx) > 0) {
+                        strokedPlayers.push(this.d.ps[i].trim());
                     }
                 }
 
-                // 2. COD Segment Context
-                if (this.d.gameType === 'cod') {
-                    const rh = this.getRelHole(h);
-                    const m = Math.floor((rh - 1) / 6);
-                    const holesLeft = (m + 1) * 6 - rh + 1;
-                    const results = this.calcSegResults(m);
-                    const main = results[0];
-
-                    if (main) {
-                        const d = main.w1 - main.w2;
-                        if (d !== 0) {
-                            const teamDown = d < 0 ? 1 : 2;
-                            const tIdx = teamDown === 1 ? main.seg.t1 : main.seg.t2;
-                            const teamName = `${this.d.ps[tIdx[0]]}/${this.d.ps[tIdx[1]]}`;
-                            const diff = Math.abs(d);
-
-                            if (holesLeft <= 2 && holesLeft > 0) {
-                                msgs.push(`⚠️ Segment Alert: **${teamName}** is down ${diff} with ${holesLeft} left—Win needed!`);
-                            } else if (diff >= 2) {
-                                msgs.push(`📈 Momentum: **${teamName}** needs a strong finish to stabilize this segment.`);
-                            }
-                        } else if (holesLeft === 1) {
-                            msgs.push(`🎯 All Square on the final hole of the segment! Pure pressure.`);
-                        }
-                    }
-                }
-
-                // 3. Technical Tips
-                if (par === 3) msgs.push("⛳ Par 3: Greenies are active! Aim for the fat of the green and secure the par.");
-                if (hcp <= 3 && hcp > 0) msgs.push(`⛰️ Difficulty: Hole Rank ${hcp}. This is the hardest stretch on the course.`);
-                if (par === 5 && hcp >= 15) msgs.push("🦅 Scoring Opportunity: Short par 5. Aggressive play could pay off here.");
-
-                if (msgs.length > 0) {
-                    msgEl.innerHTML = msgs[0];
+                if (strokedPlayers.length > 0 && this.d.gameType !== 'single' && this.d.gameType !== 'scramble') {
+                    let namesStr = "";
+                    if (strokedPlayers.length === 1) namesStr = strokedPlayers[0] + " has a stroke";
+                    else if (strokedPlayers.length === 2) namesStr = strokedPlayers[0] + " and " + strokedPlayers[1] + " have strokes";
+                    else if (strokedPlayers.length === 3) namesStr = strokedPlayers[0] + ", " + strokedPlayers[1] + " and " + strokedPlayers[2] + " have strokes";
+                    else if (strokedPlayers.length === 4) namesStr = "Everyone has strokes";
+                    
+                    msgEl.innerText = namesStr + " on this hole";
                     el.style.display = 'block';
                 } else {
                     el.style.display = 'none';
@@ -3559,8 +3649,10 @@ const App = {
                     h += `<div style="margin-top:16px; background:rgba(245,158,11,0.1); border-radius:6px; padding:6px; font-size:12px; text-align:center; color:#F59E0B;">$${r.carryover} carries over to next segment</div>`;
                 }
 
-                document.getElementById('junk-payout-body').innerHTML = h;
-                document.getElementById('junk-payout-modal').classList.add('active');
+                const body = document.getElementById('junk-payout-body');
+                const modal = document.getElementById('junk-payout-modal');
+                if (body) body.innerHTML = h;
+                if (modal) modal.classList.add('active');
             },
             calcJunkRes: function () {
                 const bet = 1; // Fixed at $1 as per user instruction
@@ -3585,17 +3677,19 @@ const App = {
                     const voided = []; // Track voided items for the note
 
                     [1, 2, 3, 4, 5, 6].forEach(rh => {
-                        const h = (segIdx * 6) + rh;
+                        const relH = (segIdx * 6) + rh;
+                        const absH = this.getAbsHole(relH);
                         const c = CS[this.d.crs] || CS['cc'];
-                        const par = c.p[h - 1];
-                        if (this.d.junk && this.d.junk[h]) {
+                        if (!c || !c.p) return;
+                        const par = c.p[absH - 1];
+                        if (this.d.junk && this.d.junk[absH]) {
                             players.forEach(pIdx => {
                                 ['G', 'S', 'P'].forEach(t => {
-                                    if (this.d.junk[h][pIdx + '_' + t]) {
-                                        const sc = (this.d.s[h] && this.d.s[h][pIdx]);
+                                    if (this.d.junk[absH][pIdx + '_' + t]) {
+                                        const sc = (this.d.s[absH] && this.d.s[absH][pIdx]);
                                         // RULE: G and S require Par or BETTER
                                         if (sc && (t === 'G' || t === 'S') && sc > par) {
-                                            voided.push({ pIdx, h, type: t === 'G' ? 'Greenie' : 'Sandie', sc });
+                                            voided.push({ pIdx, h: absH, type: t === 'G' ? 'Greenie' : 'Sandie', sc });
                                         } else {
                                             playerItems[pIdx]++;
                                             totalItemsInSeg++;
@@ -3931,8 +4025,8 @@ const App = {
                         else if (seg.winner === 2) { nr.t2.forEach(p => bets[p] += bet); nr.t1.forEach(p => bets[p] -= bet); }
                     });
                     const segLine = (label, seg) => {
-                        if (seg.winner === 1) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#10B981;">${tn1} wins +$${bet}</span></div>`;
-                        if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#F59E0B;">${tn2} wins +$${bet}</span></div>`;
+                        if (seg.winner === 1) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#60A5FA;">${tn1} wins +$${bet}</span></div>`;
+                        if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#22D3EE;">${tn2} wins +$${bet}</span></div>`;
                         return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#FFFFFF;">All Square</span></div>`;
                     };
                     resHTML += `<div style="margin-bottom:16px;background:rgba(96,165,250,0.1);padding:10px;border-radius:8px;">`
@@ -3954,8 +4048,8 @@ const App = {
                             }
                             const matchName = (rIdx === 0) ? lbl : `PRESS (H${this.getAbsHole(r.startRh)}-${this.getAbsHole(r.endRh)})`;
                             let wTxt = "ALL SQUARE", wCol = "white";
-                            if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})`; wCol = "#10B981"; }
-                            else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})`; wCol = "#F59E0B"; }
+                            if (r.winner === 1) { wTxt = `${this.d.ps[r.seg.t1[0]]}/${this.d.ps[r.seg.t1[1]]} (+$${r.amt})`; wCol = "#60A5FA"; }
+                            else if (r.winner === 2) { wTxt = `${this.d.ps[r.seg.t2[0]]}/${this.d.ps[r.seg.t2[1]]} (+$${r.amt})`; wCol = "#22D3EE"; }
 
                             resHTML += `<div style="margin-bottom:16px;">
                                 <div style="font-weight:900; color:#FFFFFF; font-size:11px; text-transform:uppercase; margin-bottom:2px;">${matchName}</div>
@@ -3976,8 +4070,8 @@ const App = {
                                     best2 = Math.min(s[r.seg.t2[0]] - this.getPops(r.seg.t2[0], h - 1), s[r.seg.t2[1]] - this.getPops(r.seg.t2[1], h - 1));
                                 }
                                 let bStyle = "background:#334155; color:#FFFFFF;", bTxt = `H${h}`;
-                                if (best1 < best2) { bStyle = "background:#10B981; color:#064E3B;"; bTxt = `H${h}: ${best1}`; }
-                                else if (best2 < best1) { bStyle = "background:#F59E0B; color:#78350F;"; bTxt = `H${h}: ${best2}`; }
+                                if (best1 < best2) { bStyle = "background:#60A5FA; color:#0F172A;"; bTxt = `H${h}: ${best1}`; }
+                                else if (best2 < best1) { bStyle = "background:#22D3EE; color:#082F49;"; bTxt = `H${h}: ${best2}`; }
                                 else { bTxt = `H${h}: -`; }
                                 resHTML += `<div style="${bStyle} padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">${bTxt}</div>`;
                             }
@@ -4389,7 +4483,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v278.3-GOLD</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v280.4</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -4980,8 +5074,8 @@ PAYOUTS:
                         const n2 = `${this.d.ps[seg.t2[0]] || '?'}/${this.d.ps[seg.t2[1]] || '?'}`;
                         const d = res.w1 - res.w2;
                         let statusTxt, statusCol;
-                        if (d > 0)       { statusTxt = `${n1} leads ${d} UP`; statusCol = '#10B981'; }
-                        else if (d < 0)  { statusTxt = `${n2} leads ${Math.abs(d)} UP`; statusCol = '#F59E0B'; }
+                        if (d > 0)       { statusTxt = `${n1} leads ${d} UP`; statusCol = '#60A5FA'; }
+                        else if (d < 0)  { statusTxt = `${n2} leads ${Math.abs(d)} UP`; statusCol = '#22D3EE'; }
                         else             { statusTxt = 'All Square'; statusCol = '#FFFFFF'; }
 
                         html += `<div class="std-row">`;
@@ -5000,8 +5094,8 @@ PAYOUTS:
                     const nassauStdRow = (label, seg) => {
                         const d = seg.w1 - seg.w2;
                         let txt, col;
-                        if (d > 0)      { txt = `${tn1} leads ${d} UP`; col = '#10B981'; }
-                        else if (d < 0) { txt = `${tn2} leads ${Math.abs(d)} UP`; col = '#F59E0B'; }
+                        if (d > 0)      { txt = `${tn1} leads ${d} UP`; col = '#60A5FA'; }
+                        else if (d < 0) { txt = `${tn2} leads ${Math.abs(d)} UP`; col = '#22D3EE'; }
                         else            { txt = 'All Square'; col = '#FFFFFF'; }
                         return `<div class="std-row"><span style="color:#FFFFFF;font-size:12px;">${label}</span><span style="color:${col};font-weight:900;">${txt}</span></div>`;
                     };
@@ -5187,6 +5281,60 @@ PAYOUTS:
                 };
             },
 
+            shareSimpleScorecard: async function () {
+                const btn = document.getElementById('sms-score-btn');
+                try {
+                    btn.innerText = "GENERATING...";
+                    const c = CS[this.d.crs] || CS['cc'];
+                    const node = document.getElementById('share-node');
+                    
+                    // Simple Scorecard Snapshot Layout
+                    node.innerHTML = `
+                        <div class="sn-head" style="font-size:24px; font-weight:900; color:#10B981; margin-bottom:4px;">${c.n}</div>
+                        <div class="sn-sub" style="font-size:12px; color:#cbd5e1; margin-bottom:20px;">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • SCORECARD ONLY</div>
+                        <div style="background:#0F172A; border-radius:12px; border:1px solid #334155; padding:16px;">
+                            ${this.getScorecardHTML()}
+                        </div>
+                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v280.11</div>
+                    `;
+
+                    // Inject necessary table styles for the snapshot
+                    const style = document.createElement('style');
+                    style.innerHTML = `
+                        #share-node table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+                        #share-node th, #share-node td { border: 1px solid #334155; text-align: center; padding: 6px 2px; color: white; font-size: 11px; }
+                        #share-node th { background: #1E293B; color: #10B981; font-weight: 900; }
+                        #share-node .par-row { background: #0F172A; font-weight: 700; color: #94A3B8; }
+                        #share-node .sc-val { font-weight: 900; font-size: 14px; position:relative; z-index:2; }
+                        #share-node .sc-bird { color: #10B981; }
+                        #share-node .sc-bog { color: #F87171; }
+                        #share-node .sc-dbl { color: #EF4444; }
+                        #share-node .sc-eagle { color: #22D3EE; text-decoration: underline; }
+                        #share-node .card-table-wrap { overflow: hidden; border-radius: 8px; border: 1px solid #334155; }
+                    `;
+                    node.appendChild(style);
+
+                    // Add a small delay to ensure DOM is rendered before capture
+                    await new Promise(r => setTimeout(r, 300));
+                    await document.fonts.ready;
+
+                    const canvas = await html2canvas(node, { backgroundColor: '#0F172A', scale: 2, scrollY: 0 });
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) throw new Error("Canvas Blob Failed");
+                        this.shareBlob = blob;
+                        const url = URL.createObjectURL(blob);
+                        document.getElementById('sp-img').src = url;
+                        document.getElementById('share-preview-modal').classList.add('active');
+                        
+                        await this.doShareParams('both');
+                        btn.innerText = "SHARE SCORECARD ONLY 📄";
+                    }, 'image/png');
+                } catch (e) {
+                    console.error("Scorecard Share Error: ", e);
+                    btn.innerText = "SHARE ERROR";
+                }
+            },
+
             closeStandings: function () {
                 const modal = document.getElementById('standings-modal');
                 if (modal) modal.classList.remove('active');
@@ -5194,6 +5342,7 @@ PAYOUTS:
         };
         window.addEventListener('load', () => App.init());
         window.App = App;
+
 </script>
 </body>
 
