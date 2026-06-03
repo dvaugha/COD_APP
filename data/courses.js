@@ -20,6 +20,7 @@ const CS_INDEX = {
     "lp": { n: "Lonnie Poole", r: "NC" },
     "maples": { n: "Maples (Sea Trail)", r: "NC" },
     "re": { n: "Rivers Edge", r: "NC" },
+    "rga": { n: "Raleigh Golf Association", r: "NC" },
     "sandpiper": { n: "Sandpiper Bay", r: "NC" },
     
     // SOUTH CAROLINA (SC)

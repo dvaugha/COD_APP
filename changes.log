@@ -14,6 +14,12 @@
 - Added defensive NaN checks and course data fallbacks in getPops and junk calculations.
 - Ensured hole state persistence as integers.
 - Verified fixes with automated logic test harness.
+[2026-05-07] v280.7 Release
+- Fixed navigation and auto-forward logic for rounds starting on Hole 10.
+- Corrected junk scoring hole mapping (getAbsHole) in calcJunkRes.
+- Added defensive NaN checks and course data fallbacks in getPops and junk calculations.
+- Ensured hole state persistence as integers.
+- Verified fixes with automated logic test harness.
 
 [2026-05-07] v280.8 Release
 - Fixed a critical crash in navH caused by missing auto-adv-banner element in some UI states.
@@ -21,3 +27,4 @@
 - Strengthened course data lookups in junk scoring.
 
 2026-05-21 21:05:00 - Updated Rivers Edge (re) in nc.json with scorecard yardages, par, and handicaps. Added Gold, Black, White, Green, and Blue tees.
+2026-06-03 16:49:30 - Added Raleigh Golf Association (rga) to data/courses.js and data/regions/nc.json with yardages (Blue, White, Gold, Green, Red), par, and handicaps from front and back 9 scorecards.
