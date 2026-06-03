@@ -259,7 +259,7 @@ const App = {
             },
 
             speak: function (text, callback) {
-                if (!this.d.voiceEnabled || !window.speechSynthesis) return;
+                if (!this.d.voiceEnabled || !window.speechSynthesis || this.d.gameType === 'single') return;
                 window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(text);
                 if (callback) u.onend = callback;

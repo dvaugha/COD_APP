@@ -28,3 +28,4 @@
 
 2026-05-21 21:05:00 - Updated Rivers Edge (re) in nc.json with scorecard yardages, par, and handicaps. Added Gold, Black, White, Green, and Blue tees.
 2026-06-03 16:49:30 - Added Raleigh Golf Association (rga) to data/courses.js and data/regions/nc.json with yardages (Blue, White, Gold, Green, Red), par, and handicaps from front and back 9 scorecards.
+2026-06-03 17:08:00 - Silenced voice announcements when in "Scorecard Only" (single) game mode.
