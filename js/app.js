@@ -1128,20 +1128,23 @@ const App = {
                 const c = CS[val];
 
                 // Update Tee Dropdown (v275.24)
-                if (c && c.y) {
-                    Array.from(teeSelect.options).forEach(opt => {
-                        const t = opt.value;
-                        if (t === 'combo') {
-                            opt.disabled = !(c.y.combo || (c.cmb && c.cmb.length === 18));
-                        } else {
-                            opt.disabled = !c.y[t];
-                        }
-                    });
-                    if (teeSelect.selectedIndex >= 0 && teeSelect.options[teeSelect.selectedIndex].disabled) {
-                        for (let opt of teeSelect.options) {
-                            if (!opt.disabled) {
-                                teeSelect.value = opt.value;
-                                break;
+                if (c) {
+                    const yardageSource = c.y || (c.nines && Object.values(c.nines)[0] && Object.values(c.nines)[0].y);
+                    if (yardageSource) {
+                        Array.from(teeSelect.options).forEach(opt => {
+                            const t = opt.value;
+                            if (t === 'combo') {
+                                opt.disabled = !(yardageSource.combo || (c.cmb && c.cmb.length === 18) || (yardageSource.white && yardageSource.gold));
+                            } else {
+                                opt.disabled = !yardageSource[t];
+                            }
+                        });
+                        if (teeSelect.selectedIndex >= 0 && teeSelect.options[teeSelect.selectedIndex].disabled) {
+                            for (let opt of teeSelect.options) {
+                                if (!opt.disabled) {
+                                    teeSelect.value = opt.value;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -1194,10 +1197,23 @@ const App = {
                 else n1.value = keys[0];
 
                 // Attach event listener
-                n1.onchange = () => populateN2(n1.value);
+                n1.onchange = () => {
+                    populateN2(n1.value);
+                    this.buildComposite(val, n1.value, n2.value);
+                    this.uCard();
+                    this.uDash();
+                };
+                n2.onchange = () => {
+                    this.buildComposite(val, n1.value, n2.value);
+                    this.uCard();
+                    this.uDash();
+                };
 
                 // Initial population of N2
                 populateN2(n1.value);
+                
+                // Build composite immediately so that uCard and uDash can render it without crashing
+                this.buildComposite(val, n1.value, n2.value);
             },
 
             buildComposite: function (crsId, k1, k2) {
@@ -1236,8 +1252,13 @@ const App = {
                     const arr2 = (n2.y[color] && n2.y[color].length === 9) ? n2.y[color] : Array(9).fill(0);
                     c.y[color] = [...arr1, ...arr2];
                 };
+                pushY('black');
+                pushY('blue');
                 pushY('white');
                 pushY('gold');
+                pushY('orange');
+                pushY('red');
+                pushY('teal');
 
                 // Build Smart Combo Yards
                 for (let i = 0; i < 18; i++) {
