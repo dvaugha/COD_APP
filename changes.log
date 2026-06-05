@@ -38,3 +38,4 @@
 - Fixed composite course setup crash where getScorecardHTML would read c.p before buildComposite was run (built composite immediately on course select and nine selection).
 - Added Black and Orange tee options to index.html select element.
 - Fixed buildComposite in js/app.js to initialize all possible tee colors (black, blue, white, gold, orange, red, teal).
+- Fixed composite course handicap display to decode mapped 18-hole values back to their original 9-hole scorecard values (e.g. mapping 5 back to 3) for display in uDash, uCard, and Share Recap, while keeping correct 18-hole mapping in the backend for stroke allocation logic.
