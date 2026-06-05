@@ -35,3 +35,6 @@
 - Fixed buildComposite in CODv280_13_GOLD.html to handle black and orange tee options during nine combinations.
 - Bumped version from v280.12 to v280.13 in index.html, js/app.js, and bundle_gold.py.
 - Fixed course selection crash in selectCourse for composite courses (with nines) by adding defensive c.y check.
+- Fixed composite course setup crash where getScorecardHTML would read c.p before buildComposite was run (built composite immediately on course select and nine selection).
+- Added Black and Orange tee options to index.html select element.
+- Fixed buildComposite in js/app.js to initialize all possible tee colors (black, blue, white, gold, orange, red, teal).
