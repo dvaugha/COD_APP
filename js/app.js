@@ -1271,6 +1271,21 @@ const App = {
                 }
             },
 
+            getDisplayHcp: function(hIdx) {
+                const c = CS[this.d.crs];
+                if (!c) return '-';
+                const hcpVal = c.hcp ? c.hcp[hIdx] : null;
+                if (!hcpVal) return '-';
+                if (c.origN) {
+                    if (hIdx < 9) {
+                        return (hcpVal + 1) / 2;
+                    } else {
+                        return hcpVal / 2;
+                    }
+                }
+                return hcpVal;
+            },
+
             getPops: function (pIdx, hIdx, useFull) {
                 if (!this.d.hcps || Object.keys(this.d.hcps).length === 0) return 0;
                 const mode = this.d.hcpMode || 'standard';
@@ -1634,7 +1649,7 @@ const App = {
                 // HANDICAP SUMMARY
                 const strokeHoles = [];
                 for (let h = 1; h <= 18; h++) {
-                    const hcpAlloc = c.hcp[h - 1];
+                    const hcpAlloc = this.getDisplayHcp(h - 1);
                     const getters = [];
                     [0, 1, 2, 3].forEach(i => {
                         const pops = this.getPops(i, h - 1);
@@ -1747,7 +1762,7 @@ const App = {
                 
                 const dists = (c && c.y) ? (c.y[this.d.tee] || []) : [];
                 safeGet('d-dist', dists[hIdx] || '-');
-                safeGet('d-hcp', (c && c.hcp) ? (c.hcp[hIdx] || '-') : '-');
+                safeGet('d-hcp', this.getDisplayHcp(hIdx));
                 
                 let tT = (this.d.tee || 'white').toUpperCase() + " TEE";
                 if (this.d.tee === 'combo' && c) { 
@@ -2836,7 +2851,7 @@ const App = {
                     // HANDICAP SUMMARY (Share)
                     const sHoles = [];
                     for (let h = 1; h <= 18; h++) {
-                        const hcpAlloc = c.hcp[h - 1];
+                        const hcpAlloc = this.getDisplayHcp(h - 1);
                         const getters = [];
                         [0, 1, 2, 3].forEach(i => {
                             const pops = this.getPops(i, h - 1);
