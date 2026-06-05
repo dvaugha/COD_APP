@@ -34,3 +34,4 @@
 - Completed audit and corrected Sandpiper Bay data in data/regions/nc.json (Black, White, Gold, Orange tees; ratings; handicap and par values).
 - Fixed buildComposite in CODv280_13_GOLD.html to handle black and orange tee options during nine combinations.
 - Bumped version from v280.12 to v280.13 in index.html, js/app.js, and bundle_gold.py.
+- Fixed course selection crash in selectCourse for composite courses (with nines) by adding defensive c.y check.

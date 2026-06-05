@@ -1062,7 +1062,7 @@ const App = {
 
                 // Fixup course data: Generate 'smart' combo yards
                 const c = CS[id];
-                if (c && (!c.y.combo || c.y.combo.length === 0)) {
+                if (c && c.y && (!c.y.combo || c.y.combo.length === 0)) {
                     const hasCmb = (c.cmb && c.cmb.length === 18);
                     const hasHcp = (c.hcp && c.hcp.length === 18);
                     

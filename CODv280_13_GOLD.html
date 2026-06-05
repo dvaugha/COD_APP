@@ -992,7 +992,7 @@
             border-top: 1px solid #334155;
         }
 </style>
-    <!-- Deployment Nudge: 2026-06-05 05:23 PM
+    <!-- Deployment Nudge: 2026-06-05 05:43 PM
 </head>
 <body style="background:#0F172A; color:#F8FAFC;">
     <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
@@ -2553,7 +2553,7 @@ const App = {
 
                 // Fixup course data: Generate 'smart' combo yards
                 const c = CS[id];
-                if (c && (!c.y.combo || c.y.combo.length === 0)) {
+                if (c && c.y && (!c.y.combo || c.y.combo.length === 0)) {
                     const hasCmb = (c.cmb && c.cmb.length === 18);
                     const hasHcp = (c.hcp && c.hcp.length === 18);
                     
