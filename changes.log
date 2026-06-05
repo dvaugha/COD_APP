@@ -30,3 +30,7 @@
 2026-06-03 16:49:30 - Added Raleigh Golf Association (rga) to data/courses.js and data/regions/nc.json with yardages (Blue, White, Gold, Green, Red), par, and handicaps from front and back 9 scorecards.
 2026-06-03 17:08:00 - Silenced voice announcements when in "Scorecard Only" (single) game mode.
 [2026-06-03] v280.12 Release - Added RGA (Raleigh Golf Association) course; Silenced voice in Scorecard Only mode
+[2026-06-05] v280.13 Release
+- Completed audit and corrected Sandpiper Bay data in data/regions/nc.json (Black, White, Gold, Orange tees; ratings; handicap and par values).
+- Fixed buildComposite in CODv280_13_GOLD.html to handle black and orange tee options during nine combinations.
+- Bumped version from v280.12 to v280.13 in index.html, js/app.js, and bundle_gold.py.
