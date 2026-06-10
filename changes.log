@@ -41,3 +41,9 @@
 - Fixed composite course handicap display to decode mapped 18-hole values back to their original 9-hole scorecard values (e.g. mapping 5 back to 3) for display in uDash, uCard, and Share Recap, while keeping correct 18-hole mapping in the backend for stroke allocation logic.
 
 2026-06-10 17:34:00 - Updated Sea Trail Byrd course in data/regions/nc.json with correct post-renovation yardages for Blue, White, and Gold tees, and corrected handicaps for holes 11 and 14.
+
+2026-06-10 17:54:00 - Corrected Men's handicaps for Sea Trail Jones course (swapped holes 15 and 16) and Maples course (fixed scrambled handicap array) in data/regions/nc.json.
+[2026-06-10] v280.14 Release
+- Corrected Sea Trail Jones and Maples Men's handicap arrays.
+- Bumped version to v280.14 in index.html, js/app.js, and bundle_gold.py.
+- Generated new CODv280_14_GOLD.html bundle.
