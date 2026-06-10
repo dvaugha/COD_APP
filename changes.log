@@ -39,3 +39,5 @@
 - Added Black and Orange tee options to index.html select element.
 - Fixed buildComposite in js/app.js to initialize all possible tee colors (black, blue, white, gold, orange, red, teal).
 - Fixed composite course handicap display to decode mapped 18-hole values back to their original 9-hole scorecard values (e.g. mapping 5 back to 3) for display in uDash, uCard, and Share Recap, while keeping correct 18-hole mapping in the backend for stroke allocation logic.
+
+2026-06-10 17:34:00 - Updated Sea Trail Byrd course in data/regions/nc.json with correct post-renovation yardages for Blue, White, and Gold tees, and corrected handicaps for holes 11 and 14.
