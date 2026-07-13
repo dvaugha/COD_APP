@@ -47,3 +47,10 @@
 - Corrected Sea Trail Jones and Maples Men's handicap arrays.
 - Bumped version to v280.14 in index.html, js/app.js, and bundle_gold.py.
 - Generated new CODv280_14_GOLD.html bundle.
+
+2026-07-13 18:16:00 - Added River Ridge Golf Course to data/courses.js and data/regions/nc.json.
+
+[2026-07-13] v280.15 Release
+- Added River Ridge Golf Course (Raleigh, NC) with scorecard yardages (Black, Blue, White, Gold, Red), par, and handicap information.
+- Bumped version to v280.15 in index.html, js/app.js, and bundle_gold.py.
+- Generated new CODv280_15_GOLD.html bundle.

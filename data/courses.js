@@ -21,6 +21,7 @@ const CS_INDEX = {
     "maples": { n: "Maples (Sea Trail)", r: "NC" },
     "re": { n: "Rivers Edge", r: "NC" },
     "rga": { n: "Raleigh Golf Association", r: "NC" },
+    "rr": { n: "River Ridge", r: "NC" },
     "sandpiper": { n: "Sandpiper Bay", r: "NC" },
     
     // SOUTH CAROLINA (SC)
