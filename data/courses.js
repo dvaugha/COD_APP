@@ -26,7 +26,8 @@ const CS_INDEX = {
     
     // SOUTH CAROLINA (SC)
     "prestwick": { n: "Prestwick CC", r: "SC" },
-    "blackmoor": { n: "Blackmoor GC", r: "SC" }
+    "blackmoor": { n: "Blackmoor GC", r: "SC" },
+    "river_hills": { n: "River Hills", r: "SC" }
 };
 
 /**
