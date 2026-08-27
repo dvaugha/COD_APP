@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v280.15</title>
+    <title>COD Golf v281.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
     <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="css/styles.css?v=202606101753">
-    <!-- Deployment Nudge: 2026-06-10 05:53 PM
-</head>
+    <link rel="stylesheet" href="css/styles.css?v=202608271333">
+    <!-- Deployment Nudge: 2026-08-27 01:33 PM </head>
 <body style="background:#0F172A; color:#F8FAFC;">
     <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
 
@@ -59,7 +58,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v280.15</div>
+            <div class="tx-xl">COD Golf v281.0</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -67,12 +66,13 @@
             <select id="g-mode-top" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;"
                 onchange="App.onGameModeChange(this)">
                 <option value="cod">COD (Match Play)</option>
+                <option value="cc_match">Captain's Choice (2-Man Scramble)</option>
                 <option value="nassau">Nassau (18-Hole)</option>
                 <option value="scramble">6-Hole Scramble (Points)</option>
                 <option value="stroke">Versus (Stroke Play)</option>
                 <option value="single">SCORECARD ONLY</option>
                 <option value="rabbit">RABBIT HUNTER</option>
-                        </select>
+            </select>
 
             <div id="pot-container" class="flex-r" style="justify-content:center; gap:10px; align-items:center; margin-bottom:16px;">
                 <div class="tx-sm">POT / BUY-IN $</div>
@@ -182,6 +182,16 @@
                     <input type="number" id="s-bet" class="g-inp" value="5">
                 </div>
             </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px; border-top:1px solid #334155; padding-top:12px;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">NO HANDICAPS (STRAIGHT GROSS)</div>
+                    <div style="font-size:10px; color:#FFFFFF;">Bypass all handicap calculations and stroke dots</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-no-hcps" onchange="App.toggleNoHcps(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
         <div class="box">
@@ -235,7 +245,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v280.15</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v281.0</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -472,8 +482,8 @@
         <div id="recap-body"></div>
     </div>
 
-    <script src="data/courses.js?v=202606101753"></script>
-    <script src="js/app.js?v=202606101753"></script>
+    <script src="data/courses.js?v=202608271333"></script>
+    <script src="js/app.js?v=202608271333"></script>
 </body>
 
 </html>

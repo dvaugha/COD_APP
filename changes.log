@@ -54,3 +54,11 @@
 - Added River Ridge Golf Course (Raleigh, NC) with scorecard yardages (Black, Blue, White, Gold, Red), par, and handicap information.
 - Bumped version to v280.15 in index.html, js/app.js, and bundle_gold.py.
 - Generated new CODv280_15_GOLD.html bundle.
+
+[2026-08-27] v281.0 Release
+- Added Captain's Choice (2-Man Scramble) game mode with fixed 18-hole team matches.
+- Implemented team-based score inputs and score syncing for Team A (Cart A) and Team B (Cart B).
+- Updated in-round dashboard banner and scorecard payouts to reflect Front 9, Back 9, and Overall Match standings.
+- Added "No Handicaps (Straight Gross)" toggle to bypass all handicap and stroke calculations and remove stroke badges.
+- Bumped version to v281.0 in index.html, js/app.js, and bundle_gold.py.
+- Generated new CODv281_0_GOLD.html bundle.
