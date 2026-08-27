@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v280.12</title>
+    <title>COD Golf v281.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="COD_APP_ICON.png">
@@ -992,8 +992,7 @@
             border-top: 1px solid #334155;
         }
 </style>
-    <!-- Deployment Nudge: 2026-06-03 05:08 PM
-</head>
+    <!-- Deployment Nudge: 2026-08-27 01:33 PM </head>
 <body style="background:#0F172A; color:#F8FAFC;">
     <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
 
@@ -1040,7 +1039,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v280.12</div>
+            <div class="tx-xl">COD Golf v281.0</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -1048,12 +1047,13 @@
             <select id="g-mode-top" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;"
                 onchange="App.onGameModeChange(this)">
                 <option value="cod">COD (Match Play)</option>
+                <option value="cc_match">Captain's Choice (2-Man Scramble)</option>
                 <option value="nassau">Nassau (18-Hole)</option>
                 <option value="scramble">6-Hole Scramble (Points)</option>
                 <option value="stroke">Versus (Stroke Play)</option>
                 <option value="single">SCORECARD ONLY</option>
                 <option value="rabbit">RABBIT HUNTER</option>
-                        </select>
+            </select>
 
             <div id="pot-container" class="flex-r" style="justify-content:center; gap:10px; align-items:center; margin-bottom:16px;">
                 <div class="tx-sm">POT / BUY-IN $</div>
@@ -1131,9 +1131,11 @@
                 <div style="flex:1;">
                     <div class="tx-sm">TEE</div>
                     <select id="s-tee" class="g-inp">
+                        <option value="black">Black</option>
                         <option value="blue">Blue</option>
                         <option value="white">White</option>
                         <option value="gold">Gold</option>
+                        <option value="orange">Orange</option>
                         <option value="red">Red</option>
                         <option value="teal">Teal</option>
                         <option value="combo">Combo</option>
@@ -1160,6 +1162,16 @@
                     <div class="tx-sm">SEG BET $</div>
                     <input type="number" id="s-bet" class="g-inp" value="5">
                 </div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px; border-top:1px solid #334155; padding-top:12px;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">NO HANDICAPS (STRAIGHT GROSS)</div>
+                    <div style="font-size:10px; color:#FFFFFF;">Bypass all handicap calculations and stroke dots</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-no-hcps" onchange="App.toggleNoHcps(this.checked)">
+                    <span class="slider"></span>
+                </label>
             </div>
         </div>
 
@@ -1214,7 +1226,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v280.12</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v281.0</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -1475,6 +1487,7 @@ const CS_INDEX = {
     "maples": { n: "Maples (Sea Trail)", r: "NC" },
     "re": { n: "Rivers Edge", r: "NC" },
     "rga": { n: "Raleigh Golf Association", r: "NC" },
+    "rr": { n: "River Ridge", r: "NC" },
     "sandpiper": { n: "Sandpiper Bay", r: "NC" },
     
     // SOUTH CAROLINA (SC)
@@ -1490,7 +1503,7 @@ let CS = {};
 </script>
     <script>
 const App = {
-            d: { roster: ["Dan", "Dave", "Eddie", "Muzzy", "Mark", "Tom", "TonyC", "JohnP", "MikeG", "Putt", "Rizzo", "Dante", "Steve", "Dom", "Lino", "BillB", "JohnT", "TonyS"], permHcps: { "Dan":13, "Dave":18, "Eddie":17, "Muzzy":14, "Mark":16, "Tom":15, "TonyC":22, "JohnP":22, "MikeG":18, "Putt":12, "Rizzo":18, "Dante":15, "Steve":12, "Dom":10, "Lino":20, "BillB":15, "TonyS":9, "JohnT":8 }, ps: ['', '', '', ''], chosen: ['', '', '', ''], bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false, roundEnded: false },
+            d: { roster: ["Dan", "Dave", "Eddie", "Muzzy", "Mark", "Tom", "TonyC", "JohnP", "MikeG", "Putt", "Rizzo", "Dante", "Steve", "Dom", "Lino", "BillB", "JohnT", "TonyS"], permHcps: { "Dan":13, "Dave":18, "Eddie":17, "Muzzy":14, "Mark":16, "Tom":15, "TonyC":22, "JohnP":22, "MikeG":18, "Putt":12, "Rizzo":18, "Dante":15, "Steve":12, "Dom":10, "Lino":20, "BillB":15, "TonyS":9, "JohnT":8 }, ps: ['', '', '', ''], chosen: ['', '', '', ''], bet: 5, pot: 20, gameType: 'cod', crs: 'jones', tee: 'white', start: 1, h: 1, s: {}, gameId: null, voiceEnabled: false, ghToken: '', testSyncsDone: 0, isTestMode: false, roundEnded: false, noHandicaps: false },
 
             ghl: function (h) {
                 if (this.d.nines && h > 9) return `${h - 9}/${h}`;
@@ -1512,9 +1525,10 @@ const App = {
             init: function () {
                 const defR = [...this.d.roster];
                 try {
-                    let s = localStorage.getItem('COD_GOLF_DATA_v277_0');
+                    let s = localStorage.getItem('COD_GOLF_DATA_v281_0');
                     if (!s) {
-                        const old = localStorage.getItem('COD_GOLF_DATA_v276_0') ||
+                        const old = localStorage.getItem('COD_GOLF_DATA_v277_0') ||
+                                    localStorage.getItem('COD_GOLF_DATA_v276_0') ||
                                     localStorage.getItem('COD_GOLF_DATA_v275_22') ||
                                     localStorage.getItem('COD_GOLF_DATA_v275_21') ||
                                     localStorage.getItem('COD_GOLF_DATA_v275_20') || 
@@ -1561,6 +1575,7 @@ const App = {
                     if (this.d.testSyncsDone === undefined) this.d.testSyncsDone = 0;
                     if (this.d.ghToken === undefined) this.d.ghToken = '';
                     if (this.d.roundEnded === undefined) this.d.roundEnded = false;
+                    if (this.d.noHandicaps === undefined) this.d.noHandicaps = false;
                 } catch (e) { }
                 this.renderRoster(); this.renderHistory(); this.refreshDrop(); this.restoreSet();
 
@@ -1593,14 +1608,14 @@ const App = {
                 return function () {
                     clearTimeout(t);
                     t = setTimeout(() => {
-                        localStorage.setItem('COD_GOLF_DATA_v277_0', JSON.stringify(this.d));
+                        localStorage.setItem('COD_GOLF_DATA_v281_0', JSON.stringify(this.d));
                     }, 500);
                 };
             })(),
 
             hardReset: function () {
                 if (confirm("This will Delete History and Reset Roster. Continue?")) {
-                    localStorage.removeItem('COD_GOLF_DATA_v277_0');
+                    localStorage.removeItem('COD_GOLF_DATA_v281_0');
                     localStorage.removeItem('GOLF_HISTORY_265');
                     location.reload();
                 }
@@ -1747,6 +1762,11 @@ const App = {
                 this.d.voiceEnabled = val;
                 this.save();
                 if (val) this.speak("Voice alerts enabled");
+            },
+
+            toggleNoHcps: function (val) {
+                this.d.noHandicaps = val;
+                this.save();
             },
 
             speak: function (text, callback) {
@@ -2119,7 +2139,7 @@ const App = {
             },
 
 
-            mod: function (idx, delta) {
+             mod: function (idx, delta) {
                 if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
                 const pid = this.slotMap[idx];
                 const par = CS[this.d.crs].p[this.d.h - 1];
@@ -2134,6 +2154,20 @@ const App = {
                     const partnerIdx = (idx === 0) ? 1 : (idx === 1 ? 0 : (idx === 2 ? 3 : 2));
                     const pPid = this.slotMap[partnerIdx];
                     this.d.s[this.d.h][pPid] = s;
+                }
+
+                if (this.d.gameType === 'cc_match') {
+                    const p1 = this.slotMap[0];
+                    const p2 = this.slotMap[1];
+                    const p3 = this.slotMap[2];
+                    const p4 = this.slotMap[3];
+                    if (idx === 0) {
+                        this.d.s[this.d.h][p1] = s;
+                        this.d.s[this.d.h][p2] = s;
+                    } else if (idx === 2) {
+                        this.d.s[this.d.h][p3] = s;
+                        this.d.s[this.d.h][p4] = s;
+                    }
                 }
 
                 this.save();
@@ -2153,6 +2187,20 @@ const App = {
                     this.d.s[this.d.h][pPid] = s;
                 }
 
+                if (this.d.gameType === 'cc_match') {
+                    const p1 = this.slotMap[0];
+                    const p2 = this.slotMap[1];
+                    const p3 = this.slotMap[2];
+                    const p4 = this.slotMap[3];
+                    if (idx === 0) {
+                        this.d.s[this.d.h][p1] = s;
+                        this.d.s[this.d.h][p2] = s;
+                    } else if (idx === 2) {
+                        this.d.s[this.d.h][p3] = s;
+                        this.d.s[this.d.h][p4] = s;
+                    }
+                }
+
                 this.save();
                 this.uDash();
                 this.checkAuto();
@@ -2165,7 +2213,8 @@ const App = {
                 let allPositive = true;
                 let activeCount = 0;
                 
-                [0, 1, 2, 3].forEach(i => {
+                const indices = this.d.gameType === 'cc_match' ? [0, 2] : [0, 1, 2, 3];
+                indices.forEach(i => {
                     if (this.d.ps[i]) {
                         activeCount++;
                         if (s[i] === undefined || s[i] <= 0) {
@@ -2370,7 +2419,7 @@ const App = {
                 }
             },
 
-            restoreSet: function () {
+             restoreSet: function () {
                 const ids = ['s-course', 's-tee', 's-bet', 's-start', 'g-mode', 's-pot', 's-hcp-mode'];
                 ids.forEach(k => {
                     const el = document.getElementById(k);
@@ -2378,6 +2427,7 @@ const App = {
                     if (el && this.d[prop] !== undefined) el.value = this.d[prop];
                 });
                 if (document.getElementById('s-voice')) document.getElementById('s-voice').checked = !!this.d.voiceEnabled;
+                if (document.getElementById('s-no-hcps')) document.getElementById('s-no-hcps').checked = !!this.d.noHandicaps;
                 if (document.getElementById('gh-token-input')) document.getElementById('gh-token-input').value = this.d.ghToken || '';
                 this.updateScoringModeUI();
                 
@@ -2410,8 +2460,8 @@ const App = {
                     if (count < 2) { alert("Need at least 2 players for Rabbit Hunter!"); return; }
                 } else if (gt === 'single') {
                     if (count < 1) { alert("Need at least 1 player for Single Player!"); return; }
-                } else if (gt === 'nassau') {
-                    if (count < 4) { alert("Nassau requires 4 players (Cart A vs Cart B)!"); return; }
+                } else if (gt === 'nassau' || gt === 'cc_match') {
+                    if (count < 4) { alert("Nassau and Captain's Choice require 4 players (Cart A vs Cart B)!"); return; }
                 } else {
                     if (count < 4) { alert("COD and Scramble require 4 players (2 vs 2 / Rotating)!"); return; }
                 }
@@ -2425,6 +2475,7 @@ const App = {
                 this.d.gameType = gt;
                 this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
                 this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
+                this.d.noHandicaps = document.getElementById('s-no-hcps') ? document.getElementById('s-no-hcps').checked : false;
 
                 if (this.d.gameType === 'cod' && this.d.hcpMode === 'spread' && this.d.hcpEqualize === undefined) {
                     const activeNames = [0, 1, 2, 3].map(i => this.d.chosen[i]).filter(n => n);
@@ -2553,7 +2604,7 @@ const App = {
 
                 // Fixup course data: Generate 'smart' combo yards
                 const c = CS[id];
-                if (c && (!c.y.combo || c.y.combo.length === 0)) {
+                if (c && c.y && (!c.y.combo || c.y.combo.length === 0)) {
                     const hasCmb = (c.cmb && c.cmb.length === 18);
                     const hasHcp = (c.hcp && c.hcp.length === 18);
                     
@@ -2619,20 +2670,23 @@ const App = {
                 const c = CS[val];
 
                 // Update Tee Dropdown (v275.24)
-                if (c && c.y) {
-                    Array.from(teeSelect.options).forEach(opt => {
-                        const t = opt.value;
-                        if (t === 'combo') {
-                            opt.disabled = !(c.y.combo || (c.cmb && c.cmb.length === 18));
-                        } else {
-                            opt.disabled = !c.y[t];
-                        }
-                    });
-                    if (teeSelect.selectedIndex >= 0 && teeSelect.options[teeSelect.selectedIndex].disabled) {
-                        for (let opt of teeSelect.options) {
-                            if (!opt.disabled) {
-                                teeSelect.value = opt.value;
-                                break;
+                if (c) {
+                    const yardageSource = c.y || (c.nines && Object.values(c.nines)[0] && Object.values(c.nines)[0].y);
+                    if (yardageSource) {
+                        Array.from(teeSelect.options).forEach(opt => {
+                            const t = opt.value;
+                            if (t === 'combo') {
+                                opt.disabled = !(yardageSource.combo || (c.cmb && c.cmb.length === 18) || (yardageSource.white && yardageSource.gold));
+                            } else {
+                                opt.disabled = !yardageSource[t];
+                            }
+                        });
+                        if (teeSelect.selectedIndex >= 0 && teeSelect.options[teeSelect.selectedIndex].disabled) {
+                            for (let opt of teeSelect.options) {
+                                if (!opt.disabled) {
+                                    teeSelect.value = opt.value;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -2685,10 +2739,23 @@ const App = {
                 else n1.value = keys[0];
 
                 // Attach event listener
-                n1.onchange = () => populateN2(n1.value);
+                n1.onchange = () => {
+                    populateN2(n1.value);
+                    this.buildComposite(val, n1.value, n2.value);
+                    this.uCard();
+                    this.uDash();
+                };
+                n2.onchange = () => {
+                    this.buildComposite(val, n1.value, n2.value);
+                    this.uCard();
+                    this.uDash();
+                };
 
                 // Initial population of N2
                 populateN2(n1.value);
+                
+                // Build composite immediately so that uCard and uDash can render it without crashing
+                this.buildComposite(val, n1.value, n2.value);
             },
 
             buildComposite: function (crsId, k1, k2) {
@@ -2727,8 +2794,13 @@ const App = {
                     const arr2 = (n2.y[color] && n2.y[color].length === 9) ? n2.y[color] : Array(9).fill(0);
                     c.y[color] = [...arr1, ...arr2];
                 };
+                pushY('black');
+                pushY('blue');
                 pushY('white');
                 pushY('gold');
+                pushY('orange');
+                pushY('red');
+                pushY('teal');
 
                 // Build Smart Combo Yards
                 for (let i = 0; i < 18; i++) {
@@ -2741,7 +2813,23 @@ const App = {
                 }
             },
 
+            getDisplayHcp: function(hIdx) {
+                const c = CS[this.d.crs];
+                if (!c) return '-';
+                const hcpVal = c.hcp ? c.hcp[hIdx] : null;
+                if (!hcpVal) return '-';
+                if (c.origN) {
+                    if (hIdx < 9) {
+                        return (hcpVal + 1) / 2;
+                    } else {
+                        return hcpVal / 2;
+                    }
+                }
+                return hcpVal;
+            },
+
             getPops: function (pIdx, hIdx, useFull) {
+                if (this.d.noHandicaps) return 0;
                 if (!this.d.hcps || Object.keys(this.d.hcps).length === 0) return 0;
                 const mode = this.d.hcpMode || 'standard';
                 const rh = this.getRelHole(hIdx + 1);
@@ -3104,7 +3192,7 @@ const App = {
                 // HANDICAP SUMMARY
                 const strokeHoles = [];
                 for (let h = 1; h <= 18; h++) {
-                    const hcpAlloc = c.hcp[h - 1];
+                    const hcpAlloc = this.getDisplayHcp(h - 1);
                     const getters = [];
                     [0, 1, 2, 3].forEach(i => {
                         const pops = this.getPops(i, h - 1);
@@ -3217,7 +3305,7 @@ const App = {
                 
                 const dists = (c && c.y) ? (c.y[this.d.tee] || []) : [];
                 safeGet('d-dist', dists[hIdx] || '-');
-                safeGet('d-hcp', (c && c.hcp) ? (c.hcp[hIdx] || '-') : '-');
+                safeGet('d-hcp', this.getDisplayHcp(hIdx));
                 
                 let tT = (this.d.tee || 'white').toUpperCase() + " TEE";
                 if (this.d.tee === 'combo' && c) { 
@@ -3246,7 +3334,7 @@ const App = {
 
                 // RELATIVE HOLE LOGIC
                 let m = Math.floor((rh - 1) / 6);
-                if (this.d.gameType === 'nassau') m = 0;
+                if (this.d.gameType === 'nassau' || this.d.gameType === 'cc_match') m = 0;
                 const results = this.calcSegResults(m);
                 const main = results[0];
                 const t1 = (main && main.seg) ? main.seg.t1 : [0, 1];
@@ -3255,6 +3343,7 @@ const App = {
                 let fmt = "COD (1-18)";
                 if (this.d.gameType === 'single') fmt = "SCORECARD ONLY";
                 else if (this.d.gameType === 'nassau') fmt = "NASSAU MATCH";
+                else if (this.d.gameType === 'cc_match') fmt = "CAPTAIN'S CHOICE";
                 else if (this.d.gameType === 'rabbit') fmt = "RABBIT HUNTER";
                 else if (m === 0) fmt = "CARTS (1-6)";
                 else if (m === 1) fmt = "OPPOSITES (7-12)";
@@ -3317,7 +3406,7 @@ const App = {
                             <span>${n2}: ${t2Score === 0 ? 'E' : (t2Score > 0 ? '+' + t2Score : t2Score)}</span>
                         </div>`;
                     }
-                } else if (this.d.gameType === 'nassau') {
+                } else if (this.d.gameType === 'nassau' || this.d.gameType === 'cc_match') {
                     const nr = this.calcNassau();
                     const tn1 = `${sn(nr.t1[0])}/${sn(nr.t1[1])}`;
                     const tn2 = `${sn(nr.t2[0])}/${sn(nr.t2[1])}`;
@@ -3364,18 +3453,34 @@ const App = {
                     });
                 });
 
+                const isCC = (this.d.gameType === 'cc_match');
                 const map = (id, pid) => {
                     this.slotMap[id] = pid;
                     const ec = document.getElementById('slot-' + id);
                     if (!ec) return;
                     const jRow = ec.nextElementSibling;
+                    
+                    if (isCC && (id === 1 || id === 3)) {
+                        ec.style.display = 'none';
+                        if (jRow) jRow.style.display = 'none';
+                        return;
+                    }
+
                     if (!this.d.ps[pid]) { ec.style.display = 'none'; if (jRow) jRow.style.display = 'none'; return; }
                     ec.style.display = 'flex';
                     if (jRow) jRow.style.display = 'flex';
+                    if (isCC && jRow) jRow.style.display = 'none';
 
                     const nmEl = document.getElementById('nm-' + id);
                     const pops = this.getPops(pid, hIdx);
                     const dots = " (H)".repeat(pops);
+                    
+                    let displayName = this.d.ps[pid];
+                    if (isCC) {
+                        if (id === 0) displayName = `${this.d.ps[0]} & ${this.d.ps[1]}`;
+                        else if (id === 2) displayName = `${this.d.ps[2]} & ${this.d.ps[3]}`;
+                    }
+
                     if (this.d.gameType === 'single') {
                         let relScore = 0;
                         for (let h = 1; h <= 18; h++) {
@@ -3383,23 +3488,23 @@ const App = {
                             if (sc) relScore += (sc - ((c && c.p) ? c.p[h-1] : 4));
                         }
                         const sStr = relScore === 0 ? 'E' : (relScore > 0 ? '+' + relScore : relScore);
-                        nmEl.innerHTML = `${this.d.ps[pid]} <span style="color:#10B981; font-weight:900; margin-left:8px; font-size:16px;">${sStr}</span>`;
+                        nmEl.innerHTML = `${displayName} <span style="color:#10B981; font-weight:900; margin-left:8px; font-size:16px;">${sStr}</span>`;
                     } else {
                         const expVal = Math.round(exposure[pid] || 0);
                         const expTxt = (expVal >= 0 ? '+' : '') + expVal;
                         const expCol = expVal >= 0 ? '#10B981' : '#F87171';
                         const expBg = expVal >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(248, 113, 113, 0.1)';
                         const jk = this.getJunkStats()[this.d.ps[pid]] || { G: 0, S: 0, P: 0 };
-                        const junkStr = `<span style="font-size:9px; color:#FFFFFF; margin-left:8px;">🟢${jk.G} 🏖️${jk.S} LP${jk.P}</span>`;
+                        const junkStr = isCC ? "" : `<span style="font-size:9px; color:#FFFFFF; margin-left:8px;">🟢${jk.G} 🏖️${jk.S} LP${jk.P}</span>`;
                         let rabbitIcon = '';
                         const lastHNum = this.d.h === 1 ? null : (this.d.h - 1);
                         if (this.d.gameType === 'rabbit' && lastHNum && this.d.rabbitHistory && this.d.rabbitHistory[lastHNum] === pid) rabbitIcon = ' <span style="font-size:18px;">🐇</span>';
-                        nmEl.innerHTML = `${this.d.ps[pid]}${rabbitIcon}${dots} ${junkStr} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
+                        nmEl.innerHTML = `${displayName}${rabbitIcon}${dots} ${junkStr} <span style="color:${expCol}; background:${expBg}; border:1px solid ${expCol}44; font-weight:900; font-size:10px; padding:2px 6px; border-radius:6px; margin-left:4px; vertical-align:middle;">$${expTxt}</span>`;
                     }
                     nmEl.style.color = (pops > 0 && this.d.gameType !== 'single') ? '#F59E0B' : '#FFFFFF';
                     const ghEl = document.getElementById('gh-' + id);
                     if (ghEl) ghEl.innerText = "PAR " + par;
-                    const sc = this.d.s[this.d.h] && this.d.s[this.d.h][pid];
+                    const sc = (this.d.s[this.d.h] && this.d.s[this.d.h][pid]) !== undefined ? this.d.s[this.d.h][pid] : (isCC ? par : undefined);
                     const es = document.getElementById('sc-' + id);
                     if (sc && es) {
                         ec.classList.add('has-score'); es.innerText = sc;
@@ -4016,7 +4121,7 @@ const App = {
                             '<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#FFFFFF;">BACK 18:</span><span style="color:white;">' + p18 + '</span></div>' +
                             '</div>';
                     }
-                } else if (this.d.gameType === 'nassau') {
+                } else if (this.d.gameType === 'nassau' || this.d.gameType === 'cc_match') {
                     const nr = this.calcNassau();
                     const bet = this.d.bet || 4;
                     const tn1 = `${this.d.ps[nr.t1[0]]}/${this.d.ps[nr.t1[1]]}`;
@@ -4030,8 +4135,10 @@ const App = {
                         if (seg.winner === 2) return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#22D3EE;">${tn2} wins +$${bet}</span></div>`;
                         return `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;"><span style="color:#FFFFFF;">${label}:</span><span style="color:#FFFFFF;">All Square</span></div>`;
                     };
+                    const title = this.d.gameType === 'cc_match' ? "CAPTAIN'S CHOICE RESULTS" : "NASSAU RESULTS";
+                    const titleCol = this.d.gameType === 'cc_match' ? "#F59E0B" : "#60A5FA";
                     resHTML += `<div style="margin-bottom:16px;background:rgba(96,165,250,0.1);padding:10px;border-radius:8px;">`
-                        + `<div style="font-weight:900;color:#60A5FA;font-size:14px;text-align:center;margin-bottom:10px;">🏆 NASSAU RESULTS</div>`
+                        + `<div style="font-weight:900;color:${titleCol};font-size:14px;text-align:center;margin-bottom:10px;">🏆 ${title}</div>`
                         + segLine('FRONT 9', nr.front)
                         + segLine('BACK 9', nr.back)
                         + segLine('TOTAL', nr.overall)
@@ -4306,7 +4413,7 @@ const App = {
                     // HANDICAP SUMMARY (Share)
                     const sHoles = [];
                     for (let h = 1; h <= 18; h++) {
-                        const hcpAlloc = c.hcp[h - 1];
+                        const hcpAlloc = this.getDisplayHcp(h - 1);
                         const getters = [];
                         [0, 1, 2, 3].forEach(i => {
                             const pops = this.getPops(i, h - 1);
@@ -4484,7 +4591,7 @@ const App = {
 
                     sn.innerHTML = `
                         <div class="sn-head">${c.n}</div>
-                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v280.4</div>
+                        <div class="sn-sub">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • COD GOLF v281.0</div>
                         <div class="sn-sect">
                             <div class="sn-sect-tl">FINANCIALS</div>
                             ${finHTML}
@@ -5256,7 +5363,12 @@ PAYOUTS:
 
                 for (let h = 1; h <= 18; h++) {
                     const s = this.d.s[h];
-                    if (!s || Object.keys(s).length < activeCount) continue;
+                    if (!s) continue;
+                    if (this.d.gameType === 'cc_match') {
+                        if (s[0] === undefined || s[2] === undefined) continue;
+                    } else {
+                        if (Object.keys(s).length < activeCount) continue;
+                    }
                     const best1 = Math.min(
                         (s[t1[0]] || 99) - this.getPops(t1[0], h - 1),
                         (s[t1[1]] || 99) - this.getPops(t1[1], h - 1)
@@ -5296,7 +5408,7 @@ PAYOUTS:
                         <div style="background:#0F172A; border-radius:12px; border:1px solid #334155; padding:16px;">
                             ${this.getScorecardHTML()}
                         </div>
-                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v280.12</div>
+                        <div style="margin-top:20px; text-align:center; font-size:10px; color:#475569;">GENERATED BY COD GOLF v281.0</div>
                     `;
 
                     // Inject necessary table styles for the snapshot
