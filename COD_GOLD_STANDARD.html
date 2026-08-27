@@ -3899,9 +3899,16 @@ const App = {
                     hP += '</tr>';
 
                     let pRows = '';
-                    [0, 1, 2, 3].forEach(pIdx => {
+                    const isCC = (this.d.gameType === 'cc_match');
+                    const playerIndices = isCC ? [0, 2] : [0, 1, 2, 3];
+                    playerIndices.forEach(pIdx => {
                         if (!this.d.ps[pIdx]) return;
-                        let r = `<tr><td>${this.d.ps[pIdx].substring(0, 8)}</td>`;
+                        let nameLabel = this.d.ps[pIdx].substring(0, 8);
+                        if (isCC) {
+                            if (pIdx === 0) nameLabel = `${this.d.ps[0].substring(0, 3)}/${this.d.ps[1].substring(0, 3)}`;
+                            else if (pIdx === 2) nameLabel = `${this.d.ps[2].substring(0, 3)}/${this.d.ps[3].substring(0, 3)}`;
+                        }
+                        let r = `<tr><td>${nameLabel}</td>`;
                         let tot = 0;
                         for (let n = startH; n < startH + 9; n++) {
                             const s = (this.d.s[n] && this.d.s[n][pIdx]);
@@ -3951,11 +3958,19 @@ const App = {
 
             getGrossTotalsHTML: function () {
                 let totHTML = '<div class="box" style="margin-top:0; padding:12px; background:#1E293B; border:1px solid #334155; border-radius:12px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:8px; text-transform:uppercase;">Gross Totals</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">';
-                this.d.ps.forEach((p, i) => {
-                    if (!p) return;
+                const isCC = (this.d.gameType === 'cc_match');
+                const playerIndices = isCC ? [0, 2] : [0, 1, 2, 3];
+                playerIndices.forEach(i => {
+                    if (!this.d.ps[i]) return;
                     let t = 0;
                     for (let h = 1; h <= 18; h++) if (this.d.s[h] && this.d.s[h][i]) t += this.d.s[h][i];
-                    totHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#FFFFFF; text-transform:uppercase;">${p.substring(0, 8)}</span><span style="font-size:15px; font-weight:900; color:white;">${t || '-'}</span></div>`;
+                    
+                    let nameLabel = this.d.ps[i].substring(0, 8);
+                    if (isCC) {
+                        if (i === 0) nameLabel = `${this.d.ps[0]} & ${this.d.ps[1]}`;
+                        else if (i === 2) nameLabel = `${this.d.ps[2]} & ${this.d.ps[3]}`;
+                    }
+                    totHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#FFFFFF; text-transform:uppercase;">${nameLabel}</span><span style="font-size:15px; font-weight:900; color:white;">${t || '-'}</span></div>`;
                 });
                 totHTML += '</div></div>';
                 return totHTML;
