@@ -62,3 +62,5 @@
 - Added "No Handicaps (Straight Gross)" toggle to bypass all handicap and stroke calculations and remove stroke badges.
 - Bumped version to v281.0 in index.html, js/app.js, and bundle_gold.py.
 - Generated new CODv281_0_GOLD.html bundle.
+
+2026-08-27 19:06:00 - Added River Hills Golf Course (SC) to data/courses.js and data/regions/sc.json, including Teal, Garnet (Red), Orange, Carolina Blue (Blue), and Purple (White) tees.
