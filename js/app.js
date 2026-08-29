@@ -1979,8 +1979,9 @@ const App = {
                     if (jRow) jRow.style.display = 'flex';
                     if (isCC && jRow) jRow.style.display = 'none';
 
-                    const nmEl = document.getElementById('nm-' + id);
-                    const pops = this.getPops(pid, hIdx);
+                    const pops = isCC
+                        ? Math.max(this.getPops(pid, hIdx), this.getPops(pid + 1, hIdx))
+                        : this.getPops(pid, hIdx);
                     const dots = " (H)".repeat(pops);
                     
                     let displayName = this.d.ps[pid];
@@ -2382,7 +2383,9 @@ const App = {
                                 valHTML = `<div class="sc-val ${cls}">${s}</div>`;
                             }
 
-                            const pops = this.getPops(pIdx, n - 1);
+                            const pops = isCC
+                                ? Math.max(this.getPops(pIdx, n - 1), this.getPops(pIdx + 1, n - 1))
+                                : this.getPops(pIdx, n - 1);
                             if (pops > 0) {
                                 let dStr = '';
                                 for (let k = 0; k < pops; k++) dStr += '•';
