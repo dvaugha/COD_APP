@@ -2236,16 +2236,18 @@ const App = {
                 const r = jRes.results[segIdx];
                 let h = `<div style="font-weight:900; color:#cbd5e1; margin-bottom:12px;">${r.name}</div>`;
 
-                if (r.refunded) {
-                    h += `<div style="color:#F59E0B; font-weight:700; background:rgba(245,158,11,0.1); padding:8px; border-radius:6px; margin-bottom:12px;">NO JUNK ITEMS EARNED. $${r.pot} REFUNDED TO GROUP.</div>`;
+                if (r.totalItems === 0) {
+                    h += `<div style="color:#94a3b8; font-style:italic; padding:8px;">No Junk items earned in this segment.</div>`;
                 } else {
                     let winners = false;
                     jRes.players.forEach(pIdx => {
-                        if (r.payouts[pIdx] > 0) {
+                        const items = r.items[pIdx];
+                        if (items > 0) {
                             winners = true;
+                            const earned = items * (jRes.players.length - 1) * (this.d.junkBet || 1);
                             h += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #1e293b;">
-                                <span style="font-weight:700; color:white;">${this.d.ps[pIdx]}</span>
-                                <span style="font-weight:900; color:#10B981;">+$${r.payouts[pIdx]}</span>
+                                <span style="font-weight:700; color:white;">${this.d.ps[pIdx]} (${items} item${items > 1 ? 's' : ''})</span>
+                                <span style="font-weight:900; color:#10B981;">+$${earned}</span>
                             </div>`;
                         }
                     });
@@ -2259,21 +2261,16 @@ const App = {
                     });
                 }
 
-                if (r.carryover > 0) {
-                    h += `<div style="margin-top:16px; background:rgba(245,158,11,0.1); border-radius:6px; padding:6px; font-size:12px; text-align:center; color:#F59E0B;">$${r.carryover} carries over to next segment</div>`;
-                }
-
                 const body = document.getElementById('junk-payout-body');
                 const modal = document.getElementById('junk-payout-modal');
                 if (body) body.innerHTML = h;
                 if (modal) modal.classList.add('active');
             },
             calcJunkRes: function () {
-                const bet = 1; // Fixed at $1 as per user instruction
+                const bet = this.d.junkBet !== undefined && this.d.junkBet > 0 ? this.d.junkBet : 1;
                 let players = (!this.d.junkPlayers || this.d.junkPlayers.length == 0) ? [0, 1, 2, 3] : this.d.junkPlayers;
                 players = players.filter(idx => this.d.ps[idx]);
-                const buyInPerSeg = bet * players.length;
-                if (buyInPerSeg === 0) return null;
+                if (players.length === 0) return null;
 
                 const segs = [
                     { name: "HOLES 1-6", h: [1, 6] },
@@ -2283,7 +2280,7 @@ const App = {
                 
                 const results = [];
                 const totalNet = { 0: 0, 1: 0, 2: 0, 3: 0 };
-                let carryover = 0;
+                const totalItems = { 0: 0, 1: 0, 2: 0, 3: 0 };
 
                 segs.forEach((sig, segIdx) => {
                     const playerItems = { 0: 0, 1: 0, 2: 0, 3: 0 };
@@ -2306,6 +2303,7 @@ const App = {
                                             voided.push({ pIdx, h: absH, type: t === 'G' ? 'Greenie' : 'Sandie', sc });
                                         } else {
                                             playerItems[pIdx]++;
+                                            totalItems[pIdx]++;
                                             totalItemsInSeg++;
                                         }
                                     }
@@ -2314,74 +2312,25 @@ const App = {
                         }
                     });
 
-                    const segmentPot = buyInPerSeg + carryover;
+                    // Direct $1 per item from each other player (No limits)
                     const payouts = { 0: 0, 1: 0, 2: 0, 3: 0 };
-                    let segCarryover = 0;
-                    const isLastSeg = (segIdx === segs.length - 1);
-
-                    if (totalItemsInSeg === 0) {
-                        if (isLastSeg) {
-                            // LAST SEGMENT REFUND: If no items, refund the pot equally to all players
-                            const baseRefund = Math.floor(segmentPot / players.length);
-                            let refundRem = segmentPot % players.length;
-                            players.forEach(i => {
-                                payouts[i] = baseRefund;
-                                if (refundRem > 0) { payouts[i]++; refundRem--; }
-                            });
-                            segCarryover = 0;
-                        } else {
-                            segCarryover = segmentPot;
-                        }
-                    } else if (totalItemsInSeg <= segmentPot && !isLastSeg) {
-                        // NORMAL SEGMENT: Each item gets $1, remainder carries over
-                        players.forEach(i => {
-                            payouts[i] = playerItems[i] * bet;
-                        });
-                        segCarryover = segmentPot - totalItemsInSeg;
-                    } else {
-                        // OVERFLOW OR LAST SEGMENT DRAIN: Proportional split of segmentPot among players based on items
-                        // (On the last segment, we split EVERY dollar in the pot among achievers)
-                        let currentTotal = 0;
-                        players.forEach(i => {
-                            const val = Math.round((playerItems[i] / totalItemsInSeg) * segmentPot);
-                            payouts[i] = val;
-                            currentTotal += val;
-                        });
-
-                        // Adjust for rounding
-                        let diff = segmentPot - currentTotal;
-                        if (diff !== 0) {
-                            const eligible = players.filter(i => playerItems[i] > 0);
-                            while (diff !== 0 && eligible.length > 0) {
-                                for (let i of eligible) {
-                                    if (diff > 0) { payouts[i]++; diff--; }
-                                    else if (diff < 0 && payouts[i] > 0) { payouts[i]--; diff++; }
-                                    if (diff === 0) break;
-                                }
-                            }
-                        }
-                        segCarryover = 0;
-                    }
-
-                    // Update total net
                     players.forEach(i => {
-                        totalNet[i] += (payouts[i] - bet);
+                        // Net for this segment: (items earned * (N - 1)) - (items earned by everyone else)
+                        const segNet = (playerItems[i] * players.length - totalItemsInSeg) * bet;
+                        totalNet[i] += segNet;
+                        payouts[i] = playerItems[i] * (players.length - 1) * bet;
                     });
 
                     results.push({
                         name: sig.name,
-                        pot: segmentPot,
                         totalItems: totalItemsInSeg,
+                        items: playerItems,
                         payouts: payouts,
-                        carryover: segCarryover,
-                        refunded: (isLastSeg && totalItemsInSeg === 0),
                         voided: voided
                     });
-                    
-                    carryover = segCarryover;
                 });
 
-                return { results, net: totalNet, players, finalCarryover: carryover };
+                return { results, net: totalNet, players, totalItems };
             },
 
             getScorecardHTML: function () {
@@ -3924,33 +3873,6 @@ const App = {
                                     });
                                 });
                             }
-                        }
-                        const segPot = buyInPerSeg + carryover;
-                        // Only payout if segment is complete (all 6 holes played)
-                        const segComplete = (() => {
-                            for (let rh = 1; rh <= 6; rh++) {
-                                const h = (segIdx * 6) + rh;
-                                const s = this.d.s[h];
-                                if (!s || Object.keys(s).length < activeCount) return false;
-                            }
-                            return true;
-                        })();
-
-                        if (segComplete) {
-                            if (totalItems === 0) {
-                                if (segIdx === 2) players.forEach(i => running[i] += -bet);
-                                else { carryover = segPot; players.forEach(i => running[i] -= bet); }
-                            } else {
-                                players.forEach(i => {
-                                    const p = Math.round((playerItems[i] / totalItems) * segPot);
-                                    running[i] += (p - bet);
-                                });
-                                carryover = 0;
-                            }
-                        } else {
-                            // Mid-segment: show items earned only (not finalized payout)
-                            players.forEach(i => running[i] += playerItems[i]); // store items as proxy
-                            // Use actual calcJunkRes net instead for simplicity
                         }
                     });
 
