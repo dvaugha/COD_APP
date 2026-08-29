@@ -992,7 +992,7 @@
             border-top: 1px solid #334155;
         }
 </style>
-    <!-- Deployment Nudge: 2026-08-29 04:50 PM -->
+    <!-- Deployment Nudge: 2026-08-29 04:55 PM -->
 </head>
 <body style="background:#0F172A; color:#F8FAFC;">
     <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
@@ -1630,7 +1630,12 @@ const App = {
 
             tryNewGame: function (btn) {
                 if (btn.innerText.includes("CONFIRM")) {
-                    this.startRound(false);
+                    try {
+                        this.startRound(false);
+                    } catch (e) {
+                        console.error("Start match error:", e);
+                        alert("Error starting match: " + e.message);
+                    }
                     btn.innerText = "START NEW MATCH";
                     btn.style.backgroundColor = "#EF4444";
                     return;
@@ -2465,81 +2470,101 @@ const App = {
                 this.checkCourseOptions();
             },
             startRound: function (keepScores) {
-                const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
-                const gtLine = document.getElementById('g-mode-top');
-                const gt = gtLine ? gtLine.value : this.d.gameType;
-                const count = p.filter(x => x).length;
+                try {
+                    const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
+                    const gtLine = document.getElementById('g-mode-top');
+                    const gt = gtLine ? gtLine.value : (this.d.gameType || 'cod');
+                    const count = p.filter(x => x).length;
 
-                if (gt === 'stroke') {
-                    if (count < 2) { alert("Need at least 2 players for Stroke Play!"); return; }
-                } else if (gt === 'rabbit') {
-                    if (count < 2) { alert("Need at least 2 players for Rabbit Hunter!"); return; }
-                } else if (gt === 'single') {
-                    if (count < 1) { alert("Need at least 1 player for Single Player!"); return; }
-                } else if (gt === 'nassau' || gt === 'cc_match') {
-                    if (count < 4) { alert("Nassau and Captain's Choice require 4 players (Cart A vs Cart B)!"); return; }
-                } else {
-                    if (count < 4) { alert("COD and Scramble require 4 players (2 vs 2 / Rotating)!"); return; }
-                }
-
-                // SYNC SETTINGS
-                this.d.ps = p;
-                this.d.crs = document.getElementById('course-search').value ? document.getElementById('s-course').value : this.d.crs;
-                this.d.tee = document.getElementById('s-tee').value;
-                this.d.bet = parseInt(document.getElementById('s-bet').value);
-                this.d.start = parseInt(document.getElementById('s-start').value);
-                this.d.gameType = gt;
-                this.d.pot = parseInt(document.getElementById('s-pot').value) || 20;
-                this.d.hcpMode = document.getElementById('s-hcp-mode').value || 'standard';
-                this.d.noHandicaps = document.getElementById('s-no-hcps') ? document.getElementById('s-no-hcps').checked : false;
-
-                if (this.d.gameType === 'cod' && this.d.hcpMode === 'spread' && this.d.hcpEqualize === undefined) {
-                    const activeNames = [0, 1, 2, 3].map(i => this.d.chosen[i]).filter(n => n);
-                    this.d.hcpEqualize = confirm(`Would you like to spread - ${activeNames.join(' & ')} - to allow more strokes so that it is even for each segment?`);
-                }
-
-                if (!this.d.scoringMode) this.d.scoringMode = 'std';
-                if (this.d.gameType === 'single') {
-                    this.d.bet = 0;
-                    this.d.pot = 0;
-                    this.d.junkBet = 0;
-                }
-
-                // ONLY WIPE IF STARTING NEW
-                if (!keepScores) {
-                    this.d.s = {};
-                    this.d.junk = {};
-                    this.d.press = { 0: [], 1: [], 2: [] };
-                    this.d.rabbitHistory = {};
-                    this.d.h = parseInt(this.d.start);
-                }
-
-                // Composite Course Logic
-                const crsData = CS[this.d.crs];
-                if (crsData.nines) {
-                    const n1 = document.getElementById('s-n1').value;
-                    const n2 = document.getElementById('s-n2').value;
-                    this.d.nines = [n1, n2];
-                    this.buildComposite(this.d.crs, n1, n2);
-                } else {
-                    delete this.d.nines;
-                }
-
-                this.d.roundEnded = false;
-                this.save();
-                this.nav('v-dash');
-                this.keepAwake();
-
-                // WELCOME SPEECH
-                if (this.d.voiceEnabled) {
-                    if (this.d.gameType === 'cod') {
-                        const ps = this.d.ps;
-                        this.speak(`Welcome to today's round. First segment: Carts. ${ps[0]} and ${ps[1]} versus ${ps[2]} and ${ps[3]}. Let the games begin!`);
+                    if (gt === 'stroke') {
+                        if (count < 2) { alert("Need at least 2 players for Stroke Play!"); return; }
+                    } else if (gt === 'rabbit') {
+                        if (count < 2) { alert("Need at least 2 players for Rabbit Hunter!"); return; }
+                    } else if (gt === 'single') {
+                        if (count < 1) { alert("Need at least 1 player for Single Player!"); return; }
+                    } else if (gt === 'nassau' || gt === 'cc_match') {
+                        if (count < 4) { alert("Nassau and Captain's Choice require 4 players (Cart A vs Cart B)!"); return; }
                     } else {
-                        this.speak(`Welcome to today's round. Let the games begin!`);
+                        if (count < 4) { alert("COD and Scramble require 4 players (2 vs 2 / Rotating)!"); return; }
                     }
+
+                    // SYNC SETTINGS
+                    this.d.ps = p;
+                    const searchEl = document.getElementById('course-search');
+                    const sCourseEl = document.getElementById('s-course');
+                    if (searchEl && searchEl.value && sCourseEl && sCourseEl.value && CS[sCourseEl.value]) {
+                        this.d.crs = sCourseEl.value;
+                    } else if (!this.d.crs || !CS[this.d.crs]) {
+                        this.d.crs = 'cc';
+                    }
+
+                    const teeEl = document.getElementById('s-tee');
+                    if (teeEl && teeEl.value) this.d.tee = teeEl.value;
+                    const betEl = document.getElementById('s-bet');
+                    if (betEl && betEl.value !== '') this.d.bet = parseInt(betEl.value);
+                    const startEl = document.getElementById('s-start');
+                    if (startEl && startEl.value !== '') this.d.start = parseInt(startEl.value);
+                    this.d.gameType = gt;
+                    const potEl = document.getElementById('s-pot');
+                    if (potEl && potEl.value !== '') this.d.pot = parseInt(potEl.value) || 20;
+                    const hcpModeEl = document.getElementById('s-hcp-mode');
+                    if (hcpModeEl && hcpModeEl.value) this.d.hcpMode = hcpModeEl.value;
+                    const noHcpsEl = document.getElementById('s-no-hcps');
+                    if (noHcpsEl) this.d.noHandicaps = noHcpsEl.checked;
+
+                    if (this.d.gameType === 'cod' && this.d.hcpMode === 'spread' && this.d.hcpEqualize === undefined) {
+                        const activeNames = [0, 1, 2, 3].map(i => this.d.chosen[i]).filter(n => n);
+                        this.d.hcpEqualize = confirm(`Would you like to spread - ${activeNames.join(' & ')} - to allow more strokes so that it is even for each segment?`);
+                    }
+
+                    if (!this.d.scoringMode) this.d.scoringMode = 'std';
+                    if (this.d.gameType === 'single') {
+                        this.d.bet = 0;
+                        this.d.pot = 0;
+                        this.d.junkBet = 0;
+                    }
+
+                    // ONLY WIPE IF STARTING NEW
+                    if (!keepScores) {
+                        this.d.s = {};
+                        this.d.junk = {};
+                        this.d.press = { 0: [], 1: [], 2: [] };
+                        this.d.rabbitHistory = {};
+                        this.d.h = parseInt(this.d.start) || 1;
+                    }
+
+                    // Composite Course Logic
+                    const crsData = CS[this.d.crs] || CS['cc'];
+                    if (crsData && crsData.nines) {
+                        const n1El = document.getElementById('s-n1');
+                        const n2El = document.getElementById('s-n2');
+                        const n1 = n1El ? n1El.value : 'n1';
+                        const n2 = n2El ? n2El.value : 'n2';
+                        this.d.nines = [n1, n2];
+                        this.buildComposite(this.d.crs, n1, n2);
+                    } else {
+                        delete this.d.nines;
+                    }
+
+                    this.d.roundEnded = false;
+                    this.save();
+                    this.nav('v-dash');
+                    this.keepAwake();
+
+                    // WELCOME SPEECH
+                    if (this.d.voiceEnabled) {
+                        if (this.d.gameType === 'cod') {
+                            const ps = this.d.ps;
+                            this.speak(`Welcome to today's round. First segment: Carts. ${ps[0]} and ${ps[1]} versus ${ps[2]} and ${ps[3]}. Let the games begin!`);
+                        } else {
+                            this.speak(`Welcome to today's round. Let the games begin!`);
+                        }
+                    }
+                    this.showCartCheck();
+                } catch (err) {
+                    console.error("Failed to start round:", err);
+                    alert("Error starting round: " + err.message);
                 }
-                this.showCartCheck();
             },
 
             endRound: function () {
