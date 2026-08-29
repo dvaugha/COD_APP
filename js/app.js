@@ -789,6 +789,15 @@ const App = {
                             });
                         });
 
+                        if (this.d.gameType === 'cc_match') {
+                            const p0 = this.slotMap[0] !== undefined ? this.slotMap[0] : 0;
+                            const p1 = this.slotMap[1] !== undefined ? this.slotMap[1] : 1;
+                            const p2 = this.slotMap[2] !== undefined ? this.slotMap[2] : 2;
+                            const p3 = this.slotMap[3] !== undefined ? this.slotMap[3] : 3;
+                            if (this.d.s[this.d.h][p0] !== undefined) this.d.s[this.d.h][p1] = this.d.s[this.d.h][p0];
+                            if (this.d.s[this.d.h][p2] !== undefined) this.d.s[this.d.h][p3] = this.d.s[this.d.h][p2];
+                        }
+
                         // Navigate Forward correctly matching the back 9 nav logic
                         let nextH;
                         let curH = parseInt(this.d.h);
@@ -2515,9 +2524,9 @@ const App = {
                             activeSeats.forEach(i => { if (i === h18) bets[i] += (fP * (n - 1)); else bets[i] -= fP; });
                         }
                     }
-                } else if (this.d.gameType === 'nassau') {
+                } else if (this.d.gameType === 'nassau' || this.d.gameType === 'cc_match') {
                     const nr = this.calcNassau();
-                    const bet = this.d.bet || 4;
+                    const bet = this.d.bet || (this.d.gameType === 'cc_match' ? 5 : 4);
                     [nr.front, nr.back, nr.overall].forEach(seg => {
                         if (seg.winner === 1) {
                             nr.t1.forEach(p => bets[p] += bet);
@@ -2810,7 +2819,51 @@ const App = {
                             segRes.push({ name: p, val: `${grossScore} (${relStr} NET)`, color: "#10B981" });
                             bets[pIdx] = 0; // No financial in single player
                         });
-                    } else { // This else block now correctly handles non-stroke games
+                    } else if (this.d.gameType === 'rabbit') {
+                        const h9 = this.d.rabbitHistory && this.d.rabbitHistory[9];
+                        const h18 = this.d.rabbitHistory && this.d.rabbitHistory[18];
+                        const pot = this.d.pot || 0;
+                        const hP = pot * 0.40;
+                        const fP = pot * 0.60;
+                        const activeSeats = this.d.ps.map((p, i) => p ? i : -1).filter(i => i !== -1);
+                        const n = activeSeats.length;
+                        if (n > 0) {
+                            if (h9 !== null && h9 !== undefined && this.d.ps[h9]) {
+                                activeSeats.forEach(i => { if (i === h9) bets[i] += (hP * (n - 1)); else bets[i] -= hP; });
+                            }
+                            if (h18 !== null && h18 !== undefined && this.d.ps[h18]) {
+                                activeSeats.forEach(i => { if (i === h18) bets[i] += (fP * (n - 1)); else bets[i] -= fP; });
+                            }
+                        }
+                        const p9 = (h9 !== null && h9 !== undefined && this.d.ps[h9]) ? `${this.d.ps[h9]} (+$${(hP * n).toFixed(2)})` : "NOBODY (PUSHED)";
+                        const p18 = (h18 !== null && h18 !== undefined && this.d.ps[h18]) ? `${this.d.ps[h18]} (+$${(fP * n).toFixed(2)})` : "NOBODY (PUSHED)";
+                        segRes.push({ name: "FRONT 9", val: p9, color: "#10B981" });
+                        segRes.push({ name: "BACK 18", val: p18, color: "#10B981" });
+                    } else if (this.d.gameType === 'nassau' || this.d.gameType === 'cc_match') {
+                        const nr = this.calcNassau();
+                        const bet = this.d.bet || (this.d.gameType === 'cc_match' ? 5 : 4);
+                        const tn1 = `${ps[nr.t1[0]]} & ${ps[nr.t1[1]]}`;
+                        const tn2 = `${ps[nr.t2[0]]} & ${ps[nr.t2[1]]}`;
+                        [
+                            { name: "FRONT 9", seg: nr.front },
+                            { name: "BACK 9", seg: nr.back },
+                            { name: "TOTAL", seg: nr.overall }
+                        ].forEach(s => {
+                            let wStr = "ALL SQUARE", col = "white";
+                            if (s.seg.winner === 1) {
+                                nr.t1.forEach(p => bets[p] += bet);
+                                nr.t2.forEach(p => bets[p] -= bet);
+                                wStr = `${tn1} won $${bet}`;
+                                col = "#10B981";
+                            } else if (s.seg.winner === 2) {
+                                nr.t2.forEach(p => bets[p] += bet);
+                                nr.t1.forEach(p => bets[p] -= bet);
+                                wStr = `${tn2} won $${bet}`;
+                                col = "#F59E0B";
+                            }
+                            segRes.push({ name: s.name, val: wStr, color: col });
+                        });
+                    } else { // Handles COD and Scramble games
                         [0, 1, 2].forEach(idx => {
                             const results = this.calcSegResults(idx);
                             results.forEach((r, rIdx) => {
@@ -2979,6 +3032,13 @@ const App = {
                     const sn = document.getElementById('share-node');
                     let finHTML = '';
 
+                    const jRes = this.calcJunkRes();
+                    if (jRes && jRes.net && this.d.gameType !== 'single') {
+                        [0, 1, 2, 3].forEach(i => {
+                            if (ps[i] && jRes.net[i]) bets[i] += jRes.net[i];
+                        });
+                    }
+
                     if (isScramble) {
                         [0, 1, 2, 3].forEach(i => {
                             const v = Math.round(bets[i]);
@@ -3001,7 +3061,6 @@ const App = {
                         </div>`;
                     });
                     // Add Junk Financials to Share
-                    const jRes = this.calcJunkRes();
                     if (jRes) {
                         segHTML += `<div style="margin-top:12px; border-top:1px dashed #475569; padding-top:6px; font-size:11px; color:#F59E0B; font-weight:900; text-transform:uppercase;">Segment Junk Payouts</div>`;
                         jRes.results.forEach(r => {
@@ -3255,6 +3314,42 @@ const App = {
                             });
                         }
                     }
+                } else if (this.d.gameType === 'nassau' || this.d.gameType === 'cc_match') {
+                    const nr = this.calcNassau();
+                    const bet = this.d.bet || (this.d.gameType === 'cc_match' ? 5 : 4);
+                    const tn1 = `${this.d.ps[nr.t1[0]]}/${this.d.ps[nr.t1[1]]}`;
+                    const tn2 = `${this.d.ps[nr.t2[0]]}/${this.d.ps[nr.t2[1]]}`;
+
+                    const segs = [
+                        { name: "FRONT 9", seg: nr.front },
+                        { name: "BACK 9", seg: nr.back },
+                        { name: "TOTAL", seg: nr.overall }
+                    ];
+
+                    segs.forEach(s => {
+                        let wStr = "ALL SQUARE";
+                        if (s.seg.winner === 1) {
+                            nr.t1.forEach(p => { bets[p] += bet; logs[p].push(`${s.name}: +$${bet}`); });
+                            nr.t2.forEach(p => { bets[p] -= bet; logs[p].push(`${s.name}: ($-${bet})`); });
+                            wStr = `${tn1} (+$${bet})`;
+                        } else if (s.seg.winner === 2) {
+                            nr.t2.forEach(p => { bets[p] += bet; logs[p].push(`${s.name}: +$${bet}`); });
+                            nr.t1.forEach(p => { bets[p] -= bet; logs[p].push(`${s.name}: ($-${bet})`); });
+                            wStr = `${tn2} (+$${bet})`;
+                        }
+                        summary += `${s.name}: ${wStr}\n`;
+                    });
+
+                    // Birdie stats for Nassau / Captain's Choice
+                    [0, 1, 2, 3].forEach(i => {
+                        if (!this.d.ps[i]) return;
+                        let gross = 0;
+                        for (let h = 1; h <= 18; h++) {
+                            const sc = this.d.s[h] && this.d.s[h][i];
+                            if (sc) { gross += sc; if (sc < c.p[h - 1]) birdCounts[i]++; }
+                        }
+                        if (gross > 0 && gross < bestGross) { bestGross = gross; bestPlayerIdx = i; }
+                    });
                 } else if (this.d.gameType === 'cod' || this.d.gameType === 'scramble') {
                     [0, 1, 2].forEach(idx => {
                         const results = this.calcSegResults(idx);
