@@ -73,3 +73,4 @@
 2026-08-29 16:05:00 - Updated 'SHARE SCORECARD ONLY 📄' (shareSimpleScorecard) to share ONLY the clean scorecard image with no financial betting, junk, or payouts text attached. Bumped cachebuster to ?v=202608291605 and re-bundled gold files.
 2026-08-29 16:38:00 - Fixed Captain's Choice (cc_match) scorecard and hole view dot rendering to check both partners on the cart (evaluating Cart A: 0 & 1, Cart B: 2 & 3) so that Dewey's and Doug's handicap stroke dots properly appear on their team rows. Bumped cachebuster to ?v=202608291638 and re-bundled gold files.
 2026-08-29 16:45:00 - Bumped version to v281.1 with cachebuster ?v=202608291645 across all views and bundles so iPhone / Safari users can easily verify fresh app build.
+2026-08-29 16:50:00 - Fixed undefined nmEl variable in map function; bumped cachebuster to ?v=202608291650 and re-bundled gold files.

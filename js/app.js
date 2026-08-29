@@ -1977,8 +1977,7 @@ const App = {
                     if (!this.d.ps[pid]) { ec.style.display = 'none'; if (jRow) jRow.style.display = 'none'; return; }
                     ec.style.display = 'flex';
                     if (jRow) jRow.style.display = 'flex';
-                    if (isCC && jRow) jRow.style.display = 'none';
-
+                    const nmEl = document.getElementById('nm-' + id);
                     const pops = isCC
                         ? Math.max(this.getPops(pid, hIdx), this.getPops(pid + 1, hIdx))
                         : this.getPops(pid, hIdx);

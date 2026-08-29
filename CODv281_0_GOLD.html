@@ -992,7 +992,7 @@
             border-top: 1px solid #334155;
         }
 </style>
-    <!-- Deployment Nudge: 2026-08-29 04:45 PM -->
+    <!-- Deployment Nudge: 2026-08-29 04:50 PM -->
 </head>
 <body style="background:#0F172A; color:#F8FAFC;">
     <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
@@ -3485,8 +3485,7 @@ const App = {
                     if (!this.d.ps[pid]) { ec.style.display = 'none'; if (jRow) jRow.style.display = 'none'; return; }
                     ec.style.display = 'flex';
                     if (jRow) jRow.style.display = 'flex';
-                    if (isCC && jRow) jRow.style.display = 'none';
-
+                    const nmEl = document.getElementById('nm-' + id);
                     const pops = isCC
                         ? Math.max(this.getPops(pid, hIdx), this.getPops(pid + 1, hIdx))
                         : this.getPops(pid, hIdx);
