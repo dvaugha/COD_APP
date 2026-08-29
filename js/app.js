@@ -3407,6 +3407,28 @@ const App = {
             },
 
             getSettleStr: function (bets) {
+                if (this.d.gameType === 'cc_match') {
+                    const t1Names = `${this.d.ps[0]} and ${this.d.ps[1]}`;
+                    const t2Names = `${this.d.ps[2]} and ${this.d.ps[3]}`;
+                    
+                    const nr = this.calcNassau();
+                    const bet = this.d.bet || 5;
+                    let t1Wins = 0, t2Wins = 0;
+                    [nr.front, nr.back, nr.overall].forEach(seg => {
+                        if (seg.winner === 1) t1Wins++;
+                        else if (seg.winner === 2) t2Wins++;
+                    });
+
+                    const diff = (t1Wins - t2Wins) * bet;
+                    if (diff > 0) {
+                        return `${t2Names} owe ${t1Names} $${diff}`;
+                    } else if (diff < 0) {
+                        return `${t1Names} owe ${t2Names} $${Math.abs(diff)}`;
+                    } else {
+                        return "ALL SQUARE";
+                    }
+                }
+
                 let txt = "", debtors = [], creditors = [];
                 [0, 1, 2, 3].forEach(i => {
                     let b = Math.round(bets[i]);
