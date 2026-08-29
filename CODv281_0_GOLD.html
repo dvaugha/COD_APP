@@ -992,7 +992,7 @@
             border-top: 1px solid #334155;
         }
 </style>
-    <!-- Deployment Nudge: 2026-08-29 02:10 PM -->
+    <!-- Deployment Nudge: 2026-08-29 03:30 PM -->
 </head>
 <body style="background:#0F172A; color:#F8FAFC;">
     <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
@@ -4731,8 +4731,8 @@ const App = {
 
 " + summary;
 
-                // Add Junk in simple terms
-                if (jRes && jRes.net) {
+                // Add Junk in simple terms (for non-cc_match games)
+                if (this.d.gameType !== 'cc_match' && jRes && jRes.net) {
                     let jStr = "";
                     jRes.players.forEach(i => {
                         const v = Math.round(jRes.net[i]);
@@ -4945,13 +4945,98 @@ TOTAL NET (Incl. Junk):
                     });
 
                     const diff = (t1Wins - t2Wins) * bet;
-                    if (diff > 0) {
-                        return `${t2Names} owe ${t1Names} $${diff}`;
-                    } else if (diff < 0) {
-                        return `${t1Names} owe ${t2Names} $${Math.abs(diff)}`;
-                    } else {
-                        return "ALL SQUARE";
+                    let matchTxt = "";
+                    if (diff > 0) matchTxt = `⚔️ MATCH: ${t2Names} owe ${t1Names} $${diff}`;
+                    else if (diff < 0) matchTxt = `⚔️ MATCH: ${t1Names} owe ${t2Names} $${Math.abs(diff)}`;
+                    else matchTxt = `⚔️ MATCH: ALL SQUARE`;
+
+                    const fmtAmt = (v) => {
+                        const val = Math.round(v || 0);
+                        if (val > 0) return `+$${val}`;
+                        if (val < 0) return `-$${Math.abs(val)}`;
+                        return `$0`;
+                    };
+
+                    let txt = matchTxt;
+
+                    // 1. Individual Junk Payouts & totals owed by each person
+                    const jRes = this.calcJunkRes();
+                    const hasJunk = jRes && jRes.net && Object.values(jRes.net).some(v => Math.round(v) !== 0);
+                    if (hasJunk) {
+                        txt += "
+
+💰 JUNK TOTALS:
+";
+                        [0, 1, 2, 3].forEach(i => {
+                            if (this.d.ps[i]) {
+                                txt += `${this.d.ps[i]}: ${fmtAmt(jRes.net[i])}
+`;
+                            }
+                        });
+
+                        // Calculate individual junk payouts
+                        let jDebtors = [], jCreditors = [];
+                        [0, 1, 2, 3].forEach(i => {
+                            let b = Math.round(jRes.net[i] || 0);
+                            if (b < 0) jDebtors.push({ id: i, val: Math.abs(b) });
+                            else if (b > 0) jCreditors.push({ id: i, val: b });
+                        });
+                        if (jDebtors.length > 0) {
+                            txt += "
+JUNK PAYOUTS:
+";
+                            jDebtors.forEach(d => {
+                                while (d.val > 0 && jCreditors.length > 0) {
+                                    let c = jCreditors[0], amt = Math.min(d.val, c.val);
+                                    txt += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${amt}
+`;
+                                    d.val -= amt; c.val -= amt; if (c.val === 0) jCreditors.shift();
+                                }
+                            });
+                        }
                     }
+
+                    // 2. Complete totals owed by each player in total (Match + Junk)
+                    txt += (txt.endsWith('
+') ? "
+" : "
+
+") + "🏆 COMPLETE TOTALS (Match + Junk):
+";
+                    [0, 1, 2, 3].forEach(i => {
+                        if (this.d.ps[i]) {
+                            txt += `${this.d.ps[i]}: ${fmtAmt(bets[i])}
+`;
+                        }
+                    });
+
+                    // 3. Final complete payouts
+                    let debtors = [], creditors = [];
+                    [0, 1, 2, 3].forEach(i => {
+                        let b = Math.round(bets[i]);
+                        if (b < 0) debtors.push({ id: i, val: Math.abs(b) }); else if (b > 0) creditors.push({ id: i, val: b });
+                    });
+
+                    if (debtors.length > 0) {
+                        txt += "
+FINAL PAYOUTS:
+";
+                        debtors.forEach(d => {
+                            while (d.val > 0 && creditors.length > 0) {
+                                let c = creditors[0], amt = Math.min(d.val, c.val);
+                                txt += `${this.d.ps[d.id]} pays ${this.d.ps[c.id]} $${amt}
+`;
+                                d.val -= amt; c.val -= amt; if (c.val === 0) creditors.shift();
+                            }
+                        });
+                    } else {
+                        txt += "
+FINAL PAYOUTS:
+ALL SQUARE
+";
+                    }
+
+                    return txt.trim();
                 }
 
                 let txt = "", debtors = [], creditors = [];
@@ -5012,8 +5097,8 @@ TOTAL NET (Incl. Junk):
                 if (statsStr) sett += "
 " + statsStr;
 
-                // Add Junk in simple terms
-                if (jRes && jRes.net) {
+                // Add Junk in simple terms (for non-cc_match games)
+                if (this.d.gameType !== 'cc_match' && jRes && jRes.net) {
                     let jStr = "";
                     jRes.players.forEach(i => {
                         const v = Math.round(jRes.net[i]);
@@ -5026,8 +5111,8 @@ TOTAL NET (Incl. Junk):
 
                 sett += "
 ---
-PAYOUTS:
-" + this.getSettleStr(bets);
+" + (this.d.gameType === 'cc_match' ? "" : "PAYOUTS:
+") + this.getSettleStr(bets);
 
                 if (type === 'both' || type === 'image') {
                     if (!this.shareBlob) { alert("Preview still loading..."); return; }
