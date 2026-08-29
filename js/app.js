@@ -3998,7 +3998,7 @@ const App = {
                     // Simple Scorecard Snapshot Layout
                     node.innerHTML = `
                         <div class="sn-head" style="font-size:24px; font-weight:900; color:#10B981; margin-bottom:4px;">${c.n}</div>
-                        <div class="sn-sub" style="font-size:12px; color:#cbd5e1; margin-bottom:20px;">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • SCORECARD ONLY</div>
+                        <div class="sn-sub" style="font-size:12px; color:#cbd5e1; margin-bottom:20px;">${new Date().toLocaleDateString()} • ${this.d.tee.toUpperCase()} • SCORECARD</div>
                         <div style="background:#0F172A; border-radius:12px; border:1px solid #334155; padding:16px;">
                             ${this.getScorecardHTML()}
                         </div>
@@ -4033,7 +4033,25 @@ const App = {
                         document.getElementById('sp-img').src = url;
                         document.getElementById('share-preview-modal').classList.add('active');
                         
-                        await this.doShareParams('both');
+                        const file = new File([blob], 'scorecard.png', { type: 'image/png' });
+                        if (navigator.share) {
+                            try {
+                                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                    await navigator.share({ files: [file], title: `${c.n} Scorecard` });
+                                } else {
+                                    await navigator.share({ title: `${c.n} Scorecard` });
+                                }
+                            } catch (e) {
+                                if (e.name !== 'AbortError') console.error("Share failed", e);
+                            }
+                        } else if (navigator.clipboard && navigator.clipboard.write) {
+                            try {
+                                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                                alert("Scorecard image copied to clipboard!");
+                            } catch (err) {
+                                console.log("Clipboard image write not supported", err);
+                            }
+                        }
                         btn.innerText = "SHARE SCORECARD ONLY 📄";
                     }, 'image/png');
                 } catch (e) {
