@@ -203,9 +203,9 @@ const App = {
                 } else if (el.value === 'cod' || el.value === 'scramble') {
                     if (pc) pc.style.display = 'none';
                     document.querySelectorAll('#s-bet').forEach(i => i.value = 5); // Always default $5 for COD
-                } else if (el.value === 'nassau') {
-                    if (pc) pc.style.display = 'none'; // No separate pot for Nassau
-                    document.querySelectorAll('#s-bet').forEach(i => i.value = 4); // Default $4/player/segment
+                } else if (el.value === 'nassau' || el.value === 'cc_match') {
+                    if (pc) pc.style.display = 'none'; // No separate pot for Nassau / CC match
+                    document.querySelectorAll('#s-bet').forEach(i => i.value = (el.value === 'cc_match' ? 5 : 4));
                 } else if (el.value === 'rabbit') {
                     if (pc) pc.style.display = 'flex';
                     if (potLbl) potLbl.innerText = 'BUY-IN $';
@@ -931,6 +931,9 @@ const App = {
                     const prop = k.replace('s-', '').replace('g-mode', 'gameType').replace('hcp-mode', 'hcpMode');
                     if (el && this.d[prop] !== undefined) el.value = this.d[prop];
                 });
+                const gTop = document.getElementById('g-mode-top');
+                if (gTop && this.d.gameType) gTop.value = this.d.gameType;
+
                 if (document.getElementById('s-voice')) document.getElementById('s-voice').checked = !!this.d.voiceEnabled;
                 if (document.getElementById('s-no-hcps')) document.getElementById('s-no-hcps').checked = !!this.d.noHandicaps;
                 if (document.getElementById('gh-token-input')) document.getElementById('gh-token-input').value = this.d.ghToken || '';
@@ -940,7 +943,7 @@ const App = {
                 const gt = this.d.gameType;
                 const pc2 = document.getElementById('pot-container');
                 const potLbl2 = document.getElementById('pot-label');
-                if (gt === 'cod' || gt === 'scramble' || gt === 'single') {
+                if (gt === 'cod' || gt === 'scramble' || gt === 'single' || gt === 'nassau' || gt === 'cc_match') {
                     if (pc2) pc2.style.display = 'none';
                 } else {
                     if (pc2) pc2.style.display = 'flex';

@@ -30,8 +30,12 @@ def bundle():
 
     with open(gold_path, 'w', encoding='utf-8') as f:
         f.write(html)
-
     print(f"Created {gold_path}")
+
+    std_path = os.path.join(repo_root, "COD_GOLD_STANDARD.html")
+    with open(std_path, 'w', encoding='utf-8') as f:
+        f.write(html)
+    print(f"Created {std_path}")
 
 if __name__ == "__main__":
     bundle()
