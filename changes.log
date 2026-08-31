@@ -75,3 +75,4 @@
 2026-08-29 16:45:00 - Bumped version to v281.1 with cachebuster ?v=202608291645 across all views and bundles so iPhone / Safari users can easily verify fresh app build.
 2026-08-29 16:50:00 - Fixed undefined nmEl variable in map function; bumped cachebuster to ?v=202608291650 and re-bundled gold files.
 2026-08-29 16:55:00 - Hardened tryNewGame and startRound with comprehensive try/catch blocks and fallback course checks to ensure match start transitions cleanly to the dashboard. Bumped cachebuster to ?v=202608291655 and re-bundled gold files.
+2026-08-30 20:20:00 - Implemented manual 9-hole Press ($5) for Captain's Choice (cc_match) and Nassau: press buttons appear on dashboard when trailing on the active nine, score strictly across the current 9 holes, and integrate into round summary and payouts. Bumped cachebuster to ?v=202608302020 and re-bundled gold files.

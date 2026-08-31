@@ -992,7 +992,7 @@
             border-top: 1px solid #334155;
         }
 </style>
-    <!-- Deployment Nudge: 2026-08-29 04:55 PM -->
+    <!-- Deployment Nudge: 2026-08-30 08:20 PM -->
 </head>
 <body style="background:#0F172A; color:#F8FAFC;">
     <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
@@ -1570,6 +1570,7 @@ const App = {
                     }
                     if (!this.d.start) this.d.start = 1;
                     if (!this.d.press) this.d.press = { 0: [], 1: [], 2: [] };
+                    if (!this.d.nassauPresses) this.d.nassauPresses = [];
                     if (!this.d.hcps) this.d.hcps = {};
                     if (!this.d.gameType) this.d.gameType = 'cod';
                     if (!this.d.pot) this.d.pot = 20;
@@ -1656,6 +1657,7 @@ const App = {
                 this.d.junk = {};
                 this.d.isTestMode = false; // Reset test flag
                 this.d.press = { 0: [], 1: [], 2: [] };
+                this.d.nassauPresses = [];
                 this.d.start = parseInt(document.getElementById('s-start').value);
                 this.d.h = this.d.start;
                 this.d.ps = ['', '', '', ''];
@@ -2529,6 +2531,7 @@ const App = {
                         this.d.s = {};
                         this.d.junk = {};
                         this.d.press = { 0: [], 1: [], 2: [] };
+                        this.d.nassauPresses = [];
                         this.d.rabbitHistory = {};
                         this.d.h = parseInt(this.d.start) || 1;
                     }
@@ -3104,6 +3107,64 @@ const App = {
                 modal.classList.add('active');
             },
 
+            initiateNassauPress: function (team) {
+                const rh = this.getRelHole(this.d.h);
+                const isFront = (rh <= 9);
+                const curNine = isFront ? 'front' : 'back';
+                const nineLabel = isFront ? 'Front 9' : 'Back 9';
+
+                if (!this.d.nassauPresses) this.d.nassauPresses = [];
+                if (this.d.nassauPresses.some(p => p.nine === curNine && p.team === team)) {
+                    alert(`A ${nineLabel} press is already active for this team!`);
+                    return;
+                }
+
+                const nr = this.calcNassau();
+                const activeSeg = isFront ? nr.front : nr.back;
+                const diff = (team === 1) ? (activeSeg.w1 - activeSeg.w2) : (activeSeg.w2 - activeSeg.w1);
+                if (diff >= 0) {
+                    alert("Team must be trailing in this nine to press!");
+                    return;
+                }
+
+                const t1 = [0, 1];
+                const t2 = [2, 3];
+                const tNames = (team === 1 ? t1 : t2).map(idx => this.d.ps[idx]);
+                const nameStr = tNames.join(" & ");
+                const startAbs = this.getAbsHole(rh);
+                const endAbs = isFront ? this.getAbsHole(9) : this.getAbsHole(18);
+
+                const startThePress = () => {
+                    this.d.nassauPresses.push({
+                        nine: curNine,
+                        team: team,
+                        startH: rh,
+                        bet: 5
+                    });
+                    this.save();
+                    this.uDash();
+                    this.closePress();
+                };
+
+                const modal = document.getElementById('press-modal');
+                const msg = document.getElementById('pm-msg');
+                const btn = document.getElementById('pm-btn');
+
+                let warningHtml = `
+                    <div style="color:white; font-weight:700; font-size:16px; margin-bottom:8px;">Initiate $5 ${nineLabel} Press?</div>
+                    <div style="color:#94A3B8; font-size:13px; margin-bottom:12px;">${nameStr} trailing by ${Math.abs(diff)} in the ${nineLabel}.</div>
+                    <div style="color:#10B981; font-weight:700; background:rgba(16,185,129,0.1); border:1px solid #10B981; padding:8px; border-radius:6px; font-size:12px;">
+                        Scores Holes ${startAbs} through ${endAbs} for a new $5 bet.
+                    </div>
+                `;
+                let voiceMsg = `Press initiated on hole ${startAbs} for the ${nineLabel}.`;
+
+                msg.innerHTML = warningHtml;
+                this.speak(voiceMsg);
+                btn.onclick = () => startThePress();
+                modal.classList.add('active');
+            },
+
 
             closePress: function () { document.getElementById('press-modal').classList.remove('active'); },
 
@@ -3459,6 +3520,11 @@ const App = {
                         return `<div style="margin-bottom:4px;"><span style="font-size:10px; color:#FFFFFF; font-weight:900; text-transform:uppercase; margin-right:8px;">${label}:</span> ${val}</div>`;
                     };
                     statHTML = nassauLine('Front', nr.front) + nassauLine('Back', nr.back) + nassauLine('Total', nr.overall);
+                    if (nr.presses && nr.presses.length > 0) {
+                        nr.presses.forEach(p => {
+                            statHTML += nassauLine(p.name, p);
+                        });
+                    }
                 } else if (this.d.gameType === 'rabbit') {
                     statHTML = ""; // Rabbit banner is displayed independently above.
                 } else if (main) {
@@ -3473,7 +3539,18 @@ const App = {
 
                 // PRESS BUTTONS
                 let pressButtons = '';
-                if (main && this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'nassau' && this.d.gameType !== 'rabbit') {
+                if (this.d.gameType === 'cc_match' || this.d.gameType === 'nassau') {
+                    const isFront = (rh <= 9);
+                    const curNine = isFront ? 'front' : 'back';
+                    const nr = this.calcNassau();
+                    const activeSeg = isFront ? nr.front : nr.back;
+                    const diff1 = activeSeg.w1 - activeSeg.w2;
+                    const diff2 = activeSeg.w2 - activeSeg.w1;
+                    const hasP1 = this.d.nassauPresses && this.d.nassauPresses.some(p => p.nine === curNine && p.team === 1);
+                    const hasP2 = this.d.nassauPresses && this.d.nassauPresses.some(p => p.nine === curNine && p.team === 2);
+                    if (diff1 < 0 && !hasP1) pressButtons += `<button class="g-btn g-btn-sm" style="background:#EF4444; width:auto; margin-top:4px; margin-right:4px; padding:6px 10px; font-size:10px;" onclick="App.initiateNassauPress(1)">${sn(nr.t1[0])}/${sn(nr.t1[1])} PRESS</button>`;
+                    if (diff2 < 0 && !hasP2) pressButtons += `<button class="g-btn g-btn-sm" style="background:#F59E0B; width:auto; margin-top:4px; padding:6px 10px; font-size:10px;" onclick="App.initiateNassauPress(2)">${sn(nr.t2[0])}/${sn(nr.t2[1])} PRESS</button>`;
+                } else if (main && this.d.gameType !== 'scramble' && this.d.gameType !== 'stroke' && this.d.gameType !== 'rabbit') {
                     const diff1 = main.w1 - main.w2;
                     const diff2 = main.w2 - main.w1;
                     const hasP1 = this.d.press && this.d.press[m] && this.d.press[m].some(p => p.team === 1);
@@ -4818,21 +4895,28 @@ BACK 18: ${p18}
                     const tn2 = `${this.d.ps[nr.t2[0]]}/${this.d.ps[nr.t2[1]]}`;
 
                     const segs = [
-                        { name: "FRONT 9", seg: nr.front },
-                        { name: "BACK 9", seg: nr.back },
-                        { name: "TOTAL", seg: nr.overall }
+                        { name: "FRONT 9", seg: nr.front, bet: bet },
+                        { name: "BACK 9", seg: nr.back, bet: bet },
+                        { name: "TOTAL", seg: nr.overall, bet: bet }
                     ];
+
+                    if (nr.presses && nr.presses.length > 0) {
+                        nr.presses.forEach(p => {
+                            segs.push({ name: p.name, seg: p, bet: p.bet || 5 });
+                        });
+                    }
 
                     segs.forEach(s => {
                         let wStr = "ALL SQUARE";
+                        const sBet = s.bet;
                         if (s.seg.winner === 1) {
-                            nr.t1.forEach(p => { bets[p] += bet; logs[p].push(`${s.name}: +$${bet}`); });
-                            nr.t2.forEach(p => { bets[p] -= bet; logs[p].push(`${s.name}: ($-${bet})`); });
-                            wStr = `${tn1} (+$${bet})`;
+                            nr.t1.forEach(p => { bets[p] += sBet; logs[p].push(`${s.name}: +$${sBet}`); });
+                            nr.t2.forEach(p => { bets[p] -= sBet; logs[p].push(`${s.name}: ($-${sBet})`); });
+                            wStr = `${tn1} (+$${sBet})`;
                         } else if (s.seg.winner === 2) {
-                            nr.t2.forEach(p => { bets[p] += bet; logs[p].push(`${s.name}: +$${bet}`); });
-                            nr.t1.forEach(p => { bets[p] -= bet; logs[p].push(`${s.name}: ($-${bet})`); });
-                            wStr = `${tn2} (+$${bet})`;
+                            nr.t2.forEach(p => { bets[p] += sBet; logs[p].push(`${s.name}: +$${sBet}`); });
+                            nr.t1.forEach(p => { bets[p] -= sBet; logs[p].push(`${s.name}: ($-${sBet})`); });
+                            wStr = `${tn2} (+$${sBet})`;
                         }
                         summary += `${s.name}: ${wStr}
 `;
@@ -5560,11 +5644,54 @@ ALL SQUARE
                 }
 
                 const oW1 = fW1 + bW1, oW2 = fW2 + bW2;
+
+                const presses = [];
+                if (this.d.nassauPresses && this.d.nassauPresses.length > 0) {
+                    this.d.nassauPresses.forEach(p => {
+                        let pW1 = 0, pW2 = 0;
+                        const startH = p.startH;
+                        const endH = (p.nine === 'front' ? 9 : 18);
+                        for (let rh = startH; rh <= endH; rh++) {
+                            const absH = this.getAbsHole(rh);
+                            const s = this.d.s[absH];
+                            if (!s) continue;
+                            if (this.d.gameType === 'cc_match') {
+                                if (s[0] === undefined || s[2] === undefined) continue;
+                            } else {
+                                if (Object.keys(s).length < activeCount) continue;
+                            }
+                            const best1 = Math.min(
+                                (s[t1[0]] || 99) - this.getPops(t1[0], absH - 1),
+                                (s[t1[1]] || 99) - this.getPops(t1[1], absH - 1)
+                            );
+                            const best2 = Math.min(
+                                (s[t2[0]] || 99) - this.getPops(t2[0], absH - 1),
+                                (s[t2[1]] || 99) - this.getPops(t2[1], absH - 1)
+                            );
+                            if (best1 < best2) pW1++;
+                            else if (best2 < best1) pW2++;
+                        }
+                        const winner = pW1 > pW2 ? 1 : (pW2 > pW1 ? 2 : 0);
+                        const startAbs = this.getAbsHole(startH);
+                        const endAbs = this.getAbsHole(endH);
+                        const name = `${p.nine === 'front' ? 'FRONT 9' : 'BACK 9'} PRESS (H${startAbs}-${endAbs})`;
+                        presses.push({
+                            ...p,
+                            w1: pW1,
+                            w2: pW2,
+                            winner,
+                            name,
+                            bet: p.bet || 5
+                        });
+                    });
+                }
+
                 return {
                     t1, t2,
                     front:   { w1: fW1, w2: fW2, winner: fW1 > fW2 ? 1 : (fW2 > fW1 ? 2 : 0) },
                     back:    { w1: bW1, w2: bW2, winner: bW1 > bW2 ? 1 : (bW2 > bW1 ? 2 : 0) },
-                    overall: { w1: oW1, w2: oW2, winner: oW1 > oW2 ? 1 : (oW2 > oW1 ? 2 : 0) }
+                    overall: { w1: oW1, w2: oW2, winner: oW1 > oW2 ? 1 : (oW2 > oW1 ? 2 : 0) },
+                    presses
                 };
             },
 
