@@ -40,7 +40,7 @@ Object.assign(App, {
                 let warningHtml = `<div style="color:white; font-weight:700; margin-bottom:8px;">Initiate PRESS on Hole ${this.getAbsHole(startH)}?</div>`;
                 let voiceMsg = `Press initiated on hole ${this.getAbsHole(startH)}.`;
 
-                if (this.d.gameType === 'highlow' && Math.abs(diff) >= 3) {
+                if ((this.d.gameType === 'highlow' || this.d.gameType === 'cod') && Math.abs(diff) >= 3) {
                     warningHtml = `
                         <div style="color:#EF4444; font-weight:900; font-size:18px; margin-bottom:12px;">⚠️ $3 PRESS</div>
                         <div style="color:white; margin-bottom:12px;">${nameStr} are trailing by ${Math.abs(diff)}.</div>
@@ -49,15 +49,6 @@ Object.assign(App, {
                         </div>
                     `;
                     voiceMsg = `Attention! ${nameStr} are trailing by ${Math.abs(diff)}. This press is a 3 dollar bet, not 5. Accept the challenge?`;
-                } else if (Math.abs(diff) >= 3) {
-                    warningHtml = `
-                        <div style="color:#EF4444; font-weight:900; font-size:18px; margin-bottom:12px;">⚠️ HIGH STAKES PRESS</div>
-                        <div style="color:white; margin-bottom:12px;">${nameStr} are trailing by ${Math.abs(diff)}.</div>
-                        <div style="color:#FCA5A5; font-weight:700; border:1px solid #EF4444; padding:8px; border-radius:4px;">
-                            NOTICE: A TIE on this hole will still cost ${nameStr} $3!
-                        </div>
-                    `;
-                    voiceMsg = `Attention! ${nameStr} are trailing by 3. A tie on this hole will still cost the pressing team 3 dollars. Accept the challenge?`;
                 }
 
                 msg.innerHTML = warningHtml;
