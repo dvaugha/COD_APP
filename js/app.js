@@ -1388,23 +1388,12 @@ const App = {
                 } else {
                     if (w1 > w2) winner = 1;
                     else if (w2 > w1) winner = 2;
-                    else {
-                        // TIE LOGIC for Presses vs Main Matches
-                        if (teamPressed) {
-                            // If it's a press and it's tied:
-                            // The team that was CHALLENGED (non-pressing) wins $3 if they were up by 3+ initially
-                            if (Math.abs(initialDiff) >= 3 && completedHoles > 0) {
-                                winner = (teamPressed === 1 ? 2 : 1);
-                                amt = 3;
-                            } else {
-                                winner = 0;
-                                amt = 0;
-                            }
-                        } else {
-                            winner = 0;
-                            amt = 0;
-                        }
-                    }
+                    else { winner = 0; amt = 0; } // Tied segment or tied press = push
+
+                    // Dan's $3 rule (aligned across COD and High-Low, Oct 15, 2026):
+                    // a press made while down by more than two is a $3 bet, not $5 —
+                    // a routed team can't press its way back to even.
+                    if (teamPressed && winner !== 0 && Math.abs(initialDiff) >= 3) amt = 3;
                     return { winner, amt, w1, w2, seg, isScramble: false, teamPressed, startRh, endRh };
                 }
             },
