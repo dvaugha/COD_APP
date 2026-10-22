@@ -249,8 +249,10 @@ const App = {
             },
 
             nav: function (id) {
+                const tgt = document.getElementById(id);
+                if (!tgt) return;
                 document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
-                document.getElementById(id).classList.add('active');
+                tgt.classList.add('active');
                 if (id === 'v-setup') { this.checkCourseOptions(); }
                 if (id === 'v-dash') { this.uDash(); this.updateJunkUI(); }
                 if (id === 'v-card') this.uCard();
