@@ -1460,5 +1460,63 @@ const App = {
             calcSeg: function (idx) {
                 // Compatibility wrapper for old calls that expect a single result
                 return this.calcSegResults(idx)[0];
+            },
+
+            initiatePress: function (team) {
+                let rh = this.getRelHole(this.d.h);
+                let m = Math.floor((rh - 1) / 6);
+
+                // Only allow one press per team per segment
+                if (this.d.press[m] && this.d.press[m].some(p => p.team === team)) {
+                    alert("A press is already active for this team in this segment!");
+                    return;
+                }
+
+                // Check trailing status based on holes completed up to current hole
+                const r = (this.d.gameType === 'highlow') ? this.calcMatchHL(m, (m * 6) + 1, rh, 0, null) : this.calcMatch(m, (m * 6) + 1, rh, 0, null);
+                const diff = (team === 1) ? (r.w1 - r.w2) : (r.w2 - r.w1);
+
+                if (diff >= 0) {
+                    alert("Team must be trailing to press!");
+                    return;
+                }
+
+                const startH = rh;
+                const t1 = (m === 0) ? [0, 1] : (m === 1 ? [0, 3] : [0, 2]);
+                const t2 = (m === 0) ? [2, 3] : (m === 1 ? [1, 2] : [1, 3]);
+                const tNames = (team === 1 ? t1 : t2).map(idx => this.d.ps[idx]);
+                const nameStr = tNames.join(" & ");
+
+                const startThePress = () => {
+                    if (!this.d.press[m]) this.d.press[m] = [];
+                    this.d.press[m].push({ team, startH, initialDiff: diff });
+                    this.save();
+                    this.uDash();
+                    this.closePress();
+                };
+
+                const modal = document.getElementById('press-modal');
+                const msg = document.getElementById('pm-msg');
+                const btn = document.getElementById('pm-btn');
+
+                let warningHtml = `<div style="color:white; font-weight:700; margin-bottom:8px;">Initiate PRESS on Hole ${this.getAbsHole(startH)}?</div>`;
+                let voiceMsg = `Press initiated on hole ${this.getAbsHole(startH)}.`;
+
+                if ((this.d.gameType === 'highlow' || this.d.gameType === 'cod') && Math.abs(diff) >= 3) {
+                    warningHtml = `
+                        <div style="color:#EF4444; font-weight:900; font-size:18px; margin-bottom:12px;">⚠️ $3 PRESS</div>
+                        <div style="color:white; margin-bottom:12px;">${nameStr} are trailing by ${Math.abs(diff)}.</div>
+                        <div style="color:#FCA5A5; font-weight:700; border:1px solid #EF4444; padding:8px; border-radius:4px;">
+                            NOTICE: Down 3 or more, this press is a $3 bet (not $5) — win it and you still can't break even on the segment.
+                        </div>
+                    `;
+                    voiceMsg = `Attention! ${nameStr} are trailing by ${Math.abs(diff)}. This press is a 3 dollar bet, not 5. Accept the challenge?`;
+                }
+
+                msg.innerHTML = warningHtml;
+                this.speak(voiceMsg);
+                
+                btn.onclick = () => startThePress();
+                modal.classList.add('active');
             }
         };
