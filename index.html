@@ -238,7 +238,209 @@
         <div class="box" style="background:rgba(16, 185, 129, 0.1); border:1px dashed #10B981;">
             <div class="tx-sm" style="color:#10B981">HISTORY EXPORT</div>
             <div style="font-size:10px; color:#FFFFFF; margin:8px 0;">Finished rounds save to History on this phone automatically. Tap the round in History to see its full recap, and tap 📤 (or EXPORT ROUND after a match) to send a copy to the COD History folder in Google Drive. No token or account needed.</div>
+
+        <div style="margin-top:24px; text-align:center;">
+            <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v283.0</div>
         </div>
+        <div style="height:50px;"></div>
+    </div>
+
+
+    <!-- JUNK CONFIG MODAL -->
+    <div id="junk-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">JUNK SETTINGS</div>
+            <div class="flex-r" style="margin-bottom:16px;">
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">FREQUENCY</div>
+                    <select id="j-freq" class="g-input"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                        <option value="6">Every 6 Holes (COD)</option>
+                        <option value="9">Every 9 Holes</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">BET / PLAYER / SEG</div>
+                    <input type="number" id="j-bet" class="g-input" value="1"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                </div>
+            </div>
+            <div class="tx-sm" style="text-align:left; margin-bottom:8px;">PLAYERS IN POT</div>
+            <div id="j-players-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec"
+                    onclick="document.getElementById('junk-modal').classList.remove('active')">CANCEL</button>
+                <button class="g-btn" onclick="App.saveJunkSettings()">SAVE SETTINGS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART CHECK MODAL -->
+    <div id="cart-check-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">CART CHECK</div>
+            <div style="margin-bottom:24px; color:#FFFFFF; font-size:18px; line-height:1.5; font-weight:700;">
+                Double check the drivers and passengers of each cart!
+            </div>
+            <button class="g-btn" style="background:#10B981;" onclick="App.closeCartCheck()">OK, LETS GO!</button>
+        </div>
+    </div>
+
+    <!-- SEGMENT JUNK PAYOUT MODAL -->
+    <div id="junk-payout-modal" class="modal-overlay">
+        <div class="modal-box" style="border:1px solid #F59E0B; background:#0F172A;">
+            <div id="junk-payout-title" class="tx-xl" style="color:#F59E0B; margin-bottom:12px;">SEGMENT PAYOUT</div>
+            <div id="junk-payout-body" style="color:white; font-size:16px; margin-bottom:20px; text-align:left;"></div>
+            <button class="g-btn" style="background:#F59E0B;"
+                onclick="document.getElementById('junk-payout-modal').classList.remove('active')">CONTINUE</button>
+        </div>
+    </div>
+
+    <!-- === MID-ROUND STANDINGS MODAL === -->
+    <div id="standings-modal">
+        <div class="std-header">
+            <div>
+                <div style="font-size:11px; font-weight:900; color:#10B981; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px;">📊 MID-ROUND STANDINGS</div>
+                <div id="std-subtitle" style="font-size:18px; font-weight:900; color:white;">Through Hole -</div>
+            </div>
+            <div style="text-align:right; font-size:10px; color:#FFFFFF; font-weight:700;">LIVE<br>SNAPSHOT</div>
+        </div>
+        <div id="standings-modal-inner"></div>
+        <div class="std-close-bar">
+            <button class="g-btn" style="background:#10B981; font-size:15px;" onclick="App.closeStandings()">✕ CLOSE</button>
+        </div>
+    </div>
+
+    <!-- === DASHBOARD === -->
+    <div id="v-dash" class="g-view">
+        <div class="top-bar">
+            <div class="flex-r" style="margin-bottom:12px;">
+                <button class="nav-btn" style="background:#334155; border:1px solid #FFFFFF;" onclick="App.nav('v-setup')">⚙️</button>
+                <button id="standings-btn" onclick="App.showStandings()">📊 STANDINGS</button>
+                <button class="nav-btn" style="background:#F59E0B; width:52px; font-size:14px; font-weight:900; color:black;" onclick="App.nav('v-recap')">RCP</button>
+                <button class="nav-btn" style="background:#334155; border:1px solid #FFFFFF;" onclick="App.nav('v-card')">📄</button>
+            </div>
+            <div class="flex-r" style="margin-bottom:8px;">
+                <button class="nav-btn" onclick="App.navH(-1)">←</button>
+                <div style="flex:1; text-align:center;">
+                    <div id="d-h-num" style="font-size:18px; font-weight:900; color:#FFFFFF; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">HOLE 1</div>
+                    <div id="d-par" style="font-size:44px; font-weight:900; line-height:1; color:white;">4</div>
+                    <div id="d-tee-ind"
+                        style="font-size:14px; font-weight:900; color:#FFD700; margin-top:2px; text-transform:uppercase; letter-spacing:1px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                        WHITE TEE</div>
+                </div>
+                <button class="nav-btn" style="background:#10B981;" onclick="App.navH(1)">>→</button>
+            </div>
+            <div class="flex-r">
+                <div class="h-stat">
+                    <div class="h-stat-lbl">YARDS</div>
+                    <div id="d-dist" class="h-stat-val">-</div>
+                </div>
+                <div class="h-stat">
+                    <div class="h-stat-lbl">HCP</div>
+                    <div id="d-hcp" class="h-stat-val">-</div>
+                </div>
+                <div style="flex:1; padding-right:10px;">
+                    <div id="d-fmt" class="h-stat-lbl" style="text-align:right; color:#F59E0B;">CARTS</div>
+                    <div id="d-status" class="match-stat">ALL SQUARE</div>
+                </div>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; margin-top:8px; width:100%; border:1px solid #FFFFFF;"
+                onclick="App.testFill()">TEST: FILL 5 HOLES</button>
+        </div>
+
+        <!-- === STROKE ALERT === -->
+        <div id="stroke-alert-box" class="box"
+            style="display:none; transition:0.3s; padding:12px; margin-top:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #F59E0B; text-align:center;">
+            <div id="stroke-alert-msg" style="font-size:14px; font-weight:900; color:#F59E0B; text-transform:uppercase; letter-spacing:0.5px;"></div>
+        </div>
+
+        <div id="lbl-t1"
+            style="font-size:13px; font-weight:800; color:#60A5FA; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
+        </div>
+        <div id="slot-0" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(0,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(0)">
+                <div id="nm-0" class="p-name">P1</div>
+                <div id="gh-0" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-0" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(0,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j0-g" class="junk-btn" onclick="App.tJ(0, 'G')">G</button>
+            <button id="j0-s" class="junk-btn" onclick="App.tJ(0, 'S')">S</button>
+            <button id="j0-p" class="junk-btn" onclick="App.tJ(0, 'P')">LP</button>
+        </div>
+
+        <div id="slot-1" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(1,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(1)">
+                <div id="nm-1" class="p-name">P2</div>
+                <div id="gh-1" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-1" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(1,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j1-g" class="junk-btn" onclick="App.tJ(1, 'G')">G</button>
+            <button id="j1-s" class="junk-btn" onclick="App.tJ(1, 'S')">S</button>
+            <button id="j1-p" class="junk-btn" onclick="App.tJ(1, 'P')">LP</button>
+        </div>
+
+        <div id="lbl-t2"
+            style="font-size:13px; font-weight:800; color:#22D3EE; margin:16px 0 8px 4px; text-transform:uppercase;">
+            TEAM B</div>
+        <div id="slot-2" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(2,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(2)">
+                <div id="nm-2" class="p-name">P3</div>
+                <div id="gh-2" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-2" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(2,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j2-g" class="junk-btn" onclick="App.tJ(2, 'G')">G</button>
+            <button id="j2-s" class="junk-btn" onclick="App.tJ(2, 'S')">S</button>
+            <button id="j2-p" class="junk-btn" onclick="App.tJ(2, 'P')">LP</button>
+        </div>
+
+        <div id="slot-3" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(3,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(3)">
+                <div id="nm-3" class="p-name">P4</div>
+                <div id="gh-3" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-3" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(3,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j3-g" class="junk-btn" onclick="App.tJ(3, 'G')">G</button>
+            <button id="j3-s" class="junk-btn" onclick="App.tJ(3, 'S')">S</button>
+            <button id="j3-p" class="junk-btn" onclick="App.tJ(3, 'P')">LP</button>
+        </div>
+        <div style="height:30px;"></div>
+        <div class="flex-r" style="gap:10px;"><button class="g-btn" style="background:#334155;"
+                onclick="App.nav('v-setup')">MENU</button><button class="g-btn" style="background:#334155; flex:1;"
+                onclick="App.nav('v-card')">SCORECARD</button><button class="g-btn" style="background:#EF4444;"
+                onclick="App.endRound()">END</button></div>
+    </div>
+
+    <!-- === CARD/SUMMARY SCREENS === -->
+    <div id="v-card" class="g-view">
+        <div class="flex-r" style="margin-bottom:10px;">
+            <div class="tx-xl">CARD</div><button class="g-btn g-btn-sm" style="width:auto;"
+                onclick="App.nav('v-dash')">BACK TO GAME</button>
+        </div>
+
+        <!-- Scorecard Container -->
+        <div id="card-con-body" class="card-con"></div>
+
+        <!-- === SPACER AND RESULTS === -->
+        <div style="height:20px; width:100%;"></div>
 
         <div class="box" style="margin-top:0;">
             <div class="tx-sm" style="color:#10B981">SEGMENT RESULTS</div>
