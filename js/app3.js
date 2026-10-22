@@ -794,7 +794,9 @@ Object.assign(App, {
                 if (!this.d.s || Object.keys(this.d.s).length === 0) return;
                 const { bets } = this.calcBets();
                 const c = CS[this.d.crs] || CS['cc'];
-                const rec = { id: Date.now(), date: new Date().toLocaleDateString(), course: c.n, ps: this.d.ps, net: [0, 1, 2, 3].map(i => Math.round(bets[i])) };
+                const snap = JSON.parse(JSON.stringify(this.d));
+                delete snap.ghToken;
+                const rec = { id: Date.now(), date: new Date().toLocaleDateString(), course: c.n, ps: this.d.ps, net: [0, 1, 2, 3].map(i => Math.round(bets[i])), isTest: !!this.d.isTestMode, gameType: this.d.gameType, crs: this.d.crs, tee: this.d.tee, snap: snap };
                 this.d.gameId = rec.id;
                 this.historyArchive.push(rec);
                 this.saveHistoryData();
@@ -803,77 +805,89 @@ Object.assign(App, {
                 this.renderHistory();
             },
 
-            ghSync: async function() {
-                const btn = document.getElementById('gh-sync-btn');
-                if (!this.d.ghToken) { alert("Please set GitHub Token in Setup first!"); return; }
-                
-                // Final Check for Test Rounds
-                if (this.d.isTestMode) {
-                    if (this.d.testSyncsDone >= 3) {
-                        alert("TEST MODE: No more test syncs allowed. Please start a REAL game.");
-                        return;
-                    }
-                    if (!confirm(`TEST ROUND: You have ${3 - this.d.testSyncsDone} test syncs remaining. Proceed?`)) return;
-                }
-
-                try {
-                    btn.disabled = true; btn.innerText = "☁️ CONNECTING...";
-                    const now = new Date();
-                    const year = now.getFullYear();
-                    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                    const fileName = `${month}_${monthNames[now.getMonth()]}.json`;
-                    const path = `history/${year}/${fileName}`;
-                    
-                    const owner = "dvaugha", repo = "COD_APP";
-                    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-                    const headers = { "Authorization": `token ${this.d.ghToken}`, "Accept": "application/vnd.github.v3+json" };
-
-                    // 1. Get latest round data
-                    const { bets } = this.calcBets();
-                    const c = CS[this.d.crs] || CS['cc'];
-                    const newRound = { 
-                        id: Date.now(), 
-                        date: now.toLocaleDateString(), 
-                        course: c.n, 
-                        ps: this.d.ps, 
-                        net: [0, 1, 2, 3].map(i => Math.round(bets[i])),
-                        isTest: !!this.d.isTestMode 
-                    };
-
-                    // 2. Fetch existing file
-                    let existingContent = [];
-                    let sha = null;
-                    const res = await fetch(url, { headers });
-                    if (res.status === 200) {
-                        const data = await res.json();
-                        sha = data.sha;
-                        existingContent = JSON.parse(atob(data.content));
-                    }
-
-                    // 3. Append and Push
-                    existingContent.push(newRound);
-                    const body = {
-                        message: `Archive round: ${newRound.course} (${newRound.date}) ${newRound.isTest ? '[TEST]' : ''}`,
-                        content: btoa(JSON.stringify(existingContent, null, 2)),
-                        sha: sha
-                    };
-
-                    const putRes = await fetch(url, { method: 'PUT', headers, body: JSON.stringify(body) });
-                    if (putRes.ok) {
-                        if (this.d.isTestMode) this.d.testSyncsDone++;
-                        btn.innerText = "✅ CLOUD SYNCED";
-                        btn.style.background = "#059669";
-                        this.save();
-                        alert("Round successfully secured to GitHub Cloud!");
-                    } else {
-                        throw new Error("GitHub rejected the update. Check token permissions.");
-                    }
-                } catch (e) {
-                    alert("Sync Error: " + e.message);
-                    btn.disabled = false; btn.innerText = "🚀 RETRY CLOUD SYNC";
-                }
+            histRecById: function (id) {
+                return this.historyArchive.find(h => h.id === id) || null;
             },
+
+            viewHist: function (id) {
+                if (this.histEdit) return;
+                const rec = this.histRecById(id);
+                if (!rec) return;
+                const con = document.getElementById('recap-body');
+                if (!con) return;
+                if (rec.snap) {
+                    const backup = this.d;
+                    this.d = JSON.parse(JSON.stringify(rec.snap));
+                    this.uRecap();
+                    this.d = backup;
+                } else {
+                    const netS = rec.ps.map((p, i) => `${p}: ${rec.net[i] >= 0 ? '+' : ''}${rec.net[i]}`).join(' &nbsp;·&nbsp; ');
+                    con.innerHTML = `<div class="box" style="margin-top:12px;"><div class="tx-sm" style="color:white; margin-bottom:8px;">${rec.date} — ${rec.course}</div><div style="color:#cbd5e1; font-size:13px;">${netS}</div><div style="color:#94a3b8; font-size:11px; margin-top:10px;">Saved before full-recap history (v283) — summary only.</div></div>`;
+                }
+                document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
+                document.getElementById('v-recap').classList.add('active');
+            },
+
+            buildExportHTML: function (rec) {
+                const css = ":root{--c1:#10B981;--bg:#0F172A;--card:#1E293B;--mut:#FFFFFF;--acc:#F59E0B}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#F8FAFC;font-family:'Outfit',Arial,sans-serif;padding:20px}.box{background:var(--card);padding:16px;border-radius:16px;margin-bottom:16px;box-shadow:0 4px 6px rgba(0,0,0,.2)}.flex-r{display:flex;justify-content:space-between;align-items:center}.tx-xl{font-size:24px;font-weight:900;letter-spacing:-.5px}.tx-sm{font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.card-table-wrap{overflow-x:auto;margin-bottom:20px;border-bottom:1px solid #334155;display:block}table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;min-width:320px}th,td{border:1px solid #334155;padding:4px 2px;text-align:center;font-size:10px;font-weight:700;white-space:nowrap;height:34px;box-sizing:border-box}th{background:#0F172A;color:white;border-top:none;height:24px;font-size:11px;vertical-align:middle;font-weight:900}.par-row td{background:#0F172A!important;color:#F59E0B!important;font-weight:900;border-bottom:3px solid #FFFFFF!important}td{background:#1E293B;color:white;vertical-align:middle}.sc-val{display:flex;width:22px;height:22px;align-items:center;justify-content:center;font-weight:900;margin:0 auto;font-size:10px}.sc-bird{border-radius:50%;border:1px solid #10B981;color:#10B981}.sc-eagle{border-radius:50%;border:3px double #10B981;color:#10B981}.sc-bog{border:1px solid #F87171;color:#F87171}.sc-dbl{border:3px double #F87171;color:#F87171}";
+                let recapHTML = '';
+                if (rec.snap) {
+                    const backup = this.d;
+                    this.d = JSON.parse(JSON.stringify(rec.snap));
+                    const con = document.getElementById('recap-body');
+                    if (con) { this.uRecap(); recapHTML = con.innerHTML; }
+                    this.d = backup;
+                }
+                const iso = new Date(rec.id).toISOString().slice(0, 10);
+                const stableId = iso + '-' + (rec.crs || 'course') + '-' + rec.id;
+                const payload = { app: 'COD', exportVersion: 1, id: stableId, legacyId: rec.id, dateISO: iso, dateDisplay: rec.date, course: rec.course, courseKey: rec.crs || null, tee: rec.tee || null, gameType: rec.gameType || null, ps: rec.ps, net: rec.net, isTest: !!rec.isTest, exportedAt: new Date().toISOString(), round: rec.snap || null };
+                const json = JSON.stringify(payload, null, 2).replace(/<\//g, '<\/');
+                const netS = rec.ps.map((p, i) => `${p}: ${rec.net[i] >= 0 ? '+' : ''}${rec.net[i]}`).join(' · ');
+                const testBanner = rec.isTest ? '<div style="background:#7f1d1d; color:#fecaca; padding:10px; border-radius:10px; font-weight:900; margin-bottom:14px;">TEST ROUND — DO NOT FILE</div>' : '';
+                const header = `<div class="tx-xl" style="margin-bottom:4px;">COD ROUND RECAP</div><div style="color:#cbd5e1; font-size:13px; margin-bottom:4px;">${rec.date} — ${rec.course}${rec.tee ? ' · ' + rec.tee + ' tees' : ''}${rec.gameType ? ' · ' + rec.gameType.toUpperCase() : ''}</div><div style="color:#10B981; font-size:13px; font-weight:700; margin-bottom:16px;">${netS}</div>`;
+                const fallback = recapHTML ? '' : `<div class="box"><div class="tx-sm" style="color:white;">SUMMARY</div><div style="color:#cbd5e1; font-size:13px;">${netS}</div></div>`;
+                return '<!DOCTYPE html>\n<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>COD Round — ' + rec.course + ' ' + iso + '</title><style>' + css + '</style></head><body>' + testBanner + header + recapHTML + fallback + '<script type="application/json" id="cod-round-data">' + json + '<\/script></body></html>';
+            },
+
+            deliverExport: function (filename, content) {
+                const blob = new Blob([content], { type: 'text/html' });
+                try {
+                    const file = new File([blob], filename, { type: 'text/html' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        navigator.share({ files: [file], title: filename }).catch(() => {});
+                        return 'share';
+                    }
+                } catch (e) { /* fall through to download */ }
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename;
+                document.body.appendChild(a); a.click();
+                setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
+                return 'download';
+            },
+
+            exportHist: function (id) {
+                const rec = this.histRecById(id);
+                if (!rec) { alert('Round not found in history.'); return; }
+                const iso = new Date(rec.id).toISOString().slice(0, 10);
+                const safeCourse = String(rec.course || 'Round').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                const filename = (rec.isTest ? 'TEST-' : '') + 'COD-' + iso + '-' + safeCourse + '.html';
+                const mode = this.deliverExport(filename, this.buildExportHTML(rec));
+                if (mode === 'share') alert('In the share sheet, tap "Save to Files" (or Drive) and put it in the COD History folder.');
+            },
+
+            exportRound: function () {
+                let rec = this.d.gameId ? this.histRecById(this.d.gameId) : null;
+                if (!rec) {
+                    if (this.d.s && Object.keys(this.d.s).length > 0 && this.d.h >= 18) {
+                        this.saveToHistory();
+                        rec = this.d.gameId ? this.histRecById(this.d.gameId) : null;
+                    }
+                }
+                if (!rec) { alert('No finished round to export yet — exports unlock when a round is complete and saved to History.'); return; }
+                this.exportHist(rec.id);
+            },
+
 
             renderHistory: function () {
                 const div = document.getElementById('hist-list');
@@ -924,10 +938,11 @@ Object.assign(App, {
                     let netS = r.ps.map((p, i) => `${p}:${r.net[i] >= 0 ? '+' : ''}${r.net[i]}`).join(', ');
                     hH += `<div class="hist-item">
                         <input type="checkbox" class="hist-chk" onchange="App.onChk(${r.id}, this)">
-                        <div style="flex:1">
+                        <div style="flex:1; cursor:pointer;" onclick="App.viewHist(${r.id})">
                             <div style="font-weight:bold; color:white;">${r.date} - ${r.course}</div>
                             <div style="font-size:11px;">${netS}</div>
                         </div>
+                        <button class="g-btn g-btn-sm" title="Export this round" style="background:#0F172A; border:1px solid #10B981; color:#10B981; width:auto; flex:none;" onclick="event.stopPropagation(); App.exportHist(${r.id})">📤</button>
                     </div>`;
                 });
 
