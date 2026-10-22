@@ -805,6 +805,29 @@ Object.assign(App, {
                 this.renderHistory();
             },
 
+            healMissingViews: async function () {
+                // Self-repair (v283.1): if this page copy is missing whole screens
+                // (e.g. a stale/broken cached page on the phone), fetch a fresh copy
+                // of the page bypassing the cache and restore the missing views and
+                // modals before anything tries to navigate to them.
+                const viewIds = ['v-setup', 'v-dash', 'v-card', 'v-recap'];
+                const modalIds = ['press-modal', 'junk-modal', 'hcp-modal', 'standings-modal', 'cart-check-modal', 'junk-payout-modal', 'share-preview-modal'];
+                if (!viewIds.some(id => !document.getElementById(id)) &&
+                    modalIds.every(id => document.getElementById(id))) return;
+                try {
+                    const url = window.location.href.split('#')[0].split('?')[0];
+                    const res = await fetch(url, { cache: 'no-store' });
+                    if (!res.ok) return;
+                    const html = await res.text();
+                    const fresh = new DOMParser().parseFromString(html, 'text/html');
+                    fresh.querySelectorAll('.g-view, .modal-overlay').forEach(el => {
+                        if (el.id && !document.getElementById(el.id)) {
+                            document.body.appendChild(document.importNode(el, true));
+                        }
+                    });
+                } catch (e) { /* stay on whatever screens exist; nav() guards the rest */ }
+            },
+
             histRecById: function (id) {
                 return this.historyArchive.find(h => h.id === id) || null;
             },
@@ -1335,5 +1358,5 @@ Object.assign(App, {
                 if (modal) modal.classList.remove('active');
             }
         });
-        window.addEventListener('load', () => App.init());
+        window.addEventListener('load', async () => { try { await App.healMissingViews(); } catch (e) { } App.init(); });
         window.App = App;
