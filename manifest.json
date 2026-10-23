@@ -8,7 +8,7 @@
   "theme_color": "#0F172A",
   "icons": [
     {
-      "src": "COD_APP_ICON.png",
+      "src": "/COD_APP/COD_APP_ICON.png?v=20261022",
       "sizes": "180x180",
       "type": "image/png"
     }
