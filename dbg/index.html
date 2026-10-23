@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
+    <title>COD Golf v283.1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="/COD_APP/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="COD Golf">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="css/styles.css?v=202610071447">
+    <!-- Deployment Nudge: 2026-09-13 12:05 PM -->
+</head>
+<body style="background:#0F172A; color:#F8FAFC;">
+    <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
+
+    <!-- Hidden Capture Node -->
+    <div id="share-node"></div>
+
+    <div id="press-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">PRESS OPTION</div>
+            <div id="pm-msg" style="margin-bottom:24px; color:#FFFFFF; font-size:16px; line-height:1.5;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closePress()">NO PRESS</button>
+                <button id="pm-btn" class="g-btn" style="background:#F59E0B; color:black;">YES, PRESS</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- HCP MODAL -->
+    <div id="hcp-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">ROUND HANDICAPS</div>
+            <div id="hcp-roster" style="margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closeHcpModal()">CANCEL</button>
+                <button class="g-btn" style="background:#10B981;" onclick="App.saveHcps()">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHARE PREVIEW MODAL -->
+    <div id="share-preview-modal" class="modal-overlay" style="z-index: 600;">
+        <div class="modal-box" style="max-width:400px; width:90%; padding:16px;">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">READY TO SHARE</div>
+            <img id="sp-img" style="width:100%; border-radius:8px; border:1px solid #334155; margin-bottom:16px;" />
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" style="flex:1;" onclick="App.closeSharePreview()">CLOSE ❌</button>
+                <button class="g-btn" style="background:#10B981; flex:2; font-weight:900;" onclick="App.doShareParams('both')">TXT+IMG 🚀</button>
+            </div>
+            <button class="g-btn" style="background:#F59E0B; width:100%; margin-top:12px; font-weight:900;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
+        </div>
+    </div>
+
+    <!-- === SETUP SCREEN === -->
+    <div id="v-setup" class="g-view active">
+        <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
+            <div class="tx-xl">COD Golf v283.1</div>
+        </div>
+
+        <div class="box" style="text-align:center; padding:16px;">
+            <div class="tx-sm" style="color:#10B981; margin-bottom:6px;">GAME MODE</div>
+            <select id="g-mode-top" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;"
+                onchange="App.onGameModeChange(this)">
+                <option value="cod">COD (Match Play)</option>
+                <option value="cc_match">Captain's Choice (2-Man Scramble)</option>
+                <option value="nassau">Nassau (18-Hole)</option>
+                <option value="scramble">6-Hole Scramble (Points)</option>
+                <option value="stroke">Versus (Stroke Play)</option>
+                <option value="single">SCORECARD ONLY</option>
+                <option value="highlow">HIGH-LOW (3-Segment)</option>
+            </select>
+
+            <div id="pot-container" class="flex-r" style="justify-content:center; gap:10px; align-items:center; margin-bottom:16px;">
+                <div class="tx-sm">POT / BUY-IN $</div>
+                <input type="number" id="s-pot" class="g-inp" value="20" style="width:80px; text-align:center;">
+            </div>
+
+        </div>
+        <div class="box">
+            <div class="tx-sm">ROSTER</div>
+            <div class="flex-r" style="gap:8px; margin-bottom:12px;">
+                <input type="text" id="new-p-name" class="g-inp" placeholder="Name..." style="margin:0;">
+                <button class="g-btn g-btn-sm" style="height:48px;" onclick="App.addRoster()">ADD</button>
+            </div>
+            <div id="roster-list" style="display:flex; flex-wrap:wrap;"></div>
+            <button id="del-mode-btn" class="g-btn g-btn-sm" style="background:#334155; width:100%; margin-top:10px;"
+                onclick="App.toggleDelMode()">ENABLE DELETE MODE</button>
+            <div id="del-status"
+                style="display:none; text-align:center; margin-top:5px; color:#EF4444; font-weight:bold; font-size:12px;">
+                TAP NAME TO DELETE (NO UNDO)</div>
+        </div>
+
+        <div class="box">
+            <div class="flex-r" style="justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div class="tx-sm" style="margin:0;">SEATS</div>
+                <button onclick="App.clearSeats()" style="background:transparent; border:1px solid #EF4444; color:#EF4444; font-size:10px; font-weight:900; letter-spacing:1px; cursor:pointer; padding:2px 8px; border-radius:4px; height:24px; line-height:1;">CLEAR ALL</button>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#60A5FA">CART A<br>DRIVER</div>
+                <select id="sel-0" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#60A5FA">CART A<br>PASS</div>
+                <select id="sel-1" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#22D3EE">CART B<br>DRIVER</div>
+                <select id="sel-2" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#22D3EE">CART B<br>PASS</div>
+                <select id="sel-3" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; width:100%; margin-top:10px; border:1px solid #FFFFFF;"
+                onclick="App.openHcpModal()">SET HANDICAPS ⛳</button>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm" style="color:#10B981">COURSE SELECTION</div>
+            <div style="position:relative;">
+                <input type="text" id="course-search" class="g-inp" placeholder="Search courses (NC, SC, FL)..." oninput="App.onSearchInput(this.value)" autocomplete="off">
+                <div id="course-results" class="search-results"></div>
+            </div>
+            <div id="active-course-indicator" style="display:none;"></div>
+            <select id="s-course" style="display:none;" onchange="App.checkCourseOptions()"></select>
+            
+            <div id="course-routing-opt" style="display:none; margin-top:20px; padding:15px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius:12px;">
+                <div class="tx-sm" style="color:#10B981; margin-bottom:12px;">9-HOLE ROUTING</div>
+                <div class="flex-r" style="gap:10px;">
+                    <div style="flex:1">
+                        <div class="tx-sm" style="font-size:10px; color:#FFFFFF;">FRONT 9</div>
+                        <select id="s-n1" class="g-inp" style="margin-top:4px;"></select>
+                    </div>
+                    <div style="flex:1">
+                        <div class="tx-sm" style="font-size:10px; color:#FFFFFF;">BACK 9</div>
+                        <select id="s-n2" class="g-inp" style="margin-top:4px;"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm">GAME SETTINGS</div>
+            <div class="flex-r" style="gap:10px; margin-bottom:10px;">
+                <div style="flex:1;">
+                    <div class="tx-sm">TEE</div>
+                    <select id="s-tee" class="g-inp">
+                        <option value="black">Black</option>
+                        <option value="blue">Blue</option>
+                        <option value="white">White</option>
+                        <option value="gold">Gold</option>
+                        <option value="orange">Orange</option>
+                        <option value="green">Green</option>
+                        <option value="red">Red</option>
+                        <option value="teal">Teal</option>
+                        <option value="combo">Combo</option>
+                    </select>
+                </div>
+                <div style="width:80px;">
+                    <div class="tx-sm">START</div>
+                    <select id="s-start" class="g-inp">
+                        <option value="1">#1</option>
+                        <option value="10">#10</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex-r" style="gap:10px;">
+                <div style="flex:2;">
+                    <div class="tx-sm">HCP MODE</div>
+                    <select id="s-hcp-mode" class="g-inp" onchange="App.onHcpModeChange(this)">
+                        <option value="standard">Standard (Full List)</option>
+                        <option value="spread">COD Balanced (Spread)</option>
+                        <option value="team">Team Equalizer (Per Seg)</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm">SEG BET $</div>
+                    <input type="number" id="s-bet" class="g-inp" value="5">
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px; border-top:1px solid #334155; padding-top:12px;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">NO HANDICAPS (STRAIGHT GROSS)</div>
+                    <div style="font-size:10px; color:#FFFFFF;">Bypass all handicap calculations and stroke dots</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-no-hcps" onchange="App.toggleNoHcps(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm" style="margin-bottom:8px;">SCORING MODE</div>
+            <div class="flex-r" style="gap:8px;">
+                <button id="sm-std" class="g-btn" style="flex:1; font-size:12px;" onclick="App.setScoringMode('std')">STANDARD</button>
+                <button id="sm-cc" class="g-btn g-btn-sec" style="flex:1; font-size:12px;" onclick="App.setScoringMode('cc')">CAPT. CHOICE ⚔️</button>
+            </div>
+            <div id="sm-desc" style="font-size:11px; color:#FFFFFF; margin-top:6px; font-style:italic;">Enter individual scores for each player.</div>
+        </div>
+
+        <div class="box">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">VOICE ALERTS 🔊</div>
+                    <div style="font-size:10px; color:#FFFFFF;">Announces partner swaps <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px;" onclick="App.testVoice()">[ TEST ]</span></div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-voice" onchange="App.toggleVoice(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <button id="start-btn" class="g-btn" style="margin-bottom:20px; background:#EF4444;" onclick="App.tryNewGame(this)">START NEW MATCH</button>
+        <button class="g-btn" style="margin-bottom:20px; background:#2563EB;" onclick="App.startRound(true)">RESUME MATCH</button>
+        <button class="g-btn g-btn-sec" style="margin-bottom:20px; border:1px solid #10B981; color:#10B981;" onclick="App.openJunkModal()">JUNK BETTING ⚙️</button>
+
+        <div class="box">
+            <div class="tx-sm" style="color:#F59E0B">CAREER EARNINGS</div>
+            <div id="career-earnings" style="font-size:12px; margin-top:8px;"></div>
+        </div>
+
+        <div class="box">
+            <div class="flex-r">
+                <div class="tx-sm">HISTORY</div>
+                <button id="hist-edit-btn" class="g-btn g-btn-sm" style="background:#334155; width:auto;" onclick="App.handleManageClick()">MANAGE</button>
+            </div>
+            <div id="hist-list" style="max-height:200px; overflow-y:auto; font-size:12px;"></div>
+        </div>
+
+        <div class="box" style="background:rgba(16, 185, 129, 0.1); border:1px dashed #10B981;">
+            <div class="tx-sm" style="color:#10B981">HISTORY EXPORT</div>
+            <div style="font-size:10px; color:#FFFFFF; margin:8px 0;">Finished rounds save to History on this phone automatically. Tap the round in History to see its full recap, and tap 📤 (or EXPORT ROUND after a match) to send a copy to the COD History folder in Google Drive. No token or account needed.</div>
+
+        <div style="margin-top:24px; text-align:center;">
+            <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v283.1</div>
+        </div>
+        <div style="height:50px;"></div>
+    </div>
+
+
+    <!-- JUNK CONFIG MODAL -->
+    <div id="junk-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">JUNK SETTINGS</div>
+            <div class="flex-r" style="margin-bottom:16px;">
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">FREQUENCY</div>
+                    <select id="j-freq" class="g-input"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                        <option value="6">Every 6 Holes (COD)</option>
+                        <option value="9">Every 9 Holes</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">BET / PLAYER / SEG</div>
+                    <input type="number" id="j-bet" class="g-input" value="1"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                </div>
+            </div>
+            <div class="tx-sm" style="text-align:left; margin-bottom:8px;">PLAYERS IN POT</div>
+            <div id="j-players-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec"
+                    onclick="document.getElementById('junk-modal').classList.remove('active')">CANCEL</button>
+                <button class="g-btn" onclick="App.saveJunkSettings()">SAVE SETTINGS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART CHECK MODAL -->
+    <div id="cart-check-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">CART CHECK</div>
+            <div style="margin-bottom:24px; color:#FFFFFF; font-size:18px; line-height:1.5; font-weight:700;">
+                Double check the drivers and passengers of each cart!
+            </div>
+            <button class="g-btn" style="background:#10B981;" onclick="App.closeCartCheck()">OK, LETS GO!</button>
+        </div>
+    </div>
+
+    <!-- SEGMENT JUNK PAYOUT MODAL -->
+    <div id="junk-payout-modal" class="modal-overlay">
+        <div class="modal-box" style="border:1px solid #F59E0B; background:#0F172A;">
+            <div id="junk-payout-title" class="tx-xl" style="color:#F59E0B; margin-bottom:12px;">SEGMENT PAYOUT</div>
+            <div id="junk-payout-body" style="color:white; font-size:16px; margin-bottom:20px; text-align:left;"></div>
+            <button class="g-btn" style="background:#F59E0B;"
+                onclick="document.getElementById('junk-payout-modal').classList.remove('active')">CONTINUE</button>
+        </div>
+    </div>
+
+    <!-- === MID-ROUND STANDINGS MODAL === -->
+    <div id="standings-modal">
+        <div class="std-header">
+            <div>
+                <div style="font-size:11px; font-weight:900; color:#10B981; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px;">📊 MID-ROUND STANDINGS</div>
+                <div id="std-subtitle" style="font-size:18px; font-weight:900; color:white;">Through Hole -</div>
+            </div>
+            <div style="text-align:right; font-size:10px; color:#FFFFFF; font-weight:700;">LIVE<br>SNAPSHOT</div>
+        </div>
+        <div id="standings-modal-inner"></div>
+        <div class="std-close-bar">
+            <button class="g-btn" style="background:#10B981; font-size:15px;" onclick="App.closeStandings()">✕ CLOSE</button>
+        </div>
+    </div>
+
+    <!-- === DASHBOARD === -->
+    <div id="v-dash" class="g-view">
+        <div class="top-bar">
+            <div class="flex-r" style="margin-bottom:12px;">
+                <button class="nav-btn" style="background:#334155; border:1px solid #FFFFFF;" onclick="App.nav('v-setup')">⚙️</button>
+                <button id="standings-btn" onclick="App.showStandings()">📊 STANDINGS</button>
+                <button class="nav-btn" style="background:#F59E0B; width:52px; font-size:14px; font-weight:900; color:black;" onclick="App.nav('v-recap')">RCP</button>
+                <button class="nav-btn" style="background:#334155; border:1px solid #FFFFFF;" onclick="App.nav('v-card')">📄</button>
+            </div>
+            <div class="flex-r" style="margin-bottom:8px;">
+                <button class="nav-btn" onclick="App.navH(-1)">←</button>
+                <div style="flex:1; text-align:center;">
+                    <div id="d-h-num" style="font-size:18px; font-weight:900; color:#FFFFFF; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">HOLE 1</div>
+                    <div id="d-par" style="font-size:44px; font-weight:900; line-height:1; color:white;">4</div>
+                    <div id="d-tee-ind"
+                        style="font-size:14px; font-weight:900; color:#FFD700; margin-top:2px; text-transform:uppercase; letter-spacing:1px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                        WHITE TEE</div>
+                </div>
+                <button class="nav-btn" style="background:#10B981;" onclick="App.navH(1)">>→</button>
+            </div>
+            <div class="flex-r">
+                <div class="h-stat">
+                    <div class="h-stat-lbl">YARDS</div>
+                    <div id="d-dist" class="h-stat-val">-</div>
+                </div>
+                <div class="h-stat">
+                    <div class="h-stat-lbl">HCP</div>
+                    <div id="d-hcp" class="h-stat-val">-</div>
+                </div>
+                <div style="flex:1; padding-right:10px;">
+                    <div id="d-fmt" class="h-stat-lbl" style="text-align:right; color:#F59E0B;">CARTS</div>
+                    <div id="d-status" class="match-stat">ALL SQUARE</div>
+                </div>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; margin-top:8px; width:100%; border:1px solid #FFFFFF;"
+                onclick="App.testFill()">TEST: FILL 5 HOLES</button>
+        </div>
+
+        <!-- === STROKE ALERT === -->
+        <div id="stroke-alert-box" class="box"
+            style="display:none; transition:0.3s; padding:12px; margin-top:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #F59E0B; text-align:center;">
+            <div id="stroke-alert-msg" style="font-size:14px; font-weight:900; color:#F59E0B; text-transform:uppercase; letter-spacing:0.5px;"></div>
+        </div>
+
+        <div id="lbl-t1"
+            style="font-size:13px; font-weight:800; color:#60A5FA; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
+        </div>
+        <div id="slot-0" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(0,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(0)">
+                <div id="nm-0" class="p-name">P1</div>
+                <div id="gh-0" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-0" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(0,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j0-g" class="junk-btn" onclick="App.tJ(0, 'G')">G</button>
+            <button id="j0-s" class="junk-btn" onclick="App.tJ(0, 'S')">S</button>
+            <button id="j0-p" class="junk-btn" onclick="App.tJ(0, 'P')">LP</button>
+        </div>
+
+        <div id="slot-1" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(1,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(1)">
+                <div id="nm-1" class="p-name">P2</div>
+                <div id="gh-1" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-1" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(1,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j1-g" class="junk-btn" onclick="App.tJ(1, 'G')">G</button>
+            <button id="j1-s" class="junk-btn" onclick="App.tJ(1, 'S')">S</button>
+            <button id="j1-p" class="junk-btn" onclick="App.tJ(1, 'P')">LP</button>
+        </div>
+
+        <div id="lbl-t2"
+            style="font-size:13px; font-weight:800; color:#22D3EE; margin:16px 0 8px 4px; text-transform:uppercase;">
+            TEAM B</div>
+        <div id="slot-2" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(2,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(2)">
+                <div id="nm-2" class="p-name">P3</div>
+                <div id="gh-2" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-2" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(2,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j2-g" class="junk-btn" onclick="App.tJ(2, 'G')">G</button>
+            <button id="j2-s" class="junk-btn" onclick="App.tJ(2, 'S')">S</button>
+            <button id="j2-p" class="junk-btn" onclick="App.tJ(2, 'P')">LP</button>
+        </div>
+
+        <div id="slot-3" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(3,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(3)">
+                <div id="nm-3" class="p-name">P4</div>
+                <div id="gh-3" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-3" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(3,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j3-g" class="junk-btn" onclick="App.tJ(3, 'G')">G</button>
+            <button id="j3-s" class="junk-btn" onclick="App.tJ(3, 'S')">S</button>
+            <button id="j3-p" class="junk-btn" onclick="App.tJ(3, 'P')">LP</button>
+        </div>
+        <div style="height:30px;"></div>
+        <div class="flex-r" style="gap:10px;"><button class="g-btn" style="background:#334155;"
+                onclick="App.nav('v-setup')">MENU</button><button class="g-btn" style="background:#334155; flex:1;"
+                onclick="App.nav('v-card')">SCORECARD</button><button class="g-btn" style="background:#EF4444;"
+                onclick="App.endRound()">END</button></div>
+    </div>
+
+    <!-- === CARD/SUMMARY SCREENS === -->
+    <div id="v-card" class="g-view">
+        <div class="flex-r" style="margin-bottom:10px;">
+            <div class="tx-xl">CARD</div><button class="g-btn g-btn-sm" style="width:auto;"
+                onclick="App.nav('v-dash')">BACK TO GAME</button>
+        </div>
+
+        <!-- Scorecard Container -->
+        <div id="card-con-body" class="card-con"></div>
+
+        <!-- === SPACER AND RESULTS === -->
+        <div style="height:20px; width:100%;"></div>
+
+        <div class="box" style="margin-top:0;">
+            <div class="tx-sm" style="color:#10B981">SEGMENT RESULTS</div>
+            <div id="res-txt" style="font-family:monospace; margin-top:10px; font-size:14px; line-height:1.5;"></div>
+        </div>
+
+        <div class="box" style="background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3);">
+            <div style="font-size:11px; color:#F59E0B; font-weight:700;">ℹ️ IPHONE TIP</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:4px;">If tapping SEND doesn't open messages, the
+                scorecard is already copied. Just open Messages and Paste.</div>
+        </div>
+
+        <button class="g-btn" style="background:#334155; border:1px solid #F59E0B; color:#F59E0B; margin-bottom:12px;"
+            onclick="App.nav('v-recap')">📊 ROUND RECAP</button>
+
+        <button id="sms-btn" class="g-btn" style="margin-bottom:12px;" onclick="App.share()">TXT+IMG 🚀</button>
+        
+        <button id="sms-score-btn" class="g-btn" style="background:#0F172A; border:1px solid #FFFFFF; color:#FFFFFF; margin-bottom:12px;"
+            onclick="App.shareSimpleScorecard()">SHARE SCORECARD ONLY 📄</button>
+        
+        <button id="export-btn" class="g-btn" style="background:#0F172A; border:1px solid #10B981; color:#10B981; margin-bottom:12px;"
+            onclick="App.exportRound()">📤 EXPORT ROUND</button>
+
+        <button class="g-btn" style="background:#F59E0B; color:black; margin-bottom:20px;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
+    </div>
+
+    <!-- === ROUND RECAP === -->
+    <div id="v-recap" class="g-view">
+        <div class="flex-r" style="margin-bottom:16px;">
+            <div class="tx-xl">ROUND RECAP</div>
+            <button class="g-btn g-btn-sm" style="width:auto; background:#334155;"
+                onclick="App.nav('v-card')">CLOSE</button>
+        </div>
+        <div id="recap-body"></div>
+    </div>
+
+    <script src="data/courses.js?v=202610152002"></script>
+    <script src="js/app.js?v=202610221430"></script>
+    <script src="js/app2.js?v=202610221430"></script>
+    <script src="js/app3.js?v=202610221430"></script>
+    <script src="js/tee-names.js?v=202610152002"></script>
+<script>
+window.__errs = [];
+function __showErr(msg){ var d=document.getElementById('__errbox'); if(!d){ d=document.createElement('div'); d.id='__errbox'; d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#7f1d1d;color:#fff;font:13px monospace;padding:10px;white-space:pre-wrap;'; (document.body||document.documentElement).appendChild(d);} d.textContent += msg + '\n---\n'; }
+window.addEventListener('error', function(e){ var m='ERROR: '+(e.message||'')+' @ '+(e.filename||'').split('/').pop()+':'+e.lineno+'\n'+((e.error&&e.error.stack)||''); window.__errs.push(m); __showErr(m); });
+setInterval(function(){ try {
+  var act = [...document.querySelectorAll('.g-view')].filter(e=>e.classList.contains('active')).map(e=>e.id).join(',') || 'NONE';
+  var d = document.getElementById('v-dash'), st = document.getElementById('v-setup');
+  var hb = document.getElementById('__hb'); if(!hb){ hb=document.createElement('div'); hb.id='__hb'; hb.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:99998;background:#1e3a8a;color:#fff;font:12px monospace;padding:6px;'; document.body.appendChild(hb); }
+  hb.textContent = 'HB active=' + act + ' | dashLen=' + (d?d.innerHTML.length:'?') + ' | setupLen=' + (st?st.innerHTML.length:'?') + ' | bodyKids=' + document.body.children.length + ' | views=' + document.querySelectorAll('.g-view').length;
+} catch(e){} }, 1000);
+window.addEventListener('unhandledrejection', function(e){ var m='REJECTION: '+((e.reason&&e.reason.stack)||e.reason); window.__errs.push(m); __showErr(m); });
+</script>
+</body>
+
+</html>
