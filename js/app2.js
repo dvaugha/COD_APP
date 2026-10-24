@@ -438,7 +438,7 @@ Object.assign(App, {
                     });
                 });
 
-                const isCC = (this.d.gameType === 'cc_match');
+                const isCC = this.isTeamCC();
                 const map = (id, pid) => {
                     this.slotMap[id] = pid;
                     const ec = document.getElementById('slot-' + id);
@@ -808,7 +808,7 @@ Object.assign(App, {
                     hP += '</tr>';
 
                     let pRows = '';
-                    const isCC = (this.d.gameType === 'cc_match');
+                    const isCC = this.isTeamCC();
                     const playerIndices = isCC ? [0, 2] : [0, 1, 2, 3];
                     playerIndices.forEach(pIdx => {
                         if (!this.d.ps[pIdx]) return;
@@ -869,7 +869,7 @@ Object.assign(App, {
 
             getGrossTotalsHTML: function () {
                 let totHTML = '<div class="box" style="margin-top:0; padding:12px; background:#1E293B; border:1px solid #334155; border-radius:12px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:8px; text-transform:uppercase;">Gross Totals</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">';
-                const isCC = (this.d.gameType === 'cc_match');
+                const isCC = this.isTeamCC();
                 const playerIndices = isCC ? [0, 2] : [0, 1, 2, 3];
                 playerIndices.forEach(i => {
                     if (!this.d.ps[i]) return;
