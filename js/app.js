@@ -83,6 +83,11 @@ const App = {
                             if (this.d.nines && CS[this.d.crs]) {
                                 this.buildComposite(this.d.crs, this.d.nines[0], this.d.nines[1]);
                             }
+                            // HARDENING (v283.4): a returning round whose course file
+                            // failed to load must NOT land silently on a dead dashboard.
+                            if (!this.d.roundEnded && Object.keys(this.d.s).length > 0 && this.d.ps[0] && !this.courseReady(this.d.crs)) {
+                                this.showCourseLoadModal();
+                            }
                         });
                     }
                 }
@@ -855,7 +860,7 @@ const App = {
 
                 this.checkCourseOptions();
             },
-            startRound: function (keepScores) {
+            startRound: async function (keepScores) {
                 try {
                     const p = [0, 1, 2, 3].map(i => this.d.chosen[i]);
                     const gtLine = document.getElementById('g-mode-top');
@@ -878,8 +883,19 @@ const App = {
                     const sCourseEl = document.getElementById('s-course');
                     if (searchEl && searchEl.value && sCourseEl && sCourseEl.value && CS[sCourseEl.value]) {
                         this.d.crs = sCourseEl.value;
-                    } else if (!this.d.crs || !CS[this.d.crs]) {
+                    } else if (!this.d.crs) {
                         this.d.crs = 'cc';
+                    }
+
+                    // HARDENING (v283.4): confirm the course file is really loaded
+                    // before a round starts. Never silently start on a different
+                    // course, and never land on a dashboard with no course data.
+                    // On failure nothing is wiped and no navigation happens, so
+                    // the user stays on setup and can retry.
+                    if (!(await this.ensureCourse(this.d.crs))) {
+                        const entry = CS_INDEX[this.d.crs];
+                        alert("Couldn't load course data for " + (entry ? entry.n : this.d.crs) + ". Check your signal, then try starting the round again.");
+                        return;
                     }
 
                     const teeEl = document.getElementById('s-tee');
@@ -959,6 +975,35 @@ const App = {
                 }
             },
 
+            // HARDENING (v283.4): shown on launch when a returning round's
+            // course file failed to load, instead of a dead dashboard.
+            showCourseLoadModal: function () {
+                const m = document.getElementById('course-load-modal');
+                const nameEl = document.getElementById('course-load-name');
+                const entry = CS_INDEX[this.d.crs];
+                if (nameEl) nameEl.innerText = entry ? entry.n : (this.d.crs || 'your course');
+                if (m) m.classList.add('active');
+            },
+
+            closeCourseLoadModal: function () {
+                const m = document.getElementById('course-load-modal');
+                if (m) m.classList.remove('active');
+            },
+
+            retryCourseLoad: async function () {
+                const id = this.d.crs;
+                if (!id) { this.closeCourseLoadModal(); return; }
+                const ok = await this.selectCourse(id, true);
+                if (ok) {
+                    if (this.d.nines) this.buildComposite(id, this.d.nines[0], this.d.nines[1]);
+                    this.closeCourseLoadModal();
+                    this.uDash();
+                    this.uCard();
+                }
+                // If still failing, the modal stays up so the failure is
+                // visible instead of silent.
+            },
+
             showCartCheck: function () {
                 document.getElementById('cart-check-modal').classList.add('active');
             },
@@ -996,23 +1041,43 @@ const App = {
                 }
             },
 
+            // HARDENING (v283.4): a course only counts as loaded when at least
+            // one tee yardage table is actually in memory. A region file that
+            // failed to download, or downloaded but has no tees, is NOT ready.
+            courseReady: function(id) {
+                const c = CS[id];
+                if (!c || !c.y) return false;
+                return ['white', 'blue', 'gold', 'green', 'combo'].some(t => Array.isArray(c.y[t]) && c.y[t].length > 0);
+            },
+
+            // Fetch the region file for a course if needed. Returns true only
+            // when the course is ready afterwards. Never throws.
+            ensureCourse: async function(id) {
+                if (this.courseReady(id)) return true;
+                const entry = CS_INDEX[id];
+                if (!entry) return false;
+                try {
+                    const regId = entry.r.toLowerCase();
+                    const response = await fetch(`data/regions/${regId}.json?v=${Date.now()}`);
+                    if (!response.ok) return false;
+                    const data = await response.json();
+                    // Merge regional data into local CS cache
+                    Object.assign(CS, data);
+                } catch (e) {
+                    console.error("Course load failed", e);
+                    return false;
+                }
+                return this.courseReady(id);
+            },
+
             selectCourse: async function(id, fromInit = false) {
                 const entry = CS_INDEX[id];
-                if (!entry) return;
+                if (!entry) return false;
 
                 // Load region if not already in memory
-                if (!CS[id]) {
-                    try {
-                        const regId = entry.r.toLowerCase();
-                        const response = await fetch(`data/regions/${regId}.json?v=${Date.now()}`);
-                        const data = await response.json();
-                        // Merge regional data into local CS cache
-                        Object.assign(CS, data);
-                    } catch (e) {
-                        console.error("Course load failed", e);
-                        if (!fromInit) alert("Error loading course data. Ensure you're connected to the internet.");
-                        return;
-                    }
+                if (!(await this.ensureCourse(id))) {
+                    if (!fromInit) alert("Error loading course data. Ensure you're connected to the internet.");
+                    return false;
                 }
 
                 this.d.crs = id;
@@ -1061,6 +1126,7 @@ const App = {
                 this.save();
                 this.uDash();
                 this.uCard();
+                return true;
             },
 
             updateActiveCourseUI: function() {
