@@ -248,6 +248,7 @@ const App = {
                 this.save();
             },
 
+            isTeamCC: function () { return this.d.gameType === 'cc_match' || (this.d.gameType === 'single' && this.d.scoringMode === 'cc'); },
             nav: function (id) {
                 const tgt = document.getElementById(id);
                 if (!tgt) return;
