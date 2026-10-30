@@ -278,6 +278,78 @@
         return _origExport.call(this);
     };
 
+    // --- TEST button (v283.5 fix): testFill navigation, generalized ---
+    // Live app.js testFill still uses the old start-10/else navigation, so a
+    // Shotgun round starting at #8 filled 8-18, then jumped to the card,
+    // leaving 1-7 blank. This override copies live testFill's score-filling
+    // behavior exactly (5 holes per click, par-based random scores capped at
+    // double bogey, junk, cc_match partner mirroring) and changes ONLY the
+    // navigation: advance in play order via getRelHole/getAbsHole, wrapping
+    // 18->1, and end (save + nav to card) only after relative hole 18.
+    // For starts #1 and #10 the new navigation is identical to the old code.
+    App.testFill = function () {
+        try {
+            this.d.isTestMode = true;
+            const c = CS[this.d.crs] || CS['cc'];
+            if (!this.d.ps[0]) { alert("Start round first!"); return; }
+            if (Object.keys(this.slotMap).length === 0) {
+                [0, 1, 2, 3].forEach(i => this.slotMap[i] = i);
+            }
+            for (let i = 0; i < 5; i++) {
+                const hIdx = this.d.h - 1;
+                const par = c.p[hIdx];
+                const hAlloc = c.hcp[hIdx];
+                if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
+                [0, 1, 2, 3].forEach(p => {
+                    const pid = (this.slotMap[p] !== undefined) ? this.slotMap[p] : p;
+                    if (!this.d.ps[pid]) return;
+                    const pops = this.getPops(p, hIdx, true);
+                    const exp = par + pops;
+                    const rv = Math.random();
+                    let v = 0;
+                    if (rv < 0.01) v = -2;
+                    else if (rv < 0.20) v = -1;
+                    else if (rv < 0.80) v = 0;
+                    else if (rv < 0.95) v = 1;
+                    else v = 2;
+                    let s = exp + v;
+                    const max = par + 2;
+                    if (s > max) s = max;
+                    this.d.s[this.d.h][pid] = Math.max(1, s);
+                    ['G', 'S', 'P'].forEach(t => {
+                        if (Math.random() < 0.03) {
+                            if (t === 'G' && par !== 3) return;
+                            if (!this.d.junk) this.d.junk = {};
+                            if (!this.d.junk[this.d.h]) this.d.junk[this.d.h] = {};
+                            this.d.junk[this.d.h][pid + '_' + t] = true;
+                        }
+                    });
+                });
+                if (this.d.gameType === 'cc_match') {
+                    const p0 = this.slotMap[0] !== undefined ? this.slotMap[0] : 0;
+                    const p1 = this.slotMap[1] !== undefined ? this.slotMap[1] : 1;
+                    const p2 = this.slotMap[2] !== undefined ? this.slotMap[2] : 2;
+                    const p3 = this.slotMap[3] !== undefined ? this.slotMap[3] : 3;
+                    if (this.d.s[this.d.h][p0] !== undefined) this.d.s[this.d.h][p1] = this.d.s[this.d.h][p0];
+                    if (this.d.s[this.d.h][p2] !== undefined) this.d.s[this.d.h][p3] = this.d.s[this.d.h][p2];
+                }
+                // Generalized navigation (was: start-10 special-case, else 18 -> Done).
+                const rel = this.getRelHole(parseInt(this.d.h));
+                const nextH = (rel >= 18) ? 99 : this.getAbsHole(rel + 1);
+                if (nextH === 99) {
+                    this.save();
+                    this.nav('v-card');
+                    return;
+                }
+                this.d.h = nextH;
+            }
+            this.save();
+            this.uDash();
+        } catch (e) {
+            alert("Test Error: " + e.message);
+        }
+    };
+
     // Run the gate once the app has finished its own window-load init
     // (app3.js registers its init listener before this file runs).
     window.addEventListener('load', function () {
