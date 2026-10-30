@@ -280,6 +280,11 @@
     const _origDash = App.uDash;
     App.uDash = function () {
         _origDash.call(this);
+        // VISUAL FIX (Oct 30): large hole number directly under the tee label,
+        // updated on every uDash call for all tees/modes. Just "HOLE n" (30px)
+        // so it stays readable and never wraps, unlike the full shotgun string.
+        const underTee = document.getElementById('d-h-num-under-tee');
+        if (underTee && this.d.h != null) underTee.innerText = 'HOLE ' + this.d.h;
         // 1-team-of-4 dashboard: original uDash (isTeamCC) shows team cards
         // for slots 0 and 2. For one team, hide the second team card and
         // relabel the first with all four players. Its score/relScore already
@@ -294,7 +299,9 @@
             const nm0 = document.getElementById('nm-0');
             if (nm0) {
                 const names = [0, 1, 2, 3].map(i => this.d.ps[i]).filter(Boolean);
-                const label = names.join(' & ');
+                // VISUAL FIX (Oct 30): two lines (pair 1 / pair 2) so the
+                // 4-name label cannot overflow its card and cover holes.
+                const label = names.slice(0, 2).join(' & ') + (names.length > 2 ? '<br>' + names.slice(2).join(' & ') : '');
                 // Preserve the trailing relScore span the original inserted.
                 const span = nm0.querySelector('span');
                 nm0.innerHTML = label + (span ? ' ' + span.outerHTML : '');
@@ -497,8 +504,11 @@
             hP += '</tr>';
             let pRows = '';
             const names = [0, 1, 2, 3].map(i => this.d.ps[i]).filter(Boolean);
-            const shortLabel = names.map(n => n.substring(0, 3)).join('/');
-            let r = '<tr><td>' + shortLabel + '</td>';
+            // VISUAL FIX (Oct 30): two lines (pair 1 / pair 2), smaller font
+            // and wrapping, so the label stays in its column and cannot
+            // cover holes 1-2 as the single-line 4-name label did.
+            const shortLabel = names.slice(0, 2).map(n => n.substring(0, 3)).join('/') + (names.length > 2 ? '<br>' + names.slice(2).map(n => n.substring(0, 3)).join('/') : '');
+            let r = '<tr><td style="font-size:11px; line-height:1.25; white-space:normal; word-break:break-word;">' + shortLabel + '</td>';
             let tot = 0;
             for (let n = startH; n < startH + 9; n++) {
                 const s = (this.d.s[n] && this.d.s[n][0]);
