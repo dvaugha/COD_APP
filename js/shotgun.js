@@ -183,18 +183,53 @@
     App.onGameModeChange = function (el) {
         _origMode.call(this, el);
         this.syncShotgunUI();
+        this.syncCcTeamUI();
     };
 
     const _origRestore = App.restoreSet;
     App.restoreSet = function () {
         _origRestore.call(this);
         this.syncShotgunUI();
+        this.syncCcTeamUI();
+    };
+
+    // --- Captain's Choice 1-team-of-4 (SCORECARD ONLY + Capt. Choice ONLY) ---
+    // New choice, visible only when gameType is 'single' AND scoringMode is 'cc'.
+    // Default is 'two' (current 2-teams-of-2 behavior, preserved exactly);
+    // 'four' means all 4 players are ONE team. cc_match and all money games
+    // are untouched: isTeamCC4() is false for them, so every override below
+    // falls through to the original behavior.
+    App.isTeamCC4 = function () {
+        return this.d.gameType === 'single' && this.d.scoringMode === 'cc' && this.d.ccTeam === 'four';
+    };
+    App.syncCcTeamUI = function () {
+        const box = document.getElementById('cc-team-box');
+        const sel = document.getElementById('s-cc-team');
+        if (!box || !sel) return;
+        const eligible = (this.d.gameType === 'single' && this.d.scoringMode === 'cc');
+        box.style.display = eligible ? 'block' : 'none';
+        if (eligible) sel.value = this.d.ccTeam || 'two';
+    };
+    App.onCcTeamChange = function (el) {
+        this.d.ccTeam = el ? el.value : 'two';
+        if (this.d.ccTeam !== 'four') this.d.ccTeam = 'two';
+        this.save();
+        this.uDash();
+    };
+    const _origScoring = App.setScoringMode;
+    App.setScoringMode = function (mode) {
+        _origScoring.call(this, mode);
+        this.syncCcTeamUI();
     };
 
     const _origStart = App.startRound;
     App.startRound = async function (keepScores) {
         const modeEl = document.getElementById('g-mode-top');
         const gt = modeEl ? modeEl.value : (this.d.gameType || 'cod');
+        // Capture the CC team choice (Scorecard Only + Capt. Choice only);
+        // anything else defaults to the current 2-team behavior.
+        const ccSel = document.getElementById('s-cc-team');
+        this.d.ccTeam = (gt === 'single' && this.d.scoringMode === 'cc' && ccSel && ccSel.value === 'four') ? 'four' : 'two';
         const startEl = document.getElementById('s-start');
         const isShot = !!(startEl && startEl.value === 'shotgun');
         if (gt !== 'single' || !isShot) {
@@ -245,6 +280,26 @@
     const _origDash = App.uDash;
     App.uDash = function () {
         _origDash.call(this);
+        // 1-team-of-4 dashboard: original uDash (isTeamCC) shows team cards
+        // for slots 0 and 2. For one team, hide the second team card and
+        // relabel the first with all four players. Its score/relScore already
+        // come from player 0, which mirroring keeps equal to the team score.
+        if (this.isTeamCC4 && this.isTeamCC4()) {
+            const ec2 = document.getElementById('slot-2');
+            if (ec2) {
+                ec2.style.display = 'none';
+                const jr = ec2.nextElementSibling;
+                if (jr) jr.style.display = 'none';
+            }
+            const nm0 = document.getElementById('nm-0');
+            if (nm0) {
+                const names = [0, 1, 2, 3].map(i => this.d.ps[i]).filter(Boolean);
+                const label = names.join(' & ');
+                // Preserve the trailing relScore span the original inserted.
+                const span = nm0.querySelector('span');
+                nm0.innerHTML = label + (span ? ' ' + span.outerHTML : '');
+            }
+        }
         if (this.d.shotgun) {
             const el = document.getElementById('d-h-num');
             if (el) {
@@ -348,6 +403,146 @@
         } catch (e) {
             alert("Test Error: " + e.message);
         }
+    };
+
+    // --- 1-team score entry mirroring (mod / setPar) ---
+    // Copies of live app.js mod/setPar, with one change: when isTeamCC4(),
+    // the entered score is set for ALL FOUR players (not just the partner).
+    // Otherwise the original partner-mirror and cc_match logic run unchanged.
+    App.mod = function (idx, delta) {
+        if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
+        const pid = this.slotMap[idx];
+        const par = CS[this.d.crs].p[this.d.h - 1];
+        let s = this.d.s[this.d.h][pid] || par;
+        s += delta;
+        if (s < 1) s = 1;
+        if (s > par + 2) s = par + 2;
+        this.d.s[this.d.h][pid] = s;
+        if (this.isTeamCC4 && this.isTeamCC4()) {
+            [0, 1, 2, 3].forEach(i => {
+                const pp = this.slotMap[i];
+                if (this.d.ps[pp]) this.d.s[this.d.h][pp] = s;
+            });
+        } else if (this.d.scoringMode === 'cc') {
+            const partnerIdx = (idx === 0) ? 1 : (idx === 1 ? 0 : (idx === 2 ? 3 : 2));
+            const pPid = this.slotMap[partnerIdx];
+            this.d.s[this.d.h][pPid] = s;
+        }
+        if (this.d.gameType === 'cc_match') {
+            const p1 = this.slotMap[0];
+            const p2 = this.slotMap[1];
+            const p3 = this.slotMap[2];
+            const p4 = this.slotMap[3];
+            if (idx === 0) { this.d.s[this.d.h][p1] = s; this.d.s[this.d.h][p2] = s; }
+            else if (idx === 2) { this.d.s[this.d.h][p3] = s; this.d.s[this.d.h][p4] = s; }
+        }
+        this.save();
+        this.uDash();
+        this.checkAuto();
+    };
+    App.setPar = function (idx) {
+        if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
+        const pid = this.slotMap[idx];
+        const s = CS[this.d.crs].p[this.d.h - 1];
+        this.d.s[this.d.h][pid] = s;
+        if (this.isTeamCC4 && this.isTeamCC4()) {
+            [0, 1, 2, 3].forEach(i => {
+                const pp = this.slotMap[i];
+                if (this.d.ps[pp]) this.d.s[this.d.h][pp] = s;
+            });
+        } else if (this.d.scoringMode === 'cc') {
+            const partnerIdx = (idx === 0) ? 1 : (idx === 1 ? 0 : (idx === 2 ? 3 : 2));
+            const pPid = this.slotMap[partnerIdx];
+            this.d.s[this.d.h][pPid] = s;
+        }
+        if (this.d.gameType === 'cc_match') {
+            const p1 = this.slotMap[0];
+            const p2 = this.slotMap[1];
+            const p3 = this.slotMap[2];
+            const p4 = this.slotMap[3];
+            if (idx === 0) { this.d.s[this.d.h][p1] = s; this.d.s[this.d.h][p2] = s; }
+            else if (idx === 2) { this.d.s[this.d.h][p3] = s; this.d.s[this.d.h][p4] = s; }
+        }
+        this.save();
+        this.uDash();
+        this.checkAuto();
+    };
+
+    // --- 1-team card / gross totals (copies of live app2.js renderers) ---
+    if (!App._origScorecardHTML) App._origScorecardHTML = App.getScorecardHTML;
+    if (!App._origGrossHTML) App._origGrossHTML = App.getGrossTotalsHTML;
+    // Identical to the originals except: when isTeamCC4(), playerIndices is
+    // [0] (one team row), the label joins all four players, and pops use
+    // the max across all four players. Otherwise the originals are used.
+    App.getScorecardHTML = function () {
+        if (!(this.isTeamCC4 && this.isTeamCC4())) return App._origScorecardHTML ? App._origScorecardHTML.call(this) : '';
+        const c = CS[this.d.crs] || CS['cc'];
+        const build9 = (startH, label) => {
+            let hH = '<tr><th>#</th>';
+            for (let n = startH; n < startH + 9; n++) {
+                let l = (this.d.nines && n > 9) ? (n - 9) + '/' + n : n;
+                hH += '<th style="font-size:' + ((l.toString().length > 2) ? '8px' : '11px') + '">' + l + '</th>';
+            }
+            hH += '<th>' + (startH === 1 ? 'OUT' : 'IN') + '</th>';
+            if (startH === 10) hH += '<th>TOT</th>';
+            hH += '</tr>';
+            let hP = '<tr class="par-row"><td>PAR</td>';
+            let totP = 0;
+            for (let n = startH; n < startH + 9; n++) { hP += '<td>' + c.p[n - 1] + '</td>'; totP += c.p[n - 1]; }
+            hP += '<td>' + totP + '</td>';
+            if (startH === 10) {
+                let grandP = c.p.slice(0, 18).reduce((a, b) => a + b, 0);
+                hP += '<td>' + grandP + '</td>';
+            }
+            hP += '</tr>';
+            let pRows = '';
+            const names = [0, 1, 2, 3].map(i => this.d.ps[i]).filter(Boolean);
+            const shortLabel = names.map(n => n.substring(0, 3)).join('/');
+            let r = '<tr><td>' + shortLabel + '</td>';
+            let tot = 0;
+            for (let n = startH; n < startH + 9; n++) {
+                const s = (this.d.s[n] && this.d.s[n][0]);
+                const par = c.p[n - 1];
+                let valHTML = '';
+                if (s) {
+                    tot += s;
+                    const d = s - par;
+                    let cls = '';
+                    if (d === -1) cls = 'sc-bird';
+                    else if (d <= -2) cls = 'sc-eagle';
+                    else if (d === 1) cls = 'sc-bog';
+                    else if (d >= 2) cls = 'sc-dbl';
+                    valHTML = '<div class="sc-val ' + cls + '">' + s + '</div>';
+                }
+                const pops = Math.max.apply(null, [0, 1, 2, 3].map(i => this.d.ps[i] ? this.getPops(i, n - 1) : 0));
+                if (pops > 0) {
+                    let dStr = '';
+                    for (let k = 0; k < pops; k++) dStr += '•';
+                    valHTML += '<div style="font-size:16px; line-height:10px; color:#F472B6; position:absolute; bottom:2px; right:2px; letter-spacing:-2px;">' + dStr + '</div>';
+                }
+                r += '<td style="position:relative;">' + valHTML + '</td>';
+            }
+            r += '<td>' + tot + '</td>';
+            if (startH === 10) {
+                let grand = 0;
+                for (let x = 1; x <= 18; x++) {
+                    if (this.d.s[x] && typeof this.d.s[x][0] === 'number') grand += this.d.s[x][0];
+                }
+                r += '<td>' + (grand === 0 ? '-' : grand) + '</td>';
+            }
+            r += '</tr>';
+            pRows += r;
+            return '<div style="margin-bottom:20px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:4px; text-transform:uppercase;">' + label + '</div><div class="card-table-wrap"><table><thead>' + hH + '</thead><tbody>' + hP + pRows + '</tbody></table></div></div>';
+        };
+        return build9(1, 'FRONT 9') + build9(10, 'BACK 18');
+    };
+    App.getGrossTotalsHTML = function () {
+        if (!(this.isTeamCC4 && this.isTeamCC4())) return App._origGrossHTML ? App._origGrossHTML.call(this) : '';
+        let t = 0;
+        for (let h = 1; h <= 18; h++) if (this.d.s[h] && this.d.s[h][0]) t += this.d.s[h][0];
+        const names = [0, 1, 2, 3].map(i => this.d.ps[i]).filter(Boolean);
+        const nameLabel = names.join(' & ');
+        return '<div class="box" style="margin-top:0; padding:12px; background:#1E293B; border:1px solid #334155; border-radius:12px;"><div style="font-size:12px; font-weight:900; color:#10B981; margin-bottom:8px; text-transform:uppercase;">Gross Totals</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;"><div style="display:flex; justify-content:space-between; align-items:center; background:#0F172A; padding:8px 12px; border-radius:8px; border:1px solid #334155;"><span style="font-size:12px; font-weight:700; color:#FFFFFF; text-transform:uppercase;">' + nameLabel + '</span><span style="font-size:15px; font-weight:900; color:white;">' + (t || '-') + '</span></div></div></div>';
     };
 
     // Run the gate once the app has finished its own window-load init
