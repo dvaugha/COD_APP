@@ -213,6 +213,14 @@
             <div id="sm-desc" style="font-size:11px; color:#FFFFFF; margin-top:6px; font-style:italic;">Enter individual scores for each player.</div>
         </div>
 
+        <div class="box" id="cc-team-box" style="display:none;">
+            <div class="tx-sm" style="margin-bottom:8px;">CAPTAIN'S CHOICE TEAMS</div>
+            <select id="s-cc-team" class="g-inp" onchange="App.onCcTeamChange(this)">
+                <option value="two">2 TEAMS OF 2</option>
+                <option value="four">1 TEAM OF 4</option>
+            </select>
+        </div>
+
         <div class="box">
             <div style="display:flex; align-items:center; justify-content:space-between;">
                 <div>
@@ -506,7 +514,7 @@
     <script src="js/app2.js?v=202610232215"></script>
     <script src="js/app3.js?v=202610221430"></script>
     <script src="js/tee-names.js?v=202610152002"></script>
-    <script src="js/shotgun.js?v=202610300630"></script>
+    <script src="js/shotgun.js?v=202610300645"></script>
 </body>
 
 </html>
