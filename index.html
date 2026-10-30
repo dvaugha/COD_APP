@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v283.4</title>
+    <title>COD Golf v283.5</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="180x180" href="/COD_APP/apple-touch-icon.png">
@@ -63,7 +63,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v283.4</div>
+            <div class="tx-xl">COD Golf v283.5</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -168,10 +168,14 @@
                 </div>
                 <div style="width:80px;">
                     <div class="tx-sm">START</div>
-                    <select id="s-start" class="g-inp">
+                    <select id="s-start" class="g-inp" onchange="App.onStartChange(this)">
                         <option value="1">#1</option>
                         <option value="10">#10</option>
                     </select>
+                </div>
+                <div style="width:80px; display:none;" id="s-shotgun-wrap">
+                    <div class="tx-sm">SHOTGUN HOLE</div>
+                    <input type="number" id="s-shotgun-hole" class="g-inp" min="1" max="18" placeholder="1-18" style="text-align:center;">
                 </div>
             </div>
             <div class="flex-r" style="gap:10px;">
@@ -245,7 +249,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v283.4</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v283.5</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -502,6 +506,7 @@
     <script src="js/app2.js?v=202610232215"></script>
     <script src="js/app3.js?v=202610221430"></script>
     <script src="js/tee-names.js?v=202610152002"></script>
+    <script src="js/shotgun.js?v=202610300600"></script>
 </body>
 
 </html>
