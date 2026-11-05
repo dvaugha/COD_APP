@@ -665,7 +665,7 @@ const App = {
                             if (!this.d.ps[pid]) return;
                             // Variance: Tuned v253.1 - Handicap Based
                             // Exp = Par + Strokes
-                            const pops = this.getPops(p, hIdx, true);
+                            const pops = this.getPops(pid, hIdx, true);
                             const exp = par + pops;
                             const rv = Math.random();
                             let v = 0;
