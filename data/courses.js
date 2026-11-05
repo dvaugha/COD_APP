@@ -29,7 +29,8 @@ const CS_INDEX = {
     "prestwick": { n: "Prestwick CC", r: "SC" },
     "blackmoor": { n: "Blackmoor GC", r: "SC" },
     "river_hills": { n: "River Hills", r: "SC" },
-    "grande_dunes": { n: "Grande Dunes Resort Course", r: "SC" }
+    "grande_dunes": { n: "Grande Dunes Resort Course", r: "SC" },
+    "tidewater": { n: "Tidewater", r: "SC" }
 };
 
 /**
