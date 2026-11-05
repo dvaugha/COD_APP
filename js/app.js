@@ -66,6 +66,7 @@ const App = {
                     if (!this.d.gameType) this.d.gameType = 'cod';
                     if (!this.d.pot) this.d.pot = 20;
                     if (!this.d.hcpMode) this.d.hcpMode = 'standard';
+                    if (this.d.hcpEqualize === undefined) this.d.hcpEqualize = false; // v284.1: two-button HCP modal sets this explicitly; legacy rounds default to the even (floor/round) split
                     if (!this.d.permHcps) this.d.permHcps = {};
                     if (this.d.voiceEnabled === undefined) this.d.voiceEnabled = false;
                     if (this.d.testSyncsDone === undefined) this.d.testSyncsDone = 0;
@@ -158,7 +159,6 @@ const App = {
                 this.d.h = this.d.start;
                 this.d.ps = ['', '', '', ''];
                 this.d.chosen = ['', '', '', ''];
-                delete this.d.hcpEqualize;
                 this.d.roundEnded = false;
                 this.save();
                 this.renderRoster();
@@ -236,21 +236,49 @@ const App = {
                 const gmEl = document.getElementById('g-mode') || document.getElementById('g-mode-top');
                 const gmVal = gmEl ? gmEl.value : '';
                 if ((el.value === 'spread' || el.value === 'team') && (gmVal === 'cod' || gmVal === 'highlow')) {
-                    const activeNames = [0, 1, 2, 3].map(i => this.d.chosen[i]).filter(n => n);
-                    const msg = el.value === 'team'
-                        ? "Team Equalizer: Recalculates handicaps for EVERY 6-hole segment based on the rotating partners. This makes every match start even. Proceed?"
-                        : `Would you like to spread - ${activeNames.join(' & ')} - to allow more strokes so that it is even for each segment?`;
-
-                    if (confirm(msg)) {
-                        this.d.hcpEqualize = true;
-                    } else {
-                        this.d.hcpEqualize = false;
-                    }
-                } else {
-                    this.d.hcpEqualize = false;
+                    // v284.1: two-button modal replaces the native OK/Cancel confirm,
+                    // whose Cancel still applied the new mode. Nothing is applied until
+                    // the user taps a button in the modal.
+                    this.showHcpModeModal(el.value);
+                    return;
                 }
+                this.d.hcpEqualize = false;
                 this.d.hcpMode = el.value;
                 this.save();
+            },
+
+            // v284.1: HCP MODE two-button modal. Apply = the even split
+            // (hcpEqualize false: floor for Spread, round for Team Equalizer).
+            // Cancel = keep the mode that was active before the dropdown change.
+            showHcpModeModal: function (mode) {
+                this._pendingHcpMode = mode;
+                this._prevHcpMode = this.d.hcpMode || 'standard';
+                const isTeam = mode === 'team';
+                document.getElementById('hcp-mode-title').innerText = isTeam ? 'TEAM EQUALIZER' : 'COD BALANCED (SPREAD)';
+                document.getElementById('hcp-mode-body').innerText = isTeam
+                    ? 'Recalculates strokes for every 6-hole segment from the rotating teams, so each segment starts even.'
+                    : 'Spreads each player\'s strokes evenly across all three 6-hole segments, so no segment is starved. Your normal stroke totals don\'t change.';
+                document.getElementById('hcp-mode-apply').innerText = isTeam ? 'EQUALIZE TEAMS' : 'SPREAD STROKES EVENLY';
+                const prevLabel = this._prevHcpMode === 'spread' ? 'SPREAD' : (this._prevHcpMode === 'team' ? 'TEAM EQUALIZER' : 'STANDARD');
+                document.getElementById('hcp-mode-cancel').innerText = 'KEEP ' + prevLabel;
+                document.getElementById('hcp-mode-modal').classList.add('active');
+            },
+
+            applyHcpMode: function () {
+                this.d.hcpMode = this._pendingHcpMode;
+                this.d.hcpEqualize = false;
+                this.save();
+                document.getElementById('hcp-mode-modal').classList.remove('active');
+            },
+
+            cancelHcpMode: function () {
+                const prev = this._prevHcpMode || 'standard';
+                this.d.hcpMode = prev;
+                this.d.hcpEqualize = false;
+                const el = document.getElementById('s-hcp-mode');
+                if (el) el.value = prev;
+                this.save();
+                document.getElementById('hcp-mode-modal').classList.remove('active');
             },
 
             isTeamCC: function () { return this.d.gameType === 'cc_match' || (this.d.gameType === 'single' && this.d.scoringMode === 'cc'); },
@@ -911,11 +939,6 @@ const App = {
                     if (hcpModeEl && hcpModeEl.value) this.d.hcpMode = hcpModeEl.value;
                     const noHcpsEl = document.getElementById('s-no-hcps');
                     if (noHcpsEl) this.d.noHandicaps = noHcpsEl.checked;
-
-                    if ((this.d.gameType === 'cod' || this.d.gameType === 'highlow') && this.d.hcpMode === 'spread' && this.d.hcpEqualize === undefined) {
-                        const activeNames = [0, 1, 2, 3].map(i => this.d.chosen[i]).filter(n => n);
-                        this.d.hcpEqualize = confirm(`Would you like to spread - ${activeNames.join(' & ')} - to allow more strokes so that it is even for each segment?`);
-                    }
 
                     if (!this.d.scoringMode) this.d.scoringMode = 'std';
                     if (this.d.gameType === 'single') {
