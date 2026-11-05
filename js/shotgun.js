@@ -380,7 +380,7 @@
                 [0, 1, 2, 3].forEach(p => {
                     const pid = (this.slotMap[p] !== undefined) ? this.slotMap[p] : p;
                     if (!this.d.ps[pid]) return;
-                    const pops = this.getPops(p, hIdx, true);
+                    const pops = this.getPops(pid, hIdx, true);
                     const exp = par + pops;
                     const rv = Math.random();
                     let v = 0;
