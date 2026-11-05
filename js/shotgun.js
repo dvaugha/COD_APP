@@ -134,11 +134,18 @@
             shotOpt.textContent = 'Shotgun\u2026';
             startEl.appendChild(shotOpt);
         }
-        // Restore a saved shotgun round/setup: start is a hole other than #1/#10.
-        const savedShot = !!this.d.shotgun || (typeof this.d.start === 'number' && this.d.start !== 1 && this.d.start !== 10);
+        // Restore a saved shotgun round ONLY when that round is flagged shotgun.
+        // (v283.5 bug fix, Nov 4, 2026: the old version also treated any saved
+        // start other than #1/#10 as shotgun, so a saved shotgun setup kept
+        // overriding a fresh #1 pick at setup time, before any round started.)
+        // A stale numeric start with no shotgun flag falls back to #1 below.
+        const savedShot = !!this.d.shotgun;
         if (savedShot && startEl.value !== 'shotgun') {
             startEl.value = 'shotgun';
             if (holeEl) holeEl.value = String(this.d.start);
+        }
+        if (!savedShot && startEl.value !== '1' && startEl.value !== '10' && startEl.value !== 'shotgun') {
+            startEl.value = '1';
         }
         if (holeEl) holeEl.style.display = (startEl.value === 'shotgun') ? 'block' : 'none';
         const wrap1 = document.getElementById('s-shotgun-wrap');
@@ -146,6 +153,14 @@
     },
 
     App.onStartChange = function (el) {
+        // An explicit START pick is final: picking #1 or #10 clears the saved
+        // shotgun flag, so the restore step in syncShotgunUI cannot flip the
+        // box straight back to Shotgun. Without this, a saved shotgun round
+        // made #1 unpickable at setup time.
+        if (el && el.value !== 'shotgun') {
+            this.d.shotgun = false;
+            this.save();
+        }
         this.syncShotgunUI();
         if (el.value === 'shotgun') {
             const he = document.getElementById('s-shotgun-hole');
