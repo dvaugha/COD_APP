@@ -796,7 +796,7 @@ Object.assign(App, {
                 const c = CS[this.d.crs] || CS['cc'];
                 const snap = JSON.parse(JSON.stringify(this.d));
                 delete snap.ghToken;
-                const rec = { id: Date.now(), date: new Date().toLocaleDateString(), course: c.n, ps: this.d.ps, net: [0, 1, 2, 3].map(i => Math.round(bets[i])), isTest: !!this.d.isTestMode, gameType: this.d.gameType, crs: this.d.crs, tee: this.d.tee, snap: snap };
+                const rec = { id: Date.now(), date: new Date().toLocaleDateString(), course: c.n, ps: this.d.ps, net: [0, 1, 2, 3].map(i => Math.round(bets[i])), isTest: !!this.d.isTestMode, gameType: this.d.gameType, crs: this.d.crs, tee: this.d.tee, snap: snap, pointsSnap: this.ptsSnapForSave(), pointsApplied: false };
                 this.d.gameId = rec.id;
                 this.historyArchive.push(rec);
                 this.saveHistoryData();
@@ -811,7 +811,7 @@ Object.assign(App, {
                 // of the page bypassing the cache and restore the missing views and
                 // modals before anything tries to navigate to them.
                 const viewIds = ['v-setup', 'v-dash', 'v-card', 'v-recap'];
-                const modalIds = ['press-modal', 'junk-modal', 'hcp-modal', 'standings-modal', 'cart-check-modal', 'junk-payout-modal', 'share-preview-modal'];
+                const modalIds = ['press-modal', 'junk-modal', 'hcp-modal', 'standings-modal', 'cart-check-modal', 'junk-payout-modal', 'share-preview-modal', 'points-modal'];
                 if (!viewIds.some(id => !document.getElementById(id)) &&
                     modalIds.every(id => document.getElementById(id))) return;
                 try {
@@ -841,7 +841,9 @@ Object.assign(App, {
                 if (rec.snap) {
                     const backup = this.d;
                     this.d = JSON.parse(JSON.stringify(rec.snap));
+                    this._ptsHistRecId = rec.id;
                     this.uRecap();
+                    delete this._ptsHistRecId;
                     this.d = backup;
                 } else {
                     const netS = rec.ps.map((p, i) => `${p}: ${rec.net[i] >= 0 ? '+' : ''}${rec.net[i]}`).join(' &nbsp;·&nbsp; ');
@@ -858,7 +860,7 @@ Object.assign(App, {
                     const backup = this.d;
                     this.d = JSON.parse(JSON.stringify(rec.snap));
                     const con = document.getElementById('recap-body');
-                    if (con) { this.uRecap(); recapHTML = con.innerHTML; }
+                    if (con) { this._ptsHistRecId = rec.id; this.uRecap(); recapHTML = con.innerHTML; delete this._ptsHistRecId; }
                     this.d = backup;
                 }
                 const iso = new Date(rec.id).toISOString().slice(0, 10);
@@ -1188,6 +1190,7 @@ Object.assign(App, {
                     html += `</div>`;
                 }
 
+                html += this.getPointsStandingsHTML();
                 inner.innerHTML = html || `<div style="padding:30px;text-align:center;color:#64748B;">No scores entered yet.</div>`;
 
                 modal.classList.add('active');
@@ -1358,5 +1361,449 @@ Object.assign(App, {
                 if (modal) modal.classList.remove('active');
             }
         });
+
+        Object.assign(App, {
+
+            // ===== POINTS GAME (v285.0) — Rick's points system, Scorecard Only =====
+            PTS_KEY: 'COD_POINTS_RATINGS_v1',
+
+            ptsSeed: function () {
+                const mk = (label, cod, rating, rounds) => ({ label: label, cod: cod, rating: rating, rounds: rounds, hist: [] });
+                return {
+                    players: [
+                        mk('Dave G', null, 8.43, 7),
+                        mk('Eddie M', 'Eddie', 17.44, 16),
+                        mk('Carl K', null, 18.00, 1),
+                        mk('Rick T', 'Rick', 18.59, 27),
+                        mk('Danny V', 'Dan', 18.86, 7),
+                        mk('Dean S', null, 19.33, 9),
+                        mk('Eddie Knotts', null, 19.75, 4),
+                        mk('Chase', null, 22.00, 1),
+                        mk('Charlie Richardson', null, 23.25, 4),
+                        mk('Dillon S', null, 25.60, 5),
+                        mk('Gene H', null, 26.40, 5),
+                        mk('Bruce Hogan', null, 27.00, 1),
+                        mk('Ronnie B', 'Ronnie', 27.48, 21),
+                        mk('Thomas W', null, 30.00, 8),
+                        mk("Charlie (Gene's neighbor)", null, 33.67, 3)
+                    ],
+                    applied: [],
+                    lastUndo: null
+                };
+            },
+
+            ptsLoad: function () {
+                try {
+                    const raw = localStorage.getItem(this.PTS_KEY);
+                    if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.players)) return p; }
+                } catch (e) { }
+                const seed = this.ptsSeed();
+                try { localStorage.setItem(this.PTS_KEY, JSON.stringify(seed)); } catch (e) { }
+                return seed;
+            },
+
+            ptsSaveStore: function (store) {
+                try { localStorage.setItem(this.PTS_KEY, JSON.stringify(store)); } catch (e) { }
+            },
+
+            ptsEntryFor: function (store, codName) {
+                if (!codName) return null;
+                return store.players.find(p => p.cod === codName) || store.players.find(p => p.label === codName) || null;
+            },
+
+            ptsHolePoints: function (gross, par) {
+                const d = gross - par;
+                if (d <= -2) return 4;
+                if (d === -1) return 3;
+                if (d === 0) return 2;
+                if (d === 1) return 1;
+                return 0;
+            },
+
+            ptsApplicable: function () {
+                return this.d.gameType === 'single' && !this.isTeamCC();
+            },
+
+            ptsRoundRows: function () {
+                const c = CS[this.d.crs] || CS['cc'];
+                const store = this.ptsLoad();
+                const rows = [];
+                [0, 1, 2, 3].forEach(i => {
+                    const name = this.d.ps[i];
+                    if (!name) return;
+                    let pts = 0, holes = 0;
+                    for (let h = 1; h <= 18; h++) {
+                        const sc = (this.d.s[h] && typeof this.d.s[h][i] === 'number') ? this.d.s[h][i] : null;
+                        if (sc !== null) { pts += this.ptsHolePoints(sc, c.p[h - 1]); holes++; }
+                    }
+                    const entry = this.ptsEntryFor(store, name);
+                    const rating = (entry && entry.rounds > 0) ? entry.rating : null;
+                    rows.push({ idx: i, name: name, pts: pts, holes: holes, entry: entry, rating: rating });
+                });
+                return rows;
+            },
+
+            ptsSorted: function (rows) {
+                return rows.slice().sort((a, b) => {
+                    const da = (a.rating === null) ? -9999 : (a.pts - a.rating);
+                    const db = (b.rating === null) ? -9999 : (b.pts - b.rating);
+                    if (db !== da) return db - da;
+                    return b.pts - a.pts;
+                });
+            },
+
+            ptsFmtDiff: function (v) {
+                return (v >= 0 ? '+' : '') + v.toFixed(2);
+            },
+
+            ptsRoundKey: function (rows) {
+                const c = CS[this.d.crs] || CS['cc'];
+                const sig = rows.map(r => r.name + '=' + r.pts).join('|');
+                return 'g' + (this.d.gameId || 'x') + '|' + (c.n || this.d.crs) + '|' + sig;
+            },
+
+            ptsStatusLine: function (r) {
+                if (r.rating === null) return 'No rating yet — first round sets it';
+                const diff = r.pts - r.rating;
+                if (r.holes >= 18) return 'Rating ' + r.rating.toFixed(2) + ' · ' + this.ptsFmtDiff(diff);
+                const left = 18 - r.holes;
+                if (diff >= 0) return 'Rating ' + r.rating.toFixed(2) + ' · ahead ' + this.ptsFmtDiff(diff) + ' with ' + left + ' to play';
+                return 'Rating ' + r.rating.toFixed(2) + ' · needs ' + Math.abs(diff).toFixed(2) + ' pts in last ' + left;
+            },
+
+            renderPointsPanel: function () {
+                const panel = document.getElementById('points-panel');
+                if (!panel) return;
+                if (!this.ptsApplicable()) { panel.innerHTML = ''; return; }
+                const rows = this.ptsSorted(this.ptsRoundRows());
+                if (!rows.length || rows.every(r => r.holes === 0)) { panel.innerHTML = ''; return; }
+                let html = `<div class="box" style="margin-top:0; border:1px solid rgba(245, 158, 11, 0.4);">
+                    <div class="tx-sm" style="color:#F59E0B">🏆 POINTS GAME</div>`;
+                rows.forEach(r => {
+                    html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #1e293b;">
+                        <div>
+                            <div style="color:white; font-weight:700; font-size:14px;">${r.name}</div>
+                            <div style="color:#94A3B8; font-size:11px;">${this.ptsStatusLine(r)}</div>
+                        </div>
+                        <div style="font-size:17px; font-weight:900; color:#F59E0B;">${r.pts} <span style="font-size:10px; color:#94A3B8;">PTS</span></div>
+                    </div>`;
+                });
+                html += `</div>`;
+                panel.innerHTML = html;
+            },
+
+            getPointsStandingsHTML: function () {
+                if (!this.ptsApplicable()) return '';
+                const rows = this.ptsSorted(this.ptsRoundRows());
+                if (!rows.length || rows.every(r => r.holes === 0)) return '';
+                let html = `<div class="std-section" style="border-color:#F59E0B;">`;
+                html += `<div class="std-section-title" style="color:#F59E0B;">🏆 Points Game</div>`;
+                rows.forEach(r => {
+                    const right = (r.rating === null) ? `${r.pts} pts · no rating` : `${r.pts} pts · ${this.ptsFmtDiff(r.pts - r.rating)}`;
+                    html += `<div class="std-row"><span style="color:#FFFFFF; font-size:12px;">${r.name}</span><span style="color:#F59E0B; font-weight:900;">${right}</span></div>`;
+                });
+                html += `</div>`;
+                return html;
+            },
+
+            ptsSnapForSave: function () {
+                try {
+                    if (!this.ptsApplicable() || this.d.isTestMode) return null;
+                    const rows = this.ptsRoundRows();
+                    if (!rows.length || rows.some(r => r.holes !== 18)) return null;
+                    return rows.map(r => ({ name: r.name, pts: r.pts, rating: r.rating }));
+                } catch (e) { return null; }
+            },
+
+            getPointsRecapHTML: function () {
+                try {
+                    if (!this.ptsApplicable()) return '';
+                    let snapRows = null;
+                    let rec = null;
+                    const recId = this._ptsHistRecId || this.d.gameId;
+                    if (recId) { rec = this.histRecById(recId); if (rec && rec.pointsSnap) snapRows = rec.pointsSnap; }
+                    let rows;
+                    if (snapRows) {
+                        rows = snapRows.map(r => ({ name: r.name, pts: r.pts, rating: (typeof r.rating === 'number') ? r.rating : null, holes: 18 }));
+                    } else {
+                        rows = this.ptsRoundRows();
+                    }
+                    if (!rows.length || rows.every(r => r.holes === 0)) return '';
+                    const complete = rows.every(r => r.holes === 18);
+                    const sorted = this.ptsSorted(rows);
+                    // competition places among rated players, only when the round is complete
+                    let lastDiff = null, lastPlace = 0, seen = 0;
+                    sorted.forEach(r => {
+                        r.place = null;
+                        if (!complete || r.rating === null) return;
+                        seen++;
+                        const diff = r.pts - r.rating;
+                        if (lastDiff === null || Math.abs(diff - lastDiff) > 0.0001) { lastPlace = seen; lastDiff = diff; }
+                        r.place = lastPlace;
+                    });
+                    const placeLbl = ['', '1ST', '2ND', '3RD'];
+                    const placeCol = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
+                    let html = `<div class="box" style="margin-top:12px; border:1px solid rgba(245, 158, 11, 0.4);">
+                        <div class="tx-sm" style="color:#F59E0B; margin-bottom:10px;">🏆 POINTS GAME${complete ? ' — RESULTS' : ' (LIVE)'}</div>`;
+                    sorted.forEach(r => {
+                        const diffTxt = (r.rating === null) ? 'no rating yet' : ('vs ' + r.rating.toFixed(2) + ' → ' + this.ptsFmtDiff(r.pts - r.rating));
+                        const badge = (r.place && r.place <= 3) ? `<span style="color:${placeCol[r.place]}; font-weight:900; font-size:12px; margin-right:8px;">${placeLbl[r.place]}</span>` : '';
+                        html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+                            <div style="color:white; font-weight:700; font-size:13px;">${badge}${r.name}</div>
+                            <div style="text-align:right;">
+                                <span style="font-size:15px; font-weight:900; color:#F59E0B;">${r.pts} PTS</span>
+                                <div style="color:#94A3B8; font-size:11px;">${diffTxt}</div>
+                            </div>
+                        </div>`;
+                    });
+                    // Ratings update controls — live, complete, non-test rounds only
+                    if (complete && !this._ptsHistRecId) {
+                        const store = this.ptsLoad();
+                        const key = this.ptsRoundKey(rows);
+                        const applied = (store.applied.indexOf(key) >= 0) || (rec && rec.pointsApplied);
+                        html += `<div style="margin-top:12px;">`;
+                        if (this.d.isTestMode) {
+                            html += `<div style="color:#94A3B8; font-size:12px; text-align:center;">Test round — ratings are not updated.</div>`;
+                        } else if (applied) {
+                            html += `<div style="color:#10B981; font-size:13px; font-weight:900; text-align:center;">RATINGS UPDATED ✓</div>`;
+                            if (store.lastUndo && store.lastUndo.key === key) {
+                                html += `<button class="g-btn g-btn-sm" style="background:#334155; width:100%; margin-top:8px;" onclick="App.undoPointsUpdate()">UNDO RATINGS UPDATE</button>`;
+                            }
+                        } else {
+                            html += `<button class="g-btn" style="background:#F59E0B; color:black; font-weight:900;" onclick="App.applyPointsUpdate()">UPDATE RATINGS 🏆</button>`;
+                        }
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                    return html;
+                } catch (e) { return ''; }
+            },
+
+            ptsFoldIn: function (store, entry, pts, meta) {
+                const before = { label: entry.label, rating: entry.rating, rounds: entry.rounds };
+                entry.rating = entry.rounds > 0 ? (entry.rating * entry.rounds + pts) / (entry.rounds + 1) : pts;
+                entry.rounds += 1;
+                entry.hist.push({ date: meta.date, pts: pts, course: meta.course || '', manual: !!meta.manual, key: meta.key });
+                return before;
+            },
+
+            applyPointsUpdate: function () {
+                if (this.d.isTestMode) return;
+                const rows = this.ptsRoundRows();
+                if (!rows.length || rows.some(r => r.holes !== 18)) return;
+                const store = this.ptsLoad();
+                const key = this.ptsRoundKey(rows);
+                if (store.applied.indexOf(key) >= 0) return;
+                const c = CS[this.d.crs] || CS['cc'];
+                const dateStr = new Date().toLocaleDateString();
+                const before = [];
+                rows.forEach(r => {
+                    let e = this.ptsEntryFor(store, r.name);
+                    let created = false;
+                    if (!e) {
+                        e = { label: r.name, cod: r.name, rating: 0, rounds: 0, hist: [] };
+                        store.players.push(e);
+                        created = true;
+                    }
+                    const b = this.ptsFoldIn(store, e, r.pts, { date: dateStr, course: c.n || '', manual: false, key: key });
+                    if (created) b.created = true;
+                    before.push(b);
+                });
+                store.applied.push(key);
+                store.lastUndo = { key: key, before: before };
+                this.ptsSaveStore(store);
+                if (this.d.gameId) {
+                    const rec = this.histRecById(this.d.gameId);
+                    if (rec) {
+                        if (!rec.pointsSnap) rec.pointsSnap = rows.map(r => ({ name: r.name, pts: r.pts, rating: r.rating }));
+                        rec.pointsApplied = true;
+                        this.saveHistoryData();
+                    }
+                }
+                this.uRecap();
+                try { this.renderPointsPanel(); } catch (e) { }
+            },
+
+            undoPointsUpdate: function () {
+                const store = this.ptsLoad();
+                const u = store.lastUndo;
+                if (!u) return;
+                u.before.forEach(b => {
+                    const e = store.players.find(p => p.label === b.label);
+                    if (!e) return;
+                    if (b.created) { store.players = store.players.filter(p => p.label !== b.label); return; }
+                    e.rating = b.rating;
+                    e.rounds = b.rounds;
+                    e.hist = e.hist.filter(h => h.key !== u.key);
+                });
+                store.applied = store.applied.filter(k => k !== u.key);
+                store.lastUndo = null;
+                this.ptsSaveStore(store);
+                if (this.d.gameId) {
+                    const rec = this.histRecById(this.d.gameId);
+                    if (rec && rec.pointsApplied) { rec.pointsApplied = false; this.saveHistoryData(); }
+                }
+                this.uRecap();
+                try { this.renderPointsPanel(); } catch (e) { }
+                const pm = document.getElementById('points-modal');
+                if (pm && pm.classList.contains('active')) this.renderPointsModal();
+            },
+
+            // ===== Points ratings manager modal =====
+            openPointsModal: function () {
+                this._ptsEditLabel = null;
+                this._ptsDelArm = null;
+                this.renderPointsModal();
+                const m = document.getElementById('points-modal');
+                if (m) m.classList.add('active');
+            },
+
+            closePointsModal: function () {
+                const m = document.getElementById('points-modal');
+                if (m) m.classList.remove('active');
+            },
+
+            renderPointsModal: function () {
+                const body = document.getElementById('points-modal-body');
+                if (!body) return;
+                const store = this.ptsLoad();
+                const players = store.players.slice().sort((a, b) => a.rating - b.rating);
+                let html = `<div style="color:#94A3B8; font-size:11px; margin-bottom:10px;">Rick's table — seeded Nov 9, 2026. A player's rating is their average points per round. Tap EDIT to re-sync a number from Rick or fix a mistake.</div>`;
+                html += `<div style="display:flex; border-bottom:1px solid #334155; padding-bottom:6px; margin-bottom:4px;">
+                    <div style="flex:2; color:#FFFFFF; font-size:10px; font-weight:700;">PLAYER</div>
+                    <div style="flex:1; text-align:center; color:#F59E0B; font-size:10px; font-weight:900;">RATING</div>
+                    <div style="flex:1; text-align:center; color:#FFFFFF; font-size:10px; font-weight:900;">ROUNDS</div>
+                    <div style="width:56px;"></div>
+                </div>`;
+                players.forEach(p => {
+                    html += `<div style="display:flex; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+                        <div style="flex:2; color:white; font-weight:700; font-size:13px;">${p.label}${p.cod ? ` <span style="color:#64748B; font-size:10px;">(${p.cod})</span>` : ''}</div>
+                        <div style="flex:1; text-align:center; color:#F59E0B; font-weight:900;">${p.rounds > 0 ? p.rating.toFixed(2) : '—'}</div>
+                        <div style="flex:1; text-align:center; color:#cbd5e1; font-weight:700;">${p.rounds}</div>
+                        <div style="width:56px; text-align:right;"><button class="g-btn g-btn-sm" style="background:#334155; width:auto; padding:4px 10px;" onclick="App.ptsEdit('${p.label.replace(/'/g, "\\'")}')">EDIT</button></div>
+                    </div>`;
+                });
+                // Edit section
+                if (this._ptsEditLabel) {
+                    const p = store.players.find(x => x.label === this._ptsEditLabel);
+                    if (p) {
+                        html += `<div style="background:#0F172A; border:1px solid #F59E0B; border-radius:10px; padding:12px; margin-top:14px;">
+                            <div class="tx-sm" style="color:#F59E0B;">EDIT — ${p.label}</div>
+                            <div style="display:flex; gap:8px; margin-top:8px;">
+                                <div style="flex:1;"><div class="tx-sm" style="font-size:10px;">RATING</div><input type="number" step="0.01" id="pts-ed-rating" class="g-inp" value="${p.rounds > 0 ? p.rating.toFixed(2) : ''}" style="margin:0;"></div>
+                                <div style="flex:1;"><div class="tx-sm" style="font-size:10px;">ROUNDS</div><input type="number" id="pts-ed-rounds" class="g-inp" value="${p.rounds}" style="margin:0;"></div>
+                                <div style="flex:1;"><div class="tx-sm" style="font-size:10px;">COD NAME</div><input type="text" id="pts-ed-cod" class="g-inp" value="${p.cod || ''}" style="margin:0;"></div>
+                            </div>
+                            <div style="display:flex; gap:8px; margin-top:10px;">
+                                <button class="g-btn" style="background:#10B981; flex:2;" onclick="App.ptsEditSave()">SAVE</button>
+                                <button class="g-btn g-btn-sec" style="flex:1;" onclick="App.ptsEditCancel()">CANCEL</button>
+                                <button class="g-btn" style="background:${this._ptsDelArm === p.label ? '#EF4444' : '#334155'}; flex:1;" onclick="App.ptsDelete()">${this._ptsDelArm === p.label ? 'SURE?' : 'DELETE'}</button>
+                            </div>
+                        </div>`;
+                    }
+                }
+                // Add player
+                html += `<div style="margin-top:16px;">
+                    <div class="tx-sm">ADD PLAYER</div>
+                    <div style="display:flex; gap:8px; margin-top:6px;">
+                        <input type="text" id="pts-new-name" class="g-inp" placeholder="Name..." style="margin:0; flex:2;">
+                        <button class="g-btn g-btn-sm" style="height:48px; flex:1;" onclick="App.ptsAddPlayer()">ADD</button>
+                    </div>
+                    <div style="color:#64748B; font-size:10px; margin-top:4px;">New players start with no rating — their first full round in the app sets it. Use EDIT to seed a rating from Rick's table.</div>
+                </div>`;
+                // Manual round entry
+                html += `<div style="margin-top:20px; border-top:1px solid #334155; padding-top:14px;">
+                    <div class="tx-sm" style="color:#F59E0B;">ADD A ROUND RICK SCORED (MANUAL)</div>
+                    <div style="color:#94A3B8; font-size:11px; margin:6px 0 10px;">For a round played without this app: enter each player's total points and tap ADD ROUND. Leave non-players blank.</div>`;
+                players.forEach((p, i) => {
+                    html += `<div style="display:flex; align-items:center; gap:8px; padding:3px 0;">
+                        <div style="flex:2; color:#cbd5e1; font-size:12px; font-weight:700;">${p.label}</div>
+                        <input type="number" id="pts-mr-${i}" data-label="${p.label.replace(/"/g, '&quot;')}" class="g-inp pts-mr-inp" placeholder="pts" style="margin:0; width:84px; text-align:center;">
+                    </div>`;
+                });
+                html += `<button class="g-btn" style="background:#F59E0B; color:black; font-weight:900; margin-top:10px;" onclick="App.ptsAddManualRound()">ADD ROUND</button>`;
+                if (store.lastUndo) {
+                    html += `<button class="g-btn g-btn-sm" style="background:#334155; width:100%; margin-top:10px;" onclick="App.undoPointsUpdate()">UNDO LAST RATINGS UPDATE</button>`;
+                }
+                html += `</div>`;
+                body.innerHTML = html;
+            },
+
+            ptsEdit: function (label) {
+                this._ptsEditLabel = label;
+                this._ptsDelArm = null;
+                this.renderPointsModal();
+            },
+
+            ptsEditCancel: function () {
+                this._ptsEditLabel = null;
+                this._ptsDelArm = null;
+                this.renderPointsModal();
+            },
+
+            ptsEditSave: function () {
+                const store = this.ptsLoad();
+                const p = store.players.find(x => x.label === this._ptsEditLabel);
+                if (!p) return;
+                const r = parseFloat(document.getElementById('pts-ed-rating').value);
+                const n = parseInt(document.getElementById('pts-ed-rounds').value, 10);
+                const cod = document.getElementById('pts-ed-cod').value.trim();
+                if (!isNaN(r)) p.rating = r;
+                if (!isNaN(n) && n >= 0) p.rounds = n;
+                p.cod = cod ? cod : null;
+                this.ptsSaveStore(store);
+                this._ptsEditLabel = null;
+                this._ptsDelArm = null;
+                this.renderPointsModal();
+                try { this.renderPointsPanel(); } catch (e) { }
+            },
+
+            ptsDelete: function () {
+                if (this._ptsDelArm !== this._ptsEditLabel) { this._ptsDelArm = this._ptsEditLabel; this.renderPointsModal(); return; }
+                const store = this.ptsLoad();
+                store.players = store.players.filter(p => p.label !== this._ptsEditLabel);
+                this.ptsSaveStore(store);
+                this._ptsEditLabel = null;
+                this._ptsDelArm = null;
+                this.renderPointsModal();
+            },
+
+            ptsAddPlayer: function () {
+                const inp = document.getElementById('pts-new-name');
+                const name = (inp.value || '').trim();
+                if (!name) return;
+                const store = this.ptsLoad();
+                if (store.players.some(p => p.label === name)) { inp.value = ''; return; }
+                store.players.push({ label: name, cod: null, rating: 0, rounds: 0, hist: [] });
+                this.ptsSaveStore(store);
+                this.renderPointsModal();
+            },
+
+            ptsAddManualRound: function () {
+                const inputs = document.querySelectorAll('.pts-mr-inp');
+                const store = this.ptsLoad();
+                const key = 'manual-' + Date.now();
+                const dateStr = new Date().toLocaleDateString();
+                const before = [];
+                let any = false;
+                inputs.forEach(inp => {
+                    const v = inp.value.trim();
+                    if (v === '') return;
+                    const pts = parseInt(v, 10);
+                    if (isNaN(pts)) return;
+                    const p = store.players.find(x => x.label === inp.getAttribute('data-label'));
+                    if (!p) return;
+                    any = true;
+                    before.push(this.ptsFoldIn(store, p, pts, { date: dateStr, course: '', manual: true, key: key }));
+                });
+                if (!any) return;
+                store.applied.push(key);
+                store.lastUndo = { key: key, before: before };
+                this.ptsSaveStore(store);
+                this.renderPointsModal();
+                try { this.renderPointsPanel(); } catch (e) { }
+            }
+        });
+
         window.addEventListener('load', async () => { try { await App.healMissingViews(); } catch (e) { } App.init(); });
         window.App = App;

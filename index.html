@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v284.1</title>
+    <title>COD Golf v285.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="180x180" href="/COD_APP/apple-touch-icon.png">
@@ -47,6 +47,15 @@
         </div>
     </div>
 
+    <!-- POINTS RATINGS MODAL (v285.0) -->
+    <div id="points-modal" class="modal-overlay">
+        <div class="modal-box" style="max-height:88vh; overflow-y:auto;">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">POINTS RATINGS 🏆</div>
+            <div id="points-modal-body"></div>
+            <button class="g-btn g-btn-sec" style="margin-top:16px;" onclick="App.closePointsModal()">CLOSE</button>
+        </div>
+    </div>
+
     <!-- SHARE PREVIEW MODAL -->
     <div id="share-preview-modal" class="modal-overlay" style="z-index: 600;">
         <div class="modal-box" style="max-width:400px; width:90%; padding:16px;">
@@ -63,7 +72,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v284.1</div>
+            <div class="tx-xl">COD Golf v285.0</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -123,6 +132,9 @@
             <button class="g-btn g-btn-sm"
                 style="background:#334155; width:100%; margin-top:10px; border:1px solid #FFFFFF;"
                 onclick="App.openHcpModal()">SET HANDICAPS ⛳</button>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; width:100%; margin-top:10px; border:1px solid #F59E0B; color:#F59E0B;"
+                onclick="App.openPointsModal()">POINTS RATINGS 🏆</button>
         </div>
 
         <div class="box">
@@ -257,7 +269,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v284.1</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v285.0</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -492,6 +504,8 @@
             <div id="res-txt" style="font-family:monospace; margin-top:10px; font-size:14px; line-height:1.5;"></div>
         </div>
 
+        <div id="points-panel"></div>
+
         <div class="box" style="background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3);">
             <div style="font-size:11px; color:#F59E0B; font-weight:700;">ℹ️ IPHONE TIP</div>
             <div style="font-size:10px; color:#FFFFFF; margin-top:4px;">If tapping SEND doesn't open messages, the
@@ -524,8 +538,8 @@
 
     <script src="data/courses.js?v=202611042100"></script>
     <script src="js/app.js?v=202611050730"></script>
-    <script src="js/app2.js?v=202610232215"></script>
-    <script src="js/app3.js?v=202610221430"></script>
+    <script src="js/app2.js?v=202611092310"></script>
+    <script src="js/app3.js?v=202611092310"></script>
     <script src="js/tee-names.js?v=202610152002"></script>
     <script src="js/shotgun.js?v=202611050650"></script>
 </body>

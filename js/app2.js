@@ -251,6 +251,7 @@ Object.assign(App, {
                 });
                 html += `</div>`;
 
+                html += this.getPointsRecapHTML();
                 con.innerHTML = html;
             },
 
@@ -1107,6 +1108,7 @@ Object.assign(App, {
                     resHTML += `</div></div>`;
                 }
                 document.getElementById('res-txt').innerHTML = resHTML;
+                try { this.renderPointsPanel(); } catch (e) { }
 
                 const btn = document.getElementById('hist-btn');
                 if (btn) {
