@@ -534,6 +534,7 @@ Object.assign(App, {
                 this.updateStrokeAlert();
                 this.updateJunkUI();
                 this.checkStandingsBtn();
+                try { this.renderPointsBanner(); } catch (e) { }
             },
 
             updateStrokeAlert: function () {
@@ -842,6 +843,14 @@ Object.assign(App, {
                                 let dStr = '';
                                 for (let k = 0; k < pops; k++) dStr += '•';
                                 valHTML += `<div style="font-size:16px; line-height:10px; color:#F472B6; position:absolute; bottom:2px; right:2px; letter-spacing:-2px;">${dStr}</div>`;
+                            }
+                            if (s && this.ptsApplicable && this.ptsApplicable() && this.ptsHolePoints) {
+                                const hp = this.ptsHolePoints(s, par);
+                                if (hp > 0) {
+                                    let pStr = '';
+                                    for (let k = 0; k < hp; k++) pStr += '\u2022';
+                                    valHTML += `<div style="font-size:13px; line-height:9px; color:#FFEA00; position:absolute; top:1px; left:0; right:0; text-align:center; letter-spacing:1px;">${pStr}</div>`;
+                                }
                             }
 
                             r += `<td style="position:relative;">${valHTML}</td>`;

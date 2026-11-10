@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v285.0</title>
+    <title>COD Golf v285.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="180x180" href="/COD_APP/apple-touch-icon.png">
@@ -72,7 +72,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v285.0</div>
+            <div class="tx-xl">COD Golf v285.1</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -269,7 +269,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v285.0</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v285.1</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -484,6 +484,7 @@
                 onclick="App.nav('v-setup')">MENU</button><button class="g-btn" style="background:#334155; flex:1;"
                 onclick="App.nav('v-card')">SCORECARD</button><button class="g-btn" style="background:#EF4444;"
                 onclick="App.endRound()">END</button></div>
+        <div id="points-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:300; background:rgba(15,23,42,0.97); border-top:2px solid #F59E0B; padding:8px 10px; font-size:12px; align-items:center; justify-content:center; overflow:hidden;"></div>
     </div>
 
     <!-- === CARD/SUMMARY SCREENS === -->
@@ -538,8 +539,8 @@
 
     <script src="data/courses.js?v=202611042100"></script>
     <script src="js/app.js?v=202611050730"></script>
-    <script src="js/app2.js?v=202611092310"></script>
-    <script src="js/app3.js?v=202611092310"></script>
+    <script src="js/app2.js?v=202611092330"></script>
+    <script src="js/app3.js?v=202611092330"></script>
     <script src="js/tee-names.js?v=202610152002"></script>
     <script src="js/shotgun.js?v=202611050650"></script>
 </body>

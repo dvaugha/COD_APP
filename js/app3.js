@@ -1471,6 +1471,24 @@ Object.assign(App, {
                 return 'Rating ' + r.rating.toFixed(2) + ' · needs ' + Math.abs(diff).toFixed(2) + ' pts in last ' + left;
             },
 
+            renderPointsBanner: function () {
+                const b = document.getElementById('points-banner');
+                if (!b) return;
+                const dash = document.getElementById('v-dash');
+                const hide = () => { b.style.display = 'none'; if (dash) dash.style.paddingBottom = ''; };
+                if (!this.ptsApplicable()) { hide(); return; }
+                const rows = this.ptsSorted(this.ptsRoundRows());
+                if (!rows.length || rows.every(r => r.holes === 0)) { hide(); return; }
+                const parts = rows.map(r => {
+                    const nm = r.name.substring(0, 6).toUpperCase();
+                    const d = (r.rating === null) ? '' : ` <span style="color:${(r.pts - r.rating) >= 0 ? '#10B981' : '#F87171'}; font-size:10px; font-weight:700;">${this.ptsFmtDiff(r.pts - r.rating)}</span>`;
+                    return `<span style="white-space:nowrap;"><span style="color:#FFFFFF; font-weight:700;">${nm}</span> <span style="color:#F59E0B; font-weight:900;">${r.pts}</span>${d}</span>`;
+                });
+                b.innerHTML = '<span>\uD83C\uDFC6</span>' + parts.join('<span style="color:#475569; margin:0 5px;">\u00B7</span>');
+                b.style.display = 'flex';
+                if (dash) dash.style.paddingBottom = '54px';
+            },
+
             renderPointsPanel: function () {
                 const panel = document.getElementById('points-panel');
                 if (!panel) return;
