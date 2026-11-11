@@ -1069,7 +1069,14 @@ const App = {
             // failed to download, or downloaded but has no tees, is NOT ready.
             courseReady: function(id) {
                 const c = CS[id];
-                if (!c || !c.y) return false;
+                if (!c) return false;
+                if (c.nines) {
+                    // 27-hole courses keep yardages per nine, not at top level:
+                    // ready when any nine carries yardages for a known tee.
+                    return Object.values(c.nines).some(n => n && n.y &&
+                        ['white', 'blue', 'gold', 'green', 'combo'].some(t => Array.isArray(n.y[t]) && n.y[t].length > 0));
+                }
+                if (!c.y) return false;
                 return ['white', 'blue', 'gold', 'green', 'combo'].some(t => Array.isArray(c.y[t]) && c.y[t].length > 0);
             },
 
