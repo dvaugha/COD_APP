@@ -1,5 +1,6 @@
 // SPECIAL EVENT format strip — v285.5 (Dan-approved Nov 12, 2026)
 // v285.6 (Nov 12, 2026): banner wording trimmed at Dan's request — no star, no 'Special'; the strip is just HOLE <n> — <FORMAT> and the event name.
+// v285.7 (Nov 12, 2026): special rounds — on Scramble / Modified Alternate Shot holes ONE team score completes the hole and auto-advances (wraps App.checkAuto); Better Ball holes still require every score; non-special rounds untouched.
 // Loaded AFTER js/shotgun.js, so it wraps the shotgun wrappers. Sidecar only:
 // app.js / app2.js / app3.js / tee-names.js / shotgun.js are never touched.
 // Purpose: for special events (first preset: Veterans Day Classic at
@@ -198,6 +199,48 @@
                         '<div style="font-size:11px; color:#FFFFFF; margin-top:3px;">' + holeOrderLine() + '</div></div>';
                     cardCon.innerHTML = hdr + cardCon.innerHTML;
                 } catch (e) {}
+            };
+        }
+    } catch (e) {}
+
+    try {
+        var _origCheckAuto = App.checkAuto;
+        if (typeof _origCheckAuto === 'function') {
+            App.checkAuto = function () {
+                try {
+                    // v285.7: in a special round, the team formats (Scramble,
+                    // Modified Alternate Shot) produce ONE team score per
+                    // hole, entered in a single player's row. The stock
+                    // check waits for EVERY row, which strands the round on
+                    // those holes — so while SPECIAL is on and the hole is
+                    // not Better Ball, ANY active player's positive score
+                    // completes the hole (same banner + 3s advance as the
+                    // original). Better Ball keeps the original rule — both
+                    // balls must be in before the low ball is known — and
+                    // non-special rounds always run the original check.
+                    if (this.d && this.d.special && formatFor(parseInt(this.d.h, 10) || 1, false) !== 'Better Ball') {
+                        var s = this.d.s ? this.d.s[this.d.h] : null;
+                        if (!s) { _origCheckAuto.call(this); return; }
+                        var anyEntered = false;
+                        for (var i = 0; i < 4; i++) {
+                            if (this.d.ps && this.d.ps[i] && s[i] !== undefined && s[i] > 0) { anyEntered = true; break; }
+                        }
+                        var banner = document.getElementById('auto-adv-banner');
+                        if (anyEntered) {
+                            if (banner) banner.classList.add('show');
+                            if (this.tmr) clearTimeout(this.tmr);
+                            var self = this;
+                            this.tmr = setTimeout(function () {
+                                try { self.navH(1); } catch (e) {}
+                            }, 3000);
+                        } else {
+                            if (banner) banner.classList.remove('show');
+                            if (this.tmr) clearTimeout(this.tmr);
+                        }
+                        return;
+                    }
+                } catch (e) {}
+                return _origCheckAuto.call(this);
             };
         }
     } catch (e) {}
