@@ -118,6 +118,20 @@
         App.checkCourseOptions.__tnWrapped = true;
     }
 
+    // Nines courses: switching a nine rebuilds the composite yardages via
+    // buildComposite, but nothing re-ran the picker relabel, so the totals
+    // beside the tee names kept the previous combo's numbers. Relabel after
+    // every composite build (v285.4).
+    if (App.buildComposite && !App.buildComposite.__tnWrapped) {
+        var origBuild = App.buildComposite.bind(App);
+        App.buildComposite = function () {
+            var r = origBuild.apply(null, arguments);
+            try { relabelPicker(); } catch (e) { /* labels are cosmetic; never break setup */ }
+            return r;
+        };
+        App.buildComposite.__tnWrapped = true;
+    }
+
     if (App.uDash && !App.uDash.__tnWrapped) {
         var origDash = App.uDash.bind(App);
         App.uDash = function () {
