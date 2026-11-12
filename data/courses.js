@@ -20,6 +20,7 @@ const CS_INDEX = {
     "jones": { n: "Jones (Sea Trail)", r: "NC" },
     "lp": { n: "Lonnie Poole", r: "NC" },
     "maples": { n: "Maples (Sea Trail)", r: "NC" },
+    "meadowlands": { n: "Meadowlands", r: "NC" },
     "pearl": { n: "The Pearl", r: "NC" },
     "re": { n: "Rivers Edge", r: "NC" },
     "rga": { n: "Raleigh Golf Association", r: "NC" },

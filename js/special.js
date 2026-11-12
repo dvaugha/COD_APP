@@ -1,4 +1,5 @@
 // SPECIAL EVENT format strip — v285.5 (Dan-approved Nov 12, 2026)
+// v285.6 (Nov 12, 2026): banner wording trimmed at Dan's request — no star, no 'Special'; the strip is just HOLE <n> — <FORMAT> and the event name.
 // Loaded AFTER js/shotgun.js, so it wraps the shotgun wrappers. Sidecar only:
 // app.js / app2.js / app3.js / tee-names.js / shotgun.js are never touched.
 // Purpose: for special events (first preset: Veterans Day Classic at
@@ -174,7 +175,7 @@
                 b.style.display = 'block';
                 var h = parseInt(this.d.h, 10) || 1;
                 var main = document.getElementById('special-banner-main');
-                if (main) main.innerText = '\u2b50 SPECIAL \u00b7 HOLE ' + h + ' \u2014 ' + formatFor(h, false).toUpperCase();
+                if (main) main.innerText = 'HOLE ' + h + ' \u2014 ' + formatFor(h, false).toUpperCase();
                 var ord = document.getElementById('special-banner-order');
                 if (ord) ord.innerText = playOrderLine(this.d.start);
             } catch (e) {}
@@ -193,7 +194,7 @@
                     // uCard rewrites card-con-body's innerHTML, so prepend
                     // AFTER the original runs, every time.
                     var hdr = '<div style="border:2px solid #FFD700; border-radius:10px; background:rgba(255,215,0,0.10); padding:8px 10px; margin-bottom:12px; text-align:center;">' +
-                        '<div style="font-size:14px; font-weight:900; color:#FFD700; letter-spacing:0.5px;">\u2b50 ' + preset().name + ' \u2014 SPECIAL EVENT</div>' +
+                        '<div style="font-size:14px; font-weight:900; color:#FFD700; letter-spacing:0.5px;">' + preset().name + '</div>' +
                         '<div style="font-size:11px; color:#FFFFFF; margin-top:3px;">' + holeOrderLine() + '</div></div>';
                     cardCon.innerHTML = hdr + cardCon.innerHTML;
                 } catch (e) {}
