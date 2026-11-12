@@ -1,6 +1,7 @@
 // SPECIAL EVENT format strip — v285.5 (Dan-approved Nov 12, 2026)
 // v285.6 (Nov 12, 2026): banner wording trimmed at Dan's request — no star, no 'Special'; the strip is just HOLE <n> — <FORMAT> and the event name.
 // v285.7 (Nov 12, 2026): special rounds — on Scramble / Modified Alternate Shot holes ONE team score completes the hole and auto-advances (wraps App.checkAuto); Better Ball holes still require every score; non-special rounds untouched.
+// v285.8 (Nov 12, 2026): the segment junk-payout modal is suppressed in ALL Scorecard Only rounds (wraps App.showJunkPayout) — it belongs to the money games; navH fires it at segment boundaries in every mode.
 // Loaded AFTER js/shotgun.js, so it wraps the shotgun wrappers. Sidecar only:
 // app.js / app2.js / app3.js / tee-names.js / shotgun.js are never touched.
 // Purpose: for special events (first preset: Veterans Day Classic at
@@ -241,6 +242,25 @@
                     }
                 } catch (e) {}
                 return _origCheckAuto.call(this);
+            };
+        }
+    } catch (e) {}
+
+    try {
+        var _origJunkPayout = App.showJunkPayout;
+        if (typeof _origJunkPayout === 'function') {
+            App.showJunkPayout = function (segIdx) {
+                try {
+                    // v285.8: navH calls showJunkPayout at every segment
+                    // boundary (relative holes 6/12/18) in EVERY game mode,
+                    // so Scorecard Only rounds got a segment payout popup
+                    // for a junk game they are not playing. Junk belongs to
+                    // the money games — suppress the popup whenever the
+                    // round is Scorecard Only ('single'), special or not.
+                    // Every other mode runs the original untouched.
+                    if (this.d && this.d.gameType === 'single') return;
+                } catch (e) {}
+                return _origJunkPayout.call(this, segIdx);
             };
         }
     } catch (e) {}
