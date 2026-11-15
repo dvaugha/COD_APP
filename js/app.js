@@ -400,6 +400,8 @@ const App = {
                 if (banner) banner.classList.remove('show');
                 const mhBanner = document.getElementById('missed-hole-banner');
                 if (mhBanner) mhBanner.style.display = 'none';
+                const haBanner = document.getElementById('hole-arrival-banner');
+                if (haBanner) haBanner.style.display = 'none';
 
                 let n;
                 let curH = parseInt(this.d.h);
@@ -447,6 +449,11 @@ const App = {
                 this.save();
                 this.uDash();
                 this.updateJunkUI();
+
+                // HOLE ARRIVAL BANNER (v285.11, Dan Nov 15, 2026): on a fresh forward
+                // arrival, show HOLE N — ENTER SCORES until the first score is entered,
+                // so the hole being scored is unmistakable (the one-hole-drift catch).
+                if (d === 1 && !this.corr) { try { this.showArrivalBanner(); } catch (e) {} }
 
                 // MISSED-HOLE REMINDER (v285.10, Dan Nov 15, 2026): on forward play,
                 // flag the last earlier hole that still has no score.
@@ -576,6 +583,8 @@ const App = {
 
              mod: function (idx, delta) {
                 if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
+                const haB = document.getElementById('hole-arrival-banner');
+                if (haB) haB.style.display = 'none';
                 const pid = this.slotMap[idx];
                 const par = CS[this.d.crs].p[this.d.h - 1];
                 let s = this.d.s[this.d.h][pid] || par;
@@ -611,6 +620,8 @@ const App = {
             },
             setPar: function (idx) {
                 if (!this.d.s[this.d.h]) this.d.s[this.d.h] = {};
+                const haB = document.getElementById('hole-arrival-banner');
+                if (haB) haB.style.display = 'none';
                 const pid = this.slotMap[idx];
                 const s = CS[this.d.crs].p[this.d.h - 1];
                 this.d.s[this.d.h][pid] = s;
@@ -662,7 +673,17 @@ const App = {
 
                 if (activeCount > 0 && enteredCount === activeCount && allPositive) {
                     const banner = document.getElementById('auto-adv-banner');
-                    if (banner) banner.classList.add('show');
+                    // HOLE NAMING (v285.11, Dan Nov 15, 2026): name WHICH hole just
+                    // completed and where play goes next, on screen and out loud —
+                    // if the group has physically moved on while the app sat a hole
+                    // behind, hearing the wrong hole named is the tell.
+                    const doneH = parseInt(this.d.h);
+                    let nextH = null;
+                    if (parseInt(this.d.start) === 10) { nextH = doneH === 18 ? 1 : (doneH === 9 ? null : doneH + 1); }
+                    else { nextH = doneH === 18 ? null : doneH + 1; }
+                    const doneMsg = nextH ? ('Hole ' + doneH + ' complete — on to Hole ' + nextH) : ('Hole ' + doneH + ' complete — round finished!');
+                    if (banner) { banner.textContent = doneMsg; banner.classList.add('show'); }
+                    this.speak(doneMsg);
                     if (this.tmr) clearTimeout(this.tmr);
                     this.tmr = setTimeout(() => { 
                         try {
@@ -675,6 +696,12 @@ const App = {
                     const banner = document.getElementById('auto-adv-banner');
                     if (banner) banner.classList.remove('show');
                     if (this.tmr) clearTimeout(this.tmr);
+                    // MISSED-HOLE REMINDER on score entry (v285.11): entering a score
+                    // while an earlier hole is still blank pops the reminder right
+                    // then — the real-play moment, since the app only auto-advances
+                    // after entry. (Completion takes the branch above; its reminder
+                    // fires on arrival via navH instead, so it isn't shown twice.)
+                    try { this.checkMissedHole(); } catch (e) {}
                 }
             },
 
@@ -683,8 +710,10 @@ const App = {
                 // forward and an earlier hole still has no score for someone, pop a reminder
                 // naming the LAST (most recent) missed hole. Once per hole per session.
                 // Special rounds are exempt (special.js has its own completion rules),
-                // as are test fills and finished rounds.
-                if (!this.d || this.d.special || this.d.isTestMode || this.d.roundEnded) return;
+                // as are finished rounds. Test rounds are NOT exempt (v285.11): test
+                // fills write scores directly and never reach this check, so the
+                // reminder stays visible while Dan tests.
+                if (!this.d || this.d.special || this.d.roundEnded) return;
                 if (!this.d.ps || !this.d.ps.some(function (x) { return x; })) return;
                 const curRh = this.getRelHole(parseInt(this.d.h));
                 if (isNaN(curRh) || curRh <= 1) return;
@@ -706,6 +735,8 @@ const App = {
                 }
             },
             showMissedHole: function (absH, missing) {
+                const haB2 = document.getElementById('hole-arrival-banner');
+                if (haB2) haB2.style.display = 'none';
                 let b = document.getElementById('missed-hole-banner');
                 if (!b) {
                     b = document.createElement('div');
@@ -726,6 +757,22 @@ const App = {
                 };
                 if (this._mhTmr) clearTimeout(this._mhTmr);
                 this._mhTmr = setTimeout(function () { b.style.display = 'none'; }, 7000);
+            },
+            showArrivalBanner: function () {
+                // HOLE ARRIVAL BANNER (v285.11, Dan Nov 15, 2026): big HOLE N — ENTER
+                // SCORES banner shown on arrival at a hole; stays until the first
+                // score is entered on that hole (mod/setPar hide it), so the hole
+                // being scored is unmistakable at the moment of entry.
+                if (!this.d || this.d.roundEnded) return;
+                let b = document.getElementById('hole-arrival-banner');
+                if (!b) {
+                    b = document.createElement('div');
+                    b.id = 'hole-arrival-banner';
+                    b.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9998;background:#2563EB;color:#fff;font-weight:800;font-size:22px;letter-spacing:.5px;padding:14px 22px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.45);max-width:94%;text-align:center;display:none;';
+                    document.body.appendChild(b);
+                }
+                b.textContent = 'HOLE ' + this.d.h + ' — ENTER SCORES';
+                b.style.display = 'block';
             },
 
             testFill: function () {
@@ -1028,6 +1075,7 @@ const App = {
                     this.d.roundEnded = false;
                     this.save();
                     this.nav('v-dash');
+                    try { this.showArrivalBanner(); } catch (e) {}
                     this.keepAwake();
 
                     // WELCOME SPEECH
