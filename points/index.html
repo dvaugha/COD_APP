@@ -59,6 +59,8 @@
   .pos { color: #15803d; font-weight: 800; }
   .neg { color: #b91c1c; font-weight: 700; }
   .note { background: #eef6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 11px 12px; font-size: 14.5px; line-height: 1.45; color: #1e3a5f; margin: 12px 0; }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid #bcd3ee; border-top-color: #1e3a5f; border-radius: 50%; vertical-align: -2px; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .banner { background: #f0fdf4; border: 2px solid #15803d; border-radius: 12px; padding: 13px; margin-bottom: 12px; font-size: 15px; line-height: 1.45; }
   .flagbox { background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; padding: 13px; margin: 12px 0; }
   .flagbox h3 { font-size: 16px; margin-bottom: 5px; }
@@ -181,6 +183,7 @@
     <input type="file" id="fileBack" accept="image/*" capture="environment" onchange="handlePhoto(this,1)">
     <img class="cardphoto" id="photoBackImg" style="display:none;" alt="Back nine card photo">
     <div class="note" id="readNote" style="display:none;"></div>
+    <div class="note" id="readStatus" style="display:none;"></div>
   </div>
   <div class="card">
     <h2>The card — check every cell</h2>
@@ -671,25 +674,53 @@ function handlePhoto(input, which){
 }
 /* The reader seam: with READ_ENDPOINT set, POST each nine's photo; the reply's
    scores pre-fill that nine. Not exercised in v1 (endpoint empty). */
+/* Live feedback while a photo read is in flight — a read can take up to a
+   minute, and a silent screen feels broken. Spinner + elapsed seconds. */
+var readTimer = null;
+function readStart(which){
+  var el = document.getElementById("readStatus"); if (!el) return;
+  var label = which === 0 ? "front nine" : "back nine";
+  var t0 = Date.now();
+  el.style.display = "block";
+  el.innerHTML = '<span class="spin"></span> <b>Reading the ' + label + '…</b> <span id="readMsg">Reading the handwriting.</span> <span id="readSecs"></span>';
+  if (readTimer) clearInterval(readTimer);
+  readTimer = setInterval(function(){
+    var s = Math.round((Date.now() - t0) / 1000);
+    var sec = document.getElementById("readSecs"), msg = document.getElementById("readMsg");
+    if (!sec) { clearInterval(readTimer); readTimer = null; return; }
+    sec.textContent = "(" + s + "s)";
+    if (msg) msg.textContent = s < 20 ? "Reading the handwriting." : (s < 45 ? "Still working — a careful read takes a bit." : "Taking longer than usual — hang on, it's still on the job.");
+  }, 500);
+}
+function readDone(which, ok){
+  if (readTimer) { clearInterval(readTimer); readTimer = null; }
+  var el = document.getElementById("readStatus"); if (!el) return;
+  var label = which === 0 ? "Front nine" : "Back nine";
+  el.style.display = "block";
+  el.innerHTML = ok
+    ? "✓ <b>" + label + " read.</b> Check every number against the card before you confirm — the card is the truth."
+    : "The " + label.toLowerCase() + " read didn't come through — no harm done. Tap the scores in from the card.";
+}
 function maybeRead(which){
   if (!READ_ENDPOINT || !S.current) return;
   var ct = S.current.carts[curCart];
   var data = which === 0 ? ct.photoFront : ct.photoBack;
   if (!data) return;
+  readStart(which);
   fetch(READ_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ nine: which, players: ct.players.map(function(pl){ return pl.name; }), pars: roundPars(S.current).slice(which * 9, which * 9 + 9), image: data }) })
     .then(function(resp){ return resp.json(); })
     .then(function(res){
-      if (!res || !res.scores) return;
+      if (!res || !res.scores) { readDone(which, false); return; }
       res.scores.forEach(function(row, pi){
         var pl = ct.players[pi]; if (!pl || !row) return;
         row.forEach(function(v, hi){
           if (v >= 1 && v <= 15) { pl.scores[which * 9 + hi] = v; pl.np[which * 9 + hi] = false; }
         });
       });
-      save(); renderCart();
+      save(); renderCart(); readDone(which, true);
     })
-    .catch(function(){ /* read failed — the tap-in grid is the fallback, as designed */ });
+    .catch(function(){ readDone(which, false); /* read failed — the tap-in grid is the fallback, as designed */ });
 }
 function confirmCart(){
   var ct = S.current.carts[curCart];
