@@ -398,6 +398,8 @@ const App = {
                 if (this.strokesTmr) clearTimeout(this.strokesTmr);
                 const banner = document.getElementById('auto-adv-banner');
                 if (banner) banner.classList.remove('show');
+                const mhBanner = document.getElementById('missed-hole-banner');
+                if (mhBanner) mhBanner.style.display = 'none';
 
                 let n;
                 let curH = parseInt(this.d.h);
@@ -445,6 +447,10 @@ const App = {
                 this.save();
                 this.uDash();
                 this.updateJunkUI();
+
+                // MISSED-HOLE REMINDER (v285.10, Dan Nov 15, 2026): on forward play,
+                // flag the last earlier hole that still has no score.
+                if (d === 1) { try { this.checkMissedHole(); } catch (e) {} }
 
                 // NEXT TEE ANNOUNCEMENT (COMBO)
                 if (d === 1 && !this.corr && this.d.tee === 'combo') {
@@ -670,6 +676,56 @@ const App = {
                     if (banner) banner.classList.remove('show');
                     if (this.tmr) clearTimeout(this.tmr);
                 }
+            },
+
+            checkMissedHole: function () {
+                // MISSED-HOLE REMINDER (v285.10, Dan's idea Nov 15, 2026): when play moves
+                // forward and an earlier hole still has no score for someone, pop a reminder
+                // naming the LAST (most recent) missed hole. Once per hole per session.
+                // Special rounds are exempt (special.js has its own completion rules),
+                // as are test fills and finished rounds.
+                if (!this.d || this.d.special || this.d.isTestMode || this.d.roundEnded) return;
+                if (!this.d.ps || !this.d.ps.some(function (x) { return x; })) return;
+                const curRh = this.getRelHole(parseInt(this.d.h));
+                if (isNaN(curRh) || curRh <= 1) return;
+                const indices = this.d.gameType === 'cc_match' ? [0, 2] : [0, 1, 2, 3];
+                if (!this._mhShown) this._mhShown = {};
+                for (let rh = curRh - 1; rh >= 1; rh--) {
+                    const absH = this.getAbsHole(rh);
+                    const s = this.d.s[absH];
+                    const missing = [];
+                    indices.forEach(i => {
+                        if (this.d.ps[i] && (!s || s[i] === undefined || s[i] <= 0)) missing.push(this.d.ps[i]);
+                    });
+                    if (missing.length) {
+                        if (this._mhShown[absH]) return;
+                        this._mhShown[absH] = true;
+                        this.showMissedHole(absH, missing);
+                        return;
+                    }
+                }
+            },
+            showMissedHole: function (absH, missing) {
+                let b = document.getElementById('missed-hole-banner');
+                if (!b) {
+                    b = document.createElement('div');
+                    b.id = 'missed-hole-banner';
+                    b.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9999;background:#B45309;color:#fff;font-weight:700;font-size:15px;padding:12px 18px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.4);max-width:92%;text-align:center;cursor:pointer;display:none;';
+                    document.body.appendChild(b);
+                }
+                const names = missing.length > 2 ? (missing[0] + ', ' + missing[1] + ' +' + (missing.length - 2) + ' more') : missing.join(' & ');
+                b.textContent = '⚠️ Hole ' + absH + ' has no score for ' + names + ' — tap to go back and enter it';
+                b.style.display = 'block';
+                const self = this;
+                b.onclick = function () {
+                    b.style.display = 'none';
+                    self.d.h = absH;
+                    self.save();
+                    self.uDash();
+                    if (self.updateJunkUI) self.updateJunkUI();
+                };
+                if (this._mhTmr) clearTimeout(this._mhTmr);
+                this._mhTmr = setTimeout(function () { b.style.display = 'none'; }, 7000);
             },
 
             testFill: function () {
