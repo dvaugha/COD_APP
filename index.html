@@ -1,963 +1,568 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Points Card">
-<meta name="theme-color" content="#14532d">
-<title>Points Card</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f3f4f1; color: #1c2420; max-width: 580px; margin: 0 auto; padding: 0 12px 40px; }
-  header { background: #14532d; color: #fff; padding: 16px 14px 13px; text-align: center; border-radius: 0 0 14px 14px; margin: 0 -12px 14px; }
-  header .ttl { font-size: 26px; font-weight: 800; letter-spacing: .5px; }
-  header .sub { font-size: 13px; opacity: .9; margin-top: 2px; }
-  .view { display: none; }
-  .view.on { display: block; }
-  .card { background: #fff; border: 1px solid #dde3dc; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
-  .card h2 { font-size: 19px; margin-bottom: 6px; }
-  .card h3 { font-size: 16px; margin: 10px 0 4px; }
-  .card p { font-size: 15px; line-height: 1.45; color: #37413b; }
-  .btn { display: block; width: 100%; border: none; border-radius: 12px; padding: 17px 14px; font-size: 18px; font-weight: 700; cursor: pointer; margin: 10px 0; text-align: center; }
-  .btn-green { background: #15803d; color: #fff; }
-  .btn-green:active { background: #166534; }
-  .btn-dark { background: #1f2937; color: #fff; }
-  .btn-amber { background: #f59e0b; color: #231a02; }
-  .btn-ghost { background: #e8ece8; color: #1c2420; }
-  .btn-red { background: #fee2e2; color: #991b1b; }
-  .btn[disabled] { opacity: .45; pointer-events: none; }
-  .btn .small { display: block; font-size: 13px; font-weight: 500; opacity: .85; margin-top: 3px; }
-  .rowflex { display: flex; gap: 8px; }
-  .rowflex .btn { margin: 10px 0; }
-  img.cardphoto { width: 100%; border-radius: 10px; border: 1px solid #cfd6cf; margin-top: 8px; }
-  .cap { font-size: 13px; color: #5b665e; text-align: center; margin-top: 6px; }
-  table.grid { width: 100%; border-collapse: collapse; font-size: 15px; margin: 8px 0 4px; }
-  table.grid th, table.grid td { border: 1px solid #d5dbd5; text-align: center; padding: 6px 1px; }
-  table.grid th { background: #eef2ee; font-size: 12px; color: #44504a; }
-  table.grid td.nm { text-align: left; font-weight: 700; padding-left: 7px; font-size: 14px; white-space: nowrap; }
-  table.grid td.par { color: #7a857d; font-size: 13px; }
-  table.grid td.tt { background: #f4f7f4; font-weight: 800; }
-  td.cell { cursor: pointer; position: relative; min-width: 26px; }
-  td.cell .pts { display: block; font-size: 10px; color: #b45309; letter-spacing: 1px; line-height: 1; min-height: 10px; }
-  td.cell.amber { background: #fef3c7; box-shadow: inset 0 0 0 2px #f59e0b; font-weight: 800; }
-  td.cell.np { background: #fff7ed; box-shadow: inset 0 0 0 2px #ea580c; color: #9a3412; font-weight: 800; font-size: 12px; }
-  .slot { border: 2px solid #d5dbd5; border-radius: 12px; padding: 13px; margin: 10px 0; background: #fff; }
-  .slot.in { border-color: #15803d; background: #f0fdf4; }
-  .slot .who { font-size: 17px; font-weight: 800; }
-  .slot .how { font-size: 13.5px; color: #5b665e; margin-top: 2px; }
-  .slot .st { font-size: 15px; font-weight: 700; margin-top: 7px; }
-  .slot .btn { margin-bottom: 0; }
-  .stand { width: 100%; border-collapse: collapse; font-size: 15.5px; }
-  .stand td, .stand th { padding: 8px 6px; border-bottom: 1px solid #e3e8e3; text-align: left; }
-  .stand th { font-size: 12.5px; color: #44504a; }
-  .stand .r { text-align: right; font-weight: 700; }
-  .stand tr.p1 td { background: #fef9c3; }
-  .stand tr.p2 td { background: #f1f5f9; }
-  .stand tr.p3 td { background: #ffedd5; }
-  .place { font-weight: 800; white-space: nowrap; }
-  .pos { color: #15803d; font-weight: 800; }
-  .neg { color: #b91c1c; font-weight: 700; }
-  .note { background: #eef6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 11px 12px; font-size: 14.5px; line-height: 1.45; color: #1e3a5f; margin: 12px 0; }
-  .banner { background: #f0fdf4; border: 2px solid #15803d; border-radius: 12px; padding: 13px; margin-bottom: 12px; font-size: 15px; line-height: 1.45; }
-  .flagbox { background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; padding: 13px; margin: 12px 0; }
-  .flagbox h3 { font-size: 16px; margin-bottom: 5px; }
-  .flagbox p { font-size: 14.5px; line-height: 1.45; color: #4a3f16; }
-  .fine { font-size: 12.5px; color: #77837a; text-align: center; line-height: 1.5; margin-top: 14px; }
-  .chip { display: inline-block; padding: 11px 15px; border: 2px solid #d5dbd5; border-radius: 24px; margin: 4px 4px 4px 0; font-size: 16px; font-weight: 600; background: #fff; cursor: pointer; }
-  .chip.on { border-color: #15803d; background: #f0fdf4; color: #14532d; }
-  .chip .tag { font-size: 11px; color: #b45309; font-weight: 800; margin-left: 4px; }
-  .cassign { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid #e3e8e3; }
-  .cassign .nm { font-size: 16px; font-weight: 700; }
-  .cassign .cs { display: flex; gap: 6px; }
-  .cassign .cs button { width: 42px; height: 42px; border-radius: 10px; border: 2px solid #d5dbd5; background: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
-  .cassign .cs button.on { border-color: #15803d; background: #15803d; color: #fff; }
-  .hist { border: 2px solid #d5dbd5; border-radius: 12px; padding: 12px 13px; margin: 10px 0; background: #fff; cursor: pointer; }
-  .hist .t { font-size: 16.5px; font-weight: 800; }
-  .hist .s { font-size: 13.5px; color: #5b665e; margin-top: 2px; }
-  .modal { display: none; position: fixed; inset: 0; background: rgba(10,15,12,.55); z-index: 50; align-items: flex-end; justify-content: center; }
-  .modal.on { display: flex; }
-  .sheetm { background: #fff; width: 100%; max-width: 580px; border-radius: 16px 16px 0 0; padding: 16px 14px 22px; }
-  .sheetm h3 { text-align: center; font-size: 17px; margin-bottom: 12px; }
-  .pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .pad button { padding: 15px 0; font-size: 19px; font-weight: 700; border: 1px solid #d5dbd5; background: #f7f9f7; border-radius: 10px; cursor: pointer; }
-  .pad button:active { background: #dcfce7; }
-  input[type=text], input[type=date], select, textarea { width: 100%; font-size: 17px; padding: 11px; border: 1px solid #c9d1c9; border-radius: 9px; margin: 6px 0; background: #fff; }
-  textarea { font-size: 12.5px; min-height: 96px; font-family: ui-monospace, Menlo, monospace; }
-  input[type=file] { font-size: 15px; margin: 10px 0; width: 100%; }
-  label.lbl { display: block; font-size: 13.5px; font-weight: 700; color: #44504a; margin-top: 12px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
+    <title>COD Golf v285.9</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="/COD_APP/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="COD Golf">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="css/styles.css?v=202610071447">
+    <!-- Deployment Nudge: 2026-09-13 12:05 PM -->
 </head>
-<body>
-<header>
-  <div class="ttl">⛳ POINTS CARD</div>
-  <div class="sub">The points book — paper in, finished sheet out</div>
-</header>
+<body style="background:#0F172A; color:#F8FAFC;">
+    <div id="auto-adv-banner">Hole Complete! Next in 3s...</div>
 
-<!-- HOME / THE BOOK -->
-<div class="view on" id="v-home">
-  <div class="banner" id="seedBanner" style="display:none;"></div>
-  <div class="banner" id="resumeBox" style="display:none;">
-    <b>A round is in progress.</b><br>
-    <span id="resumeText"></span>
-    <button class="btn btn-green" onclick="resumeRound()">RESUME THE ROUND →</button>
-  </div>
-  <div class="card">
-    <h2>The Book — Ratings</h2>
-    <div id="bookTable"></div>
-    <p class="cap" id="bookNote"></p>
-  </div>
-  <button class="btn btn-green" id="newRoundBtn" onclick="startSetup()">➕&nbsp; NEW ROUND<span class="small">Pick the course, who's playing, and the carts</span></button>
-  <button class="btn btn-dark" onclick="openBackup()">💾&nbsp; BACKUP / RESTORE<span class="small">Move the whole book as one packet — send it to Dan, or bring one back</span></button>
-  <button class="btn btn-amber" id="undoBtn" style="display:none;" onclick="undoLast()">↩&nbsp; UNDO LAST ROUND'S RATINGS<span class="small">Puts the book back exactly as it was before that round</span></button>
-  <div class="card">
-    <h2>Round History</h2>
-    <div id="historyList"></div>
-  </div>
-  <p class="fine">POINTS CARD · Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only, per Rick's book.<br>The paper card is the record. This app is the adding machine.</p>
-</div>
+    <!-- Hidden Capture Node -->
+    <div id="share-node"></div>
 
-<!-- NEW ROUND SETUP -->
-<div class="view" id="v-setup">
-  <div class="card">
-    <h2>New Round</h2>
-    <label class="lbl" for="setDate">Date</label>
-    <input type="date" id="setDate">
-    <label class="lbl" for="setCourse">Course</label>
-    <select id="setCourse" onchange="setupCourseChanged()"></select>
-    <div id="nineRow">
-      <label class="lbl">Which two nines, in the order played?</label>
-      <div class="rowflex">
-        <select id="setNine1" onchange="setupNinesChanged()"></select>
-        <select id="setNine2" onchange="setupNinesChanged()"></select>
-      </div>
+    <div id="press-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">PRESS OPTION</div>
+            <div id="pm-msg" style="margin-bottom:24px; color:#FFFFFF; font-size:16px; line-height:1.5;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closePress()">NO PRESS</button>
+                <button id="pm-btn" class="g-btn" style="background:#F59E0B; color:black;">YES, PRESS</button>
+            </div>
+        </div>
     </div>
-    <p class="cap" id="setParInfo"></p>
-  </div>
-  <div class="card">
-    <h2>Who's playing?</h2>
-    <p>Tap everyone in the game.</p>
-    <div id="rosterChips"></div>
-    <label class="lbl" for="addName">Someone else?</label>
-    <input type="text" id="addName" placeholder="Name">
-    <div class="rowflex">
-      <button class="btn btn-ghost" onclick="addName(false)">ADD AS GUEST<span class="small">Plays for points — no rating</span></button>
-      <button class="btn btn-ghost" onclick="addName(true)">ADD TO THE BOOK<span class="small">First rated round starts their rating</span></button>
+
+
+    <!-- HCP MODAL -->
+    <div id="hcp-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">ROUND HANDICAPS</div>
+            <div id="hcp-roster" style="margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" onclick="App.closeHcpModal()">CANCEL</button>
+                <button class="g-btn" style="background:#10B981;" onclick="App.saveHcps()">SAVE</button>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="card">
-    <h2>The carts</h2>
-    <p>Pairs by default — tap a number to move a player. 1 to 4 per cart.</p>
-    <div id="cartEditor"></div>
-    <p class="cap" id="setupMsg" style="color:#b91c1c;font-weight:700;"></p>
-  </div>
-  <button class="btn btn-green" onclick="startRound()">START THE ROUND →</button>
-  <button class="btn btn-ghost" onclick="show('v-home')">← Home</button>
-</div>
 
-<!-- ROUND BOARD -->
-<div class="view" id="v-board">
-  <div class="card">
-    <h2 id="boardTitle">Round</h2>
-    <p id="boardSub"></p>
-    <div id="boardCarts"></div>
-  </div>
-  <button class="btn btn-green" onclick="openMerge()">MERGE &amp; FINISH →<span class="small">Combined sheet, places, and the ratings update</span></button>
-  <button class="btn btn-ghost" onclick="show('v-home')">← Home (the round stays saved)</button>
-  <button class="btn btn-red" onclick="discardRound()">Throw this round away</button>
-</div>
-
-<!-- ONE CART: PHOTOS + CONFIRM GRID -->
-<div class="view" id="v-cart">
-  <div class="card">
-    <h2 id="cartTitle">Cart</h2>
-    <p id="cartSub"></p>
-    <h3>📷 The paper card — two photos</h3>
-    <p>Shoot the front nine and the back nine flat, in shade. The photos stay with this round as the record.</p>
-    <label class="lbl">Front nine photo</label>
-    <input type="file" id="fileFront" accept="image/*" capture="environment" onchange="handlePhoto(this,0)">
-    <img class="cardphoto" id="photoFrontImg" style="display:none;" alt="Front nine card photo">
-    <label class="lbl">Back nine photo</label>
-    <input type="file" id="fileBack" accept="image/*" capture="environment" onchange="handlePhoto(this,1)">
-    <img class="cardphoto" id="photoBackImg" style="display:none;" alt="Back nine card photo">
-    <div class="note" id="readNote" style="display:none;"></div>
-  </div>
-  <div class="card">
-    <h2>The card — check every cell</h2>
-    <p>Gold dots under a score are its points. Tap any cell to set it. Empty cells show gold; a hole nobody played can be marked <b>not played</b> from the number pad.</p>
-    <div id="cartGrid"></div>
-    <p class="cap" id="cartSummary"></p>
-    <button class="btn btn-green" id="cartConfirmBtn" onclick="confirmCart()">✓&nbsp; CONFIRM THIS CART</button>
-    <p class="cap" id="cartConfirmHint"></p>
-  </div>
-  <button class="btn btn-ghost" onclick="openBoard()">← Back to the carts</button>
-</div>
-
-<!-- MERGE -->
-<div class="view" id="v-merge">
-  <div class="card">
-    <h2 id="mergeTitle">Merge</h2>
-    <p>Every cart has a slot. The ratings can't update until every slot is confirmed in — no cart gets forgotten.</p>
-    <div id="mergeSlots"></div>
-    <div id="mergeFlags"></div>
-  </div>
-  <div class="card">
-    <h2>The combined sheet</h2>
-    <div id="mergeSheet"></div>
-  </div>
-  <button class="btn btn-green" id="applyBtn" onclick="openApply()">APPLY RATINGS →<span class="small">See the before &amp; after first — nothing saves until you confirm</span></button>
-  <button class="btn btn-dark" onclick="saveNoApply()">SAVE THE ROUND, SKIP RATINGS<span class="small">For a shortened or just-for-fun round — sheet kept, book untouched</span></button>
-  <button class="btn btn-ghost" onclick="openBoard()">← Back to the carts</button>
-</div>
-
-<!-- APPLY RATINGS -->
-<div class="view" id="v-apply">
-  <div class="card">
-    <h2>Update the book?</h2>
-    <p>Here's exactly what changes. Only complete 18-hole rounds count, and only for players in the book.</p>
-    <div id="applyTable"></div>
-    <div id="applyNotes"></div>
-  </div>
-  <button class="btn btn-green" onclick="doApply()">✓&nbsp; CONFIRM — UPDATE THE BOOK</button>
-  <button class="btn btn-ghost" onclick="openMerge()">← Back to the merge</button>
-</div>
-
-<!-- FINISHED SHEET -->
-<div class="view" id="v-sheet">
-  <div class="card">
-    <h2 id="sheetTitle">Finished sheet</h2>
-    <div id="sheetBody"></div>
-  </div>
-  <div class="card">
-    <h2 id="sheetRatingsTitle">Ratings</h2>
-    <div id="sheetRatings"></div>
-  </div>
-  <div class="card">
-    <h2>Send it to the group</h2>
-    <img class="cardphoto" id="sheetImg" style="display:none;" alt="Finished sheet image">
-    <button class="btn btn-green" onclick="shareSheet()">🖼&nbsp; SAVE / SHARE THE SHEET IMAGE</button>
-    <button class="btn btn-amber" id="sheetUndoBtn" style="display:none;" onclick="undoLast()">↩&nbsp; UNDO THIS ROUND'S RATINGS</button>
-  </div>
-  <button class="btn btn-ghost" onclick="goHome()">← Home</button>
-</div>
-
-<!-- BACKUP / RESTORE -->
-<div class="view" id="v-backup">
-  <div class="card">
-    <h2>Backup — the whole book in one packet</h2>
-    <p>Ratings, history, and any round in progress. Send it to Dan so two phones hold the book.</p>
-    <textarea id="backupOut" readonly></textarea>
-    <div class="rowflex">
-      <button class="btn btn-green" onclick="shareBackup()">SHARE THE PACKET</button>
-      <button class="btn btn-dark" onclick="copyBackup()">COPY IT</button>
+    <!-- POINTS RATINGS MODAL (v285.0) -->
+    <div id="points-modal" class="modal-overlay">
+        <div class="modal-box" style="max-height:88vh; overflow-y:auto;">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">POINTS RATINGS 🏆</div>
+            <div id="points-modal-body"></div>
+            <button class="g-btn g-btn-sec" style="margin-top:16px;" onclick="App.closePointsModal()">CLOSE</button>
+        </div>
     </div>
-    <p class="cap" id="backupMsg"></p>
-  </div>
-  <div class="card">
-    <h2>Restore from a packet</h2>
-    <p>Paste a packet below. Restoring <b>replaces</b> the book on this phone with the packet's book.</p>
-    <textarea id="restoreIn" placeholder="Paste the packet here"></textarea>
-    <button class="btn btn-amber" onclick="doRestore()">RESTORE FROM THE PASTED PACKET</button>
-    <p class="cap" id="restoreMsg" style="font-weight:700;"></p>
-  </div>
-  <button class="btn btn-ghost" onclick="goHome()">← Home</button>
-</div>
 
-<!-- KEYPAD MODAL -->
-<div class="modal" id="padModal">
-  <div class="sheetm">
-    <h3 id="padTitle">Score</h3>
-    <div class="pad">
-      <button onclick="padSet(1)">1</button><button onclick="padSet(2)">2</button><button onclick="padSet(3)">3</button><button onclick="padSet(4)">4</button>
-      <button onclick="padSet(5)">5</button><button onclick="padSet(6)">6</button><button onclick="padSet(7)">7</button><button onclick="padSet(8)">8</button>
-      <button onclick="padSet(9)">9</button><button onclick="padSet(10)">10</button><button onclick="padSet(11)">11</button><button onclick="padSet(12)">12</button>
-      <button onclick="padSet(13)">13</button><button onclick="padSet(14)">14</button><button onclick="padSet(15)">15</button><button onclick="padClear()">Clear</button>
+    <!-- SHARE PREVIEW MODAL -->
+    <div id="share-preview-modal" class="modal-overlay" style="z-index: 600;">
+        <div class="modal-box" style="max-width:400px; width:90%; padding:16px;">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">READY TO SHARE</div>
+            <img id="sp-img" style="width:100%; border-radius:8px; border:1px solid #334155; margin-bottom:16px;" />
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec" style="flex:1;" onclick="App.closeSharePreview()">CLOSE ❌</button>
+                <button class="g-btn" style="background:#10B981; flex:2; font-weight:900;" onclick="App.doShareParams('both')">TXT+IMG 🚀</button>
+            </div>
+            <button class="g-btn" style="background:#F59E0B; width:100%; margin-top:12px; font-weight:900;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
+        </div>
     </div>
-    <div class="rowflex">
-      <button class="btn btn-amber" onclick="padNP()">HOLE NOT PLAYED</button>
-      <button class="btn btn-green" onclick="padClose()">DONE</button>
+
+    <!-- === SETUP SCREEN === -->
+    <div id="v-setup" class="g-view active">
+        <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
+            <div class="tx-xl">COD Golf v285.9</div>
+        </div>
+
+        <div class="box" style="text-align:center; padding:16px;">
+            <div class="tx-sm" style="color:#10B981; margin-bottom:6px;">GAME MODE</div>
+            <select id="g-mode-top" class="g-inp" style="text-align:center; font-weight:900; margin-bottom:12px;"
+                onchange="App.onGameModeChange(this)">
+                <option value="cod">COD (Match Play)</option>
+                <option value="cc_match">Captain's Choice (2-Man Scramble)</option>
+                <option value="nassau">Nassau (18-Hole)</option>
+                <option value="scramble">6-Hole Scramble (Points)</option>
+                <option value="stroke">Versus (Stroke Play)</option>
+                <option value="single">SCORECARD ONLY</option>
+                <option value="highlow">HIGH-LOW (3-Segment)</option>
+            </select>
+
+            <div id="pot-container" class="flex-r" style="justify-content:center; gap:10px; align-items:center; margin-bottom:16px;">
+                <div class="tx-sm">POT / BUY-IN $</div>
+                <input type="number" id="s-pot" class="g-inp" value="20" style="width:80px; text-align:center;">
+            </div>
+
+        </div>
+        <div class="box">
+            <div class="tx-sm">ROSTER</div>
+            <div class="flex-r" style="gap:8px; margin-bottom:12px;">
+                <input type="text" id="new-p-name" class="g-inp" placeholder="Name..." style="margin:0;">
+                <button class="g-btn g-btn-sm" style="height:48px;" onclick="App.addRoster()">ADD</button>
+            </div>
+            <div id="roster-list" style="display:flex; flex-wrap:wrap;"></div>
+            <button id="del-mode-btn" class="g-btn g-btn-sm" style="background:#334155; width:100%; margin-top:10px;"
+                onclick="App.toggleDelMode()">ENABLE DELETE MODE</button>
+            <div id="del-status"
+                style="display:none; text-align:center; margin-top:5px; color:#EF4444; font-weight:bold; font-size:12px;">
+                TAP NAME TO DELETE (NO UNDO)</div>
+        </div>
+
+        <div class="box">
+            <div class="flex-r" style="justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div class="tx-sm" style="margin:0;">SEATS</div>
+                <button onclick="App.clearSeats()" style="background:transparent; border:1px solid #EF4444; color:#EF4444; font-size:10px; font-weight:900; letter-spacing:1px; cursor:pointer; padding:2px 8px; border-radius:4px; height:24px; line-height:1;">CLEAR ALL</button>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#60A5FA">CART A<br>DRIVER</div>
+                <select id="sel-0" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#60A5FA">CART A<br>PASS</div>
+                <select id="sel-1" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#22D3EE">CART B<br>DRIVER</div>
+                <select id="sel-2" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <div class="role-row">
+                <div class="role-lbl" style="color:#22D3EE">CART B<br>PASS</div>
+                <select id="sel-3" class="role-sel" onchange="App.onRole()"></select>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; width:100%; margin-top:10px; border:1px solid #FFFFFF;"
+                onclick="App.openHcpModal()">SET HANDICAPS ⛳</button>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; width:100%; margin-top:10px; border:1px solid #F59E0B; color:#F59E0B;"
+                onclick="App.openPointsModal()">POINTS RATINGS 🏆</button>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm" style="color:#10B981">COURSE SELECTION</div>
+            <div style="position:relative;">
+                <input type="text" id="course-search" class="g-inp" placeholder="Search courses (NC, SC, FL)..." oninput="App.onSearchInput(this.value)" autocomplete="off">
+                <div id="course-results" class="search-results"></div>
+            </div>
+            <div id="active-course-indicator" style="display:none;"></div>
+            <select id="s-course" style="display:none;" onchange="App.checkCourseOptions()"></select>
+            
+            <div id="course-routing-opt" style="display:none; margin-top:20px; padding:15px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius:12px;">
+                <div class="tx-sm" style="color:#10B981; margin-bottom:12px;">9-HOLE ROUTING</div>
+                <div class="flex-r" style="gap:10px;">
+                    <div style="flex:1">
+                        <div class="tx-sm" style="font-size:10px; color:#FFFFFF;">FRONT 9</div>
+                        <select id="s-n1" class="g-inp" style="margin-top:4px;"></select>
+                    </div>
+                    <div style="flex:1">
+                        <div class="tx-sm" style="font-size:10px; color:#FFFFFF;">BACK 9</div>
+                        <select id="s-n2" class="g-inp" style="margin-top:4px;"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm">GAME SETTINGS</div>
+            <div class="flex-r" style="gap:10px; margin-bottom:10px;">
+                <div style="flex:1;">
+                    <div class="tx-sm">TEE</div>
+                    <select id="s-tee" class="g-inp">
+                        <option value="black">Black</option>
+                        <option value="blue">Blue</option>
+                        <option value="white">White</option>
+                        <option value="gold">Gold</option>
+                        <option value="orange">Orange</option>
+                        <option value="green">Green</option>
+                        <option value="red">Red</option>
+                        <option value="teal">Teal</option>
+                        <option value="combo">Combo</option>
+                    </select>
+                </div>
+                <div style="width:80px;">
+                    <div class="tx-sm">START</div>
+                    <select id="s-start" class="g-inp" onchange="App.onStartChange(this)">
+                        <option value="1">#1</option>
+                        <option value="10">#10</option>
+                    </select>
+                </div>
+                <div style="width:80px; display:none;" id="s-shotgun-wrap">
+                    <div class="tx-sm">SHOTGUN HOLE</div>
+                    <input type="number" id="s-shotgun-hole" class="g-inp" min="1" max="18" placeholder="1-18" style="text-align:center;">
+                </div>
+            </div>
+            <div class="flex-r" style="gap:10px;">
+                <div style="flex:2;">
+                    <div class="tx-sm">HCP MODE</div>
+                    <select id="s-hcp-mode" class="g-inp" onchange="App.onHcpModeChange(this)">
+                        <option value="standard">Standard (Full List)</option>
+                        <option value="spread">COD Balanced (Spread)</option>
+                        <option value="team">Team Equalizer (Per Seg)</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm">SEG BET $</div>
+                    <input type="number" id="s-bet" class="g-inp" value="5">
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px; border-top:1px solid #334155; padding-top:12px;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">NO HANDICAPS (STRAIGHT GROSS)</div>
+                    <div style="font-size:10px; color:#FFFFFF;">Bypass all handicap calculations and stroke dots</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-no-hcps" onchange="App.toggleNoHcps(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="tx-sm" style="margin-bottom:8px;">SCORING MODE</div>
+            <div class="flex-r" style="gap:8px;">
+                <button id="sm-std" class="g-btn" style="flex:1; font-size:12px;" onclick="App.setScoringMode('std')">STANDARD</button>
+                <button id="sm-cc" class="g-btn g-btn-sec" style="flex:1; font-size:12px;" onclick="App.setScoringMode('cc')">CAPT. CHOICE ⚔️</button>
+            </div>
+            <div id="sm-desc" style="font-size:11px; color:#FFFFFF; margin-top:6px; font-style:italic;">Enter individual scores for each player.</div>
+        </div>
+
+        <div class="box" id="cc-team-box" style="display:none;">
+            <div class="tx-sm" style="margin-bottom:8px;">CAPTAIN'S CHOICE TEAMS</div>
+            <select id="s-cc-team" class="g-inp" onchange="App.onCcTeamChange(this)">
+                <option value="two">2 TEAMS OF 2</option>
+                <option value="four">1 TEAM OF 4</option>
+            </select>
+        </div>
+
+        <div class="box" id="special-box" style="display:none;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">SPECIAL EVENT ⭐</div>
+                    <div style="font-size:10px; color:#FFFFFF;">Shows the hole format at the top during play (tournaments only)</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-special" onchange="App.onSpecialChange(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div id="s-special-preset-wrap" style="display:none; margin-top:10px;">
+                <div class="tx-sm" style="margin-bottom:8px;">EVENT</div>
+                <select id="s-special-preset" class="g-inp" onchange="App.onSpecialPresetChange(this)">
+                    <option value="vdc">Veterans Day Classic — Meadowlands</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="box">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <div class="tx-sm" style="margin-bottom:0;">VOICE ALERTS 🔊</div>
+                    <div style="font-size:10px; color:#FFFFFF;">Announces partner swaps <span style="color:#10B981; cursor:pointer; text-decoration:underline; font-weight:900; margin-left:8px;" onclick="App.testVoice()">[ TEST ]</span></div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="s-voice" onchange="App.toggleVoice(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <button id="start-btn" class="g-btn" style="margin-bottom:20px; background:#EF4444;" onclick="App.tryNewGame(this)">START NEW MATCH</button>
+        <button class="g-btn" style="margin-bottom:20px; background:#2563EB;" onclick="App.startRound(true)">RESUME MATCH</button>
+        <button class="g-btn g-btn-sec" style="margin-bottom:20px; border:1px solid #10B981; color:#10B981;" onclick="App.openJunkModal()">JUNK BETTING ⚙️</button>
+
+        <div class="box">
+            <div class="tx-sm" style="color:#F59E0B">CAREER EARNINGS</div>
+            <div id="career-earnings" style="font-size:12px; margin-top:8px;"></div>
+        </div>
+
+        <div class="box">
+            <div class="flex-r">
+                <div class="tx-sm">HISTORY</div>
+                <button id="hist-edit-btn" class="g-btn g-btn-sm" style="background:#334155; width:auto;" onclick="App.handleManageClick()">MANAGE</button>
+            </div>
+            <div id="hist-list" style="max-height:200px; overflow-y:auto; font-size:12px;"></div>
+        </div>
+
+        <div class="box" style="background:rgba(16, 185, 129, 0.1); border:1px dashed #10B981;">
+            <div class="tx-sm" style="color:#10B981">HISTORY EXPORT</div>
+            <div style="font-size:10px; color:#FFFFFF; margin:8px 0;">Finished rounds save to History on this phone automatically. Tap the round in History to see its full recap, and tap 📤 (or EXPORT ROUND after a match) to send a copy to the COD History folder in Google Drive. No token or account needed.</div>
+
+        <div style="margin-top:24px; text-align:center;">
+            <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v285.9</div>
+        </div>
+        <div style="height:50px;"></div>
     </div>
-  </div>
-</div>
+    </div>
 
-<script>
-"use strict";
-/* ============================================================
-   POINTS CARD v1 — Rick's collector app.
-   Paper card -> photo -> confirm grid -> merge -> ratings -> sheet.
-   The automatic photo read plugs in at READ_ENDPOINT: when it is
-   non-empty, each nine's photo is POSTed there and the JSON reply
-   { scores: [[per-hole scores for player 1], [player 2], ...] }
-   pre-fills that nine on the grid. Empty in v1: tap-in only.
-   ============================================================ */
-var READ_ENDPOINT = "";
 
-/* ---------- Course pars: 27 courses (18-hole: p[18]; 27-hole: three nines) ---------- */
-var COURSES = {"byrd":{"n":"Byrd (Sea Trail)","p":[4,3,5,4,4,4,3,4,5,4,4,3,5,4,4,3,4,5]},"jones":{"n":"Jones (Sea Trail)","p":[4,3,4,4,3,4,4,5,5,4,4,4,3,4,5,4,3,5]},"maples":{"n":"Maples (Sea Trail)","p":[4,4,3,5,3,5,4,4,4,4,3,5,4,4,5,4,3,4]},"re":{"n":"Rivers Edge","p":[4,4,5,4,3,4,4,3,5,4,5,3,4,4,3,4,5,4]},"rga":{"n":"Raleigh Golf Association","p":[3,5,5,4,3,4,4,3,4,4,4,3,4,5,3,5,4,4]},"sandpiper":{"n":"Sandpiper Bay","nines":{"sand":{"n":"Sand","p":[5,3,4,4,5,3,4,3,4]},"piper":{"n":"Piper","p":[4,5,3,5,4,3,5,3,4]},"bay":{"n":"Bay","p":[5,4,3,4,3,4,4,4,5]}}},"lp":{"n":"Lonnie Poole","p":[5,3,5,4,4,3,5,3,4,4,5,4,4,3,5,4,3,4]},"rr":{"n":"River Ridge","p":[4,3,4,5,4,5,4,4,3,4,4,4,5,4,3,4,3,5]},"cc":{"n":"Crow Creek CC","p":[4,4,5,4,4,3,5,3,4,4,4,5,3,4,4,3,4,5]},"ec":{"n":"Eagle Chase GC","p":[5,4,3,4,4,3,5,4,4,4,5,3,4,4,4,3,4,5]},"pearl":{"n":"The Pearl","nines":{"east":{"n":"East","p":[5,3,3,5,3,4,4,4,5]},"north":{"n":"North","p":[4,3,5,3,4,4,5,3,4]},"west":{"n":"West","p":[4,4,4,3,5,4,5,3,5]}}},"meadowlands":{"n":"Meadowlands","p":[4,4,4,5,3,4,4,3,5,4,3,4,4,5,3,4,4,5]},"prestwick":{"n":"Prestwick","p":[4,4,4,4,3,5,4,3,5,4,4,5,3,4,4,3,5,4]},"blackmoor":{"n":"Blackmoor","p":[4,3,5,3,4,4,5,4,4,4,4,4,5,4,3,4,3,5]},"caledonia":{"n":"Caledonia","p":[4,5,3,4,4,3,4,5,3,5,3,4,4,4,4,4,3,4]},"trueblue":{"n":"True Blue","p":[5,4,3,5,4,4,3,4,5,5,3,4,4,3,5,3,4,4]},"tidewater":{"n":"Tidewater","p":[5,4,3,4,4,4,4,5,3,4,4,3,5,4,4,5,3,4]},"river_hills":{"n":"River Hills","p":[4,5,3,4,4,3,5,4,4,4,5,3,4,4,3,4,5,4]},"grande_dunes":{"n":"Grande Dunes Resort Course","p":[4,3,4,5,4,4,5,3,4,4,3,4,5,3,4,4,5,4]},"belle":{"n":"Belle Glade","nines":{"calusa":{"n":"Calusa","p":[5,4,3,4,4,3,4,5,4]},"seminole":{"n":"Seminole","p":[4,4,4,4,5,4,3,5,3]},"tequesta":{"n":"Tequesta","p":[5,4,4,4,5,3,4,3,4]}}},"bonifay":{"n":"Bonifay","nines":{"destin":{"n":"Destin","p":[5,3,4,4,3,5,4,3,5]},"ftwalton":{"n":"Ft. Walton","p":[5,3,4,4,4,5,4,3,4]},"pensacola":{"n":"Pensacola","p":[4,4,3,5,3,5,3,4,5]}}},"havana":{"n":"Havana","nines":{"hemingway":{"n":"Hemingway","p":[4,4,3,5,3,4,4,5,4]},"kenya":{"n":"Kenya","p":[4,4,4,3,5,4,3,5,4]},"kilimanjaro":{"n":"Kilimanjaro","p":[5,4,5,4,4,3,4,4,3]}}},"lopez":{"n":"Nancy Lopez","nines":{"ashley":{"n":"Ashley Meadows","p":[4,4,5,3,4,4,4,3,5]},"erinn":{"n":"Erinn Glenn","p":[4,3,4,5,4,3,4,5,4]},"torri":{"n":"Torri Pines","p":[5,3,4,4,4,4,4,3,5]}}},"palmer":{"n":"Palmer Legends","nines":{"cherry":{"n":"Cherry Hill","p":[5,4,4,4,3,4,4,3,5]},"laurel":{"n":"Laurel Valley","p":[4,5,4,5,4,3,4,3,4]},"riley":{"n":"Riley Grove","p":[4,4,4,5,4,3,4,3,5]}}},"sc":{"n":"Shallow Creek","p":[5,3,4,4,3,4,5,3,4,4,3,4,5,3,4,3,4,5]},"so":{"n":"Southern Oaks","p":[5,3,5,3,4,3,4,4,5,5,3,4,5,3,5,4,3,4]},"wl":{"n":"Woodlands","p":[4,4,5,3,4,5,3,4,4,4,5,4,4,3,4,5,3,4]}};
+    <!-- JUNK CONFIG MODAL -->
+    <div id="junk-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">JUNK SETTINGS</div>
+            <div class="flex-r" style="margin-bottom:16px;">
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">FREQUENCY</div>
+                    <select id="j-freq" class="g-input"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                        <option value="6">Every 6 Holes (COD)</option>
+                        <option value="9">Every 9 Holes</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <div class="tx-sm" style="text-align:left;">BET / PLAYER / SEG</div>
+                    <input type="number" id="j-bet" class="g-input" value="1"
+                        style="width:100%; box-sizing:border-box; padding:8px; background:#1E293B; color:white; border:1px solid #334155; border-radius:6px; margin-top:4px;">
+                </div>
+            </div>
+            <div class="tx-sm" style="text-align:left; margin-bottom:8px;">PLAYERS IN POT</div>
+            <div id="j-players-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;"></div>
+            <div class="flex-r" style="gap:12px;">
+                <button class="g-btn g-btn-sec"
+                    onclick="document.getElementById('junk-modal').classList.remove('active')">CANCEL</button>
+                <button class="g-btn" onclick="App.saveJunkSettings()">SAVE SETTINGS</button>
+            </div>
+        </div>
+    </div>
 
-/* ---------- The seed: Rick's book, verified Nov 14, 2026.
-   [name, rounds, total points] — ratings are running averages of total/rounds. ---------- */
-var SEED = [
-  ["Dave G", 8, 61.01], ["Doug", 25, 498.91], ["Eddie M", 17, 292.04], ["Carl K", 1, 18.00],
-  ["Rick T", 27, 501.93], ["Danny V", 8, 151.02], ["Dean S", 9, 173.97], ["Eddie Knotts", 4, 79.00],
-  ["Chase", 1, 22.00], ["Charlie Richardson", 4, 93.00], ["Dillon S", 5, 128.00], ["Gene H", 5, 132.00],
-  ["Bruce Hogan", 1, 27.00], ["Ronnie B", 21, 577.08], ["Thomas W", 8, 240.00], ["Charlie (Gene's neighbor)", 3, 101.01]
-];
-var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
-var LSKEY = "pointscard.v1";
-var LS = (typeof localStorage !== "undefined") ? localStorage : null;
+    <!-- CART CHECK MODAL -->
+    <div id="cart-check-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">CART CHECK</div>
+            <div style="margin-bottom:24px; color:#FFFFFF; font-size:18px; line-height:1.5; font-weight:700;">
+                Double check the drivers and passengers of each cart!
+            </div>
+            <button class="g-btn" style="background:#10B981;" onclick="App.closeCartCheck()">OK, LETS GO!</button>
+        </div>
+    </div>
 
-var S = null;            // the whole book: {version, players{name:{total,rounds}}, rounds[], current, lastAppliedId}
-var curCart = 0;         // cart index open in v-cart
-var padT = null;         // keypad target {pi, hole}
-var sheetRound = null;   // round shown in v-sheet
-var setup = null;        // new-round setup scratch
+    <!-- COURSE LOAD RETRY MODAL (v283.4 hardening) -->
+    <div id="course-load-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="tx-xl" style="margin-bottom:12px; color:white;">COURSE DATA DIDN'T LOAD</div>
+            <div style="margin-bottom:8px; color:#FFFFFF; font-size:18px; line-height:1.5; font-weight:700;">
+                Couldn't load <span id="course-load-name"></span>. Your round is safe — it just needs the course file before scores can be entered.
+            </div>
+            <div style="margin-bottom:24px; color:#94A3B8; font-size:15px; line-height:1.5;">
+                Check your signal, then tap Retry. If it keeps failing, head back to setup and try again where the signal is better.
+            </div>
+            <button class="g-btn" style="background:#10B981;" onclick="App.retryCourseLoad()">RETRY LOAD</button>
+            <button class="g-btn" style="background:#334155; margin-top:12px;" onclick="App.closeCourseLoadModal(); App.nav('v-setup')">BACK TO SETUP</button>
+        </div>
+    </div>
 
-/* ---------- small utils ---------- */
-function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-function fmt(x){ return (Math.round(x * 100) / 100).toFixed(2); }
-function sumA(a){ var t = 0; for (var i = 0; i < a.length; i++) t += (a[i] || 0); return t; }
-function dots(n){ var s = ""; for (var i = 0; i < n; i++) s += "•"; return s; }
-function clone(o){ return JSON.parse(JSON.stringify(o)); }
-function todayStr(){ var d = new Date(); function p(n){ return (n < 10 ? "0" : "") + n; } return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
-function prettyDate(iso){ var p = String(iso || "").split("-"); if (p.length !== 3) return iso || ""; var M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return M[(+p[1]) - 1] + " " + (+p[2]) + ", " + p[0]; }
-function ord(n){ return n + (n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"); }
+    <!-- HCP MODE CHOICE MODAL (v284.1: replaces native OK/Cancel confirm) -->
+    <div id="hcp-mode-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="hcp-mode-title" class="tx-xl" style="margin-bottom:12px; color:white;">COD BALANCED (SPREAD)</div>
+            <div id="hcp-mode-body" style="margin-bottom:24px; color:#94A3B8; font-size:15px; line-height:1.5;">
+                Spreads each player's strokes evenly across all three 6-hole segments, so no segment is starved.
+            </div>
+            <button id="hcp-mode-apply" class="g-btn" style="background:#10B981;" onclick="App.applyHcpMode()">SPREAD STROKES EVENLY</button>
+            <button id="hcp-mode-cancel" class="g-btn" style="background:#334155; margin-top:12px;" onclick="App.cancelHcpMode()">KEEP STANDARD</button>
+        </div>
+    </div>
 
-/* ---------- points math (Rick's system: gross only) ---------- */
-function ptsFor(gross, par){ if (gross == null) return 0; var d = gross - par; return d <= -2 ? 4 : d === -1 ? 3 : d === 0 ? 2 : d === 1 ? 1 : 0; }
-function avgOf(e){ return (e && e.rounds) ? e.total / e.rounds : 0; }
-function updatedEntry(e, pts){ return { total: Math.round((e.total + pts) * 100) / 100, rounds: e.rounds + 1 }; }
+    <!-- SEGMENT JUNK PAYOUT MODAL -->
+    <div id="junk-payout-modal" class="modal-overlay">
+        <div class="modal-box" style="border:1px solid #F59E0B; background:#0F172A;">
+            <div id="junk-payout-title" class="tx-xl" style="color:#F59E0B; margin-bottom:12px;">SEGMENT PAYOUT</div>
+            <div id="junk-payout-body" style="color:white; font-size:16px; margin-bottom:20px; text-align:left;"></div>
+            <button class="g-btn" style="background:#F59E0B;"
+                onclick="document.getElementById('junk-payout-modal').classList.remove('active')">CONTINUE</button>
+        </div>
+    </div>
 
-/* ---------- courses ---------- */
-function courseNines(ck){
-  var c = COURSES[ck]; if (!c) return [];
-  if (c.nines){ return Object.keys(c.nines).map(function(k){ return { key: k, name: c.nines[k].n, pars: c.nines[k].p.slice() }; }); }
-  return [ { key: "front", name: "Front", pars: c.p.slice(0, 9) }, { key: "back", name: "Back", pars: c.p.slice(9, 18) } ];
-}
-function roundPars(r){ return r.nines[0].pars.concat(r.nines[1].pars); }
-function courseLabel(r){ return r.courseName + " (" + r.nines[0].name + " / " + r.nines[1].name + ", par " + sumA(roundPars(r)) + ")"; }
+    <!-- === MID-ROUND STANDINGS MODAL === -->
+    <div id="standings-modal">
+        <div class="std-header">
+            <div>
+                <div style="font-size:11px; font-weight:900; color:#10B981; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px;">📊 MID-ROUND STANDINGS</div>
+                <div id="std-subtitle" style="font-size:18px; font-weight:900; color:white;">Through Hole -</div>
+            </div>
+            <div style="text-align:right; font-size:10px; color:#FFFFFF; font-weight:700;">LIVE<br>SNAPSHOT</div>
+        </div>
+        <div id="standings-modal-inner"></div>
+        <div class="std-close-bar">
+            <button class="g-btn" style="background:#10B981; font-size:15px;" onclick="App.closeStandings()">✕ CLOSE</button>
+        </div>
+    </div>
 
-/* ---------- per-player round math ---------- */
-function pGross(pl){ return sumA(pl.scores); }
-function pPoints(pl, pars){ var t = 0; for (var i = 0; i < 18; i++) t += ptsFor(pl.scores[i], pars[i]); return t; }
-function pBlanks(pl){ var n = 0; for (var i = 0; i < 18; i++) if (pl.scores[i] == null && !pl.np[i]) n++; return n; }
-function pNP(pl){ var n = 0; for (var i = 0; i < 18; i++) if (pl.np[i]) n++; return n; }
-function pEntered(pl){ return 18 - pBlanks(pl); }
-function pComplete(pl){ return pBlanks(pl) === 0 && pNP(pl) === 0; }   // a full 18 for ratings
-function allPlayers(r){ var out = []; r.carts.forEach(function(c){ c.players.forEach(function(pl){ out.push(pl); }); }); return out; }
+    <!-- === DASHBOARD === -->
+    <div id="v-dash" class="g-view">
+        <div class="top-bar">
+            <div class="flex-r" style="margin-bottom:12px;">
+                <button class="nav-btn" style="background:#334155; border:1px solid #FFFFFF;" onclick="App.nav('v-setup')">⚙️</button>
+                <button id="standings-btn" onclick="App.showStandings()">📊 STANDINGS</button>
+                <button class="nav-btn" style="background:#F59E0B; width:52px; font-size:14px; font-weight:900; color:black;" onclick="App.nav('v-recap')">RCP</button>
+                <button class="nav-btn" style="background:#334155; border:1px solid #FFFFFF;" onclick="App.nav('v-card')">📄</button>
+            </div>
+            <div class="flex-r" style="margin-bottom:8px;">
+                <button class="nav-btn" onclick="App.navH(-1)">←</button>
+                <div style="flex:1; text-align:center;">
+                    <div id="d-h-num" style="font-size:18px; font-weight:900; color:#FFFFFF; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">HOLE 1</div>
+                    <div id="d-par" style="font-size:44px; font-weight:900; line-height:1; color:white;">4</div>
+                    <div id="d-tee-ind"
+                        style="font-size:14px; font-weight:900; color:#FFD700; margin-top:2px; text-transform:uppercase; letter-spacing:1px; text-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                        WHITE TEE</div>
+                    <div id="d-h-num-under-tee" style="font-size:30px; font-weight:900; color:#FFFFFF; margin-top:4px; text-transform:uppercase; letter-spacing:1px;">HOLE 1</div>
+                </div>
+                <button class="nav-btn" style="background:#10B981;" onclick="App.navH(1)">>→</button>
+            </div>
+            <div class="flex-r">
+                <div class="h-stat">
+                    <div class="h-stat-lbl">YARDS</div>
+                    <div id="d-dist" class="h-stat-val">-</div>
+                </div>
+                <div class="h-stat">
+                    <div class="h-stat-lbl">HCP</div>
+                    <div id="d-hcp" class="h-stat-val">-</div>
+                </div>
+                <div style="flex:1; padding-right:10px;">
+                    <div id="d-fmt" class="h-stat-lbl" style="text-align:right; color:#F59E0B;">CARTS</div>
+                    <div id="d-status" class="match-stat">ALL SQUARE</div>
+                </div>
+            </div>
+            <button class="g-btn g-btn-sm"
+                style="background:#334155; margin-top:8px; width:100%; border:1px solid #FFFFFF;"
+                onclick="App.testFill()">TEST: FILL 5 HOLES</button>
+        </div>
 
-/* Standings for a round: rated players place by +/- vs their rating at round start
-   (ties share the place). Guests and first-timers place by raw points, marked *. */
-function standings(r){
-  var pars = roundPars(r);
-  var list = allPlayers(r).map(function(pl){
-    var start = r.startRatings[pl.name];   // {total,rounds} | null
-    var pts = pPoints(pl, pars);
-    return { name: pl.name, guest: !!pl.guest, gross: pGross(pl), points: pts,
-             startAvg: start ? avgOf(start) : null,
-             vs: start ? pts - avgOf(start) : null,
-             complete: pComplete(pl), np: pNP(pl), place: null, gplace: null };
-  });
-  var rated = list.filter(function(x){ return x.vs != null; }).sort(function(a, b){ return b.vs - a.vs; });
-  rated.forEach(function(x, i){ x.place = (i > 0 && rated[i - 1].vs === x.vs) ? rated[i - 1].place : i + 1; });
-  var byPts = list.slice().sort(function(a, b){ return b.points - a.points; });
-  byPts.forEach(function(x, i){ x.gplace = (i > 0 && byPts[i - 1].points === x.points) ? byPts[i - 1].gplace : i + 1; });
-  var unrated = list.filter(function(x){ return x.vs == null; }).sort(function(a, b){ return b.points - a.points; });
-  return rated.concat(unrated);
-}
-function placeLabel(x){
-  if (x.place != null) return ord(x.place);
-  return ord(x.gplace) + "*";
-}
+        <!-- === STROKE ALERT === -->
+        <div id="stroke-alert-box" class="box"
+            style="display:none; transition:0.3s; padding:12px; margin-top:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #F59E0B; text-align:center;">
+            <div id="stroke-alert-msg" style="font-size:14px; font-weight:900; color:#F59E0B; text-transform:uppercase; letter-spacing:0.5px;"></div>
+        </div>
 
-/* ---------- state: load / save / seed ---------- */
-function seedState(){
-  var players = {};
-  SEED.forEach(function(row){ players[row[0]] = { total: row[2], rounds: row[1] }; });
-  return { version: 1, players: players, rounds: [], current: null, lastAppliedId: null };
-}
-function save(){
-  if (!LS) return;
-  try { LS.setItem(LSKEY, JSON.stringify(S)); }
-  catch (e) {
-    /* storage full (photos) — retry with the current round's photos dropped, book intact */
-    try {
-      var c = clone(S);
-      if (c.current) c.current.carts.forEach(function(ct){ ct.photoFront = null; ct.photoBack = null; ct.photosDropped = true; });
-      LS.setItem(LSKEY, JSON.stringify(c));
-    } catch (e2) { /* book still lives in memory; the backup packet is the safety net */ }
-  }
-}
-function load(){
-  if (LS) { try { var raw = LS.getItem(LSKEY); if (raw) { var o = JSON.parse(raw); if (o && o.players && o.rounds) { S = o; return; } } } catch (e) {} }
-  S = seedState(); save();
-}
+        <div id="lbl-t1"
+            style="font-size:13px; font-weight:800; color:#60A5FA; margin:0 0 8px 4px; text-transform:uppercase;">TEAM A
+        </div>
+        <div id="slot-0" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(0,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(0)">
+                <div id="nm-0" class="p-name">P1</div>
+                <div id="gh-0" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-0" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(0,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j0-g" class="junk-btn" onclick="App.tJ(0, 'G')">G</button>
+            <button id="j0-s" class="junk-btn" onclick="App.tJ(0, 'S')">S</button>
+            <button id="j0-p" class="junk-btn" onclick="App.tJ(0, 'P')">LP</button>
+        </div>
 
-/* ---------- navigation ---------- */
-function show(id){
-  var vs = document.querySelectorAll(".view");
-  for (var i = 0; i < vs.length; i++) vs[i].classList.remove("on");
-  document.getElementById(id).classList.add("on");
-  window.scrollTo(0, 0);
-}
-function goHome(){ renderHome(); show("v-home"); }
+        <div id="slot-1" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(1,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(1)">
+                <div id="nm-1" class="p-name">P2</div>
+                <div id="gh-1" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-1" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(1,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j1-g" class="junk-btn" onclick="App.tJ(1, 'G')">G</button>
+            <button id="j1-s" class="junk-btn" onclick="App.tJ(1, 'S')">S</button>
+            <button id="j1-p" class="junk-btn" onclick="App.tJ(1, 'P')">LP</button>
+        </div>
 
-/* ---------- HOME / THE BOOK ---------- */
-function bookRows(book){
-  return Object.keys(book).map(function(nm){ return { name: nm, total: book[nm].total, rounds: book[nm].rounds, avg: avgOf(book[nm]) }; })
-    .sort(function(a, b){ return a.avg - b.avg; });
-}
-function bookTableHTML(book){
-  var rows = bookRows(book);
-  var html = '<table class="stand"><tr><th>Player</th><th style="text-align:right;">Rating</th><th style="text-align:right;">Rounds</th><th style="text-align:right;">Total pts</th></tr>';
-  rows.forEach(function(rw){ html += "<tr><td><b>" + esc(rw.name) + "</b></td><td class='r'>" + fmt(rw.avg) + "</td><td class='r'>" + rw.rounds + "</td><td class='r'>" + fmt(rw.total) + "</td></tr>"; });
-  return html + "</table>";
-}
-function renderHome(){
-  document.getElementById("bookTable").innerHTML = bookTableHTML(S.players);
-  document.getElementById("bookNote").textContent = SEED_NOTE + ". Ratings are running averages — total points ÷ rounds.";
-  var sb = document.getElementById("seedBanner");
-  if (!S.rounds.length && !S.current) { sb.style.display = "block"; sb.innerHTML = "📖 <b>The book is loaded.</b> " + esc(SEED_NOTE) + " — every player's rating and rounds are in, ready for the next round."; }
-  else sb.style.display = "none";
-  var rb = document.getElementById("resumeBox"), nrb = document.getElementById("newRoundBtn");
-  if (S.current) {
-    rb.style.display = "block"; nrb.style.display = "none";
-    document.getElementById("resumeText").textContent = courseLabel(S.current) + " — " + prettyDate(S.current.date) + ". Nothing is lost; pick up right where you left off.";
-  } else { rb.style.display = "none"; nrb.style.display = "block"; }
-  var ub = document.getElementById("undoBtn");
-  ub.style.display = (S.lastAppliedId && findRound(S.lastAppliedId)) ? "block" : "none";
-  var hl = document.getElementById("historyList");
-  if (!S.rounds.length) hl.innerHTML = '<p style="color:#5b665e;">No rounds yet. The first finished round lands here.</p>';
-  else hl.innerHTML = S.rounds.map(function(r){
-    var st = standings(r);
-    var top = st.length ? st[0] : null;
-    return '<div class="hist" onclick="openSheet(\'' + r.id + '\')"><div class="t">' + esc(r.courseName) + " — " + prettyDate(r.date) + '</div><div class="s">'
-      + esc(r.nines[0].name) + " / " + esc(r.nines[1].name) + " · " + allPlayers(r).length + " players · "
-      + (r.applied ? "ratings updated" : "sheet only — ratings untouched")
-      + (top ? " · " + esc(top.name) + " took it (" + top.points + " pts)" : "") + "</div></div>";
-  }).join("");
-}
-function findRound(id){ for (var i = 0; i < S.rounds.length; i++) if (S.rounds[i].id === id) return S.rounds[i]; return null; }
-function resumeRound(){ openBoard(); }
-function undoLast(){
-  var r = S.lastAppliedId ? findRound(S.lastAppliedId) : null;
-  if (!r || !r.preBook) return;
-  if (!window.confirm("Undo " + r.courseName + " (" + prettyDate(r.date) + ")? The book goes back to exactly what it was before that round.")) return;
-  S.players = clone(r.preBook);
-  r.applied = false; r.preBook = null; r.postBook = null;
-  S.lastAppliedId = null;
-  save(); goHome();
-}
+        <div id="lbl-t2"
+            style="font-size:13px; font-weight:800; color:#22D3EE; margin:16px 0 8px 4px; text-transform:uppercase;">
+            TEAM B</div>
+        <div id="slot-2" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(2,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(2)">
+                <div id="nm-2" class="p-name">P3</div>
+                <div id="gh-2" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-2" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(2,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j2-g" class="junk-btn" onclick="App.tJ(2, 'G')">G</button>
+            <button id="j2-s" class="junk-btn" onclick="App.tJ(2, 'S')">S</button>
+            <button id="j2-p" class="junk-btn" onclick="App.tJ(2, 'P')">LP</button>
+        </div>
 
-/* ---------- BACKUP / RESTORE ---------- */
-function openBackup(){
-  document.getElementById("backupOut").value = JSON.stringify(S);
-  document.getElementById("backupMsg").textContent = "";
-  document.getElementById("restoreMsg").textContent = "";
-  show("v-backup");
-}
-function shareBackup(){
-  var pkt = document.getElementById("backupOut").value;
-  if (navigator.share) navigator.share({ title: "Points Card backup", text: pkt }).catch(function(){});
-  else copyBackup();
-}
-function copyBackup(){
-  var ta = document.getElementById("backupOut");
-  ta.select(); ta.setSelectionRange(0, ta.value.length);
-  var done = function(){ document.getElementById("backupMsg").textContent = "Copied — paste it into a text or note to Dan."; };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, function(){ document.execCommand && document.execCommand("copy"); done(); });
-  else { document.execCommand && document.execCommand("copy"); done(); }
-}
-function doRestore(){
-  var msg = document.getElementById("restoreMsg");
-  var o = null;
-  try { o = JSON.parse(document.getElementById("restoreIn").value); } catch (e) {}
-  if (!o || typeof o !== "object" || !o.players || typeof o.players !== "object" || !Array.isArray(o.rounds)) {
-    msg.style.color = "#b91c1c"; msg.textContent = "That packet doesn't look right — nothing was changed."; return;
-  }
-  if (!window.confirm("Replace the whole book on this phone with the pasted packet?")) return;
-  S = o; save(); goHome();
-}
+        <div id="slot-3" class="p-card">
+            <div class="btn-act btn-minus" onclick="App.mod(3,-1)">-</div>
+            <div class="ctr-area" onclick="App.setPar(3)">
+                <div id="nm-3" class="p-name">P4</div>
+                <div id="gh-3" class="p-ghost" style="opacity:0.5;">PAR 4</div>
+                <div id="sc-3" class="p-score">4</div>
+            </div>
+            <div class="btn-act btn-plus" onclick="App.mod(3,1)">+</div>
+        </div>
+        <div class="junk-row">
+            <button id="j3-g" class="junk-btn" onclick="App.tJ(3, 'G')">G</button>
+            <button id="j3-s" class="junk-btn" onclick="App.tJ(3, 'S')">S</button>
+            <button id="j3-p" class="junk-btn" onclick="App.tJ(3, 'P')">LP</button>
+        </div>
+        <div style="height:30px;"></div>
+        <div class="flex-r" style="gap:10px;"><button class="g-btn" style="background:#334155;"
+                onclick="App.nav('v-setup')">MENU</button><button class="g-btn" style="background:#334155; flex:1;"
+                onclick="App.nav('v-card')">SCORECARD</button><button class="g-btn" style="background:#EF4444;"
+                onclick="App.endRound()">END</button></div>
+        <div id="points-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:300; background:rgba(15,23,42,0.97); border-top:2px solid #F59E0B; padding:8px 10px; font-size:12px; align-items:center; justify-content:center; overflow:hidden;"></div>
+    </div>
 
-/* ---------- SETUP ---------- */
-function startSetup(){
-  setup = { order: [], guest: {}, inbook: {}, cartOf: {} };
-  document.getElementById("setDate").value = todayStr();
-  var sel = document.getElementById("setCourse");
-  var keys = Object.keys(COURSES).sort(function(a, b){ return COURSES[a].n < COURSES[b].n ? -1 : 1; });
-  sel.innerHTML = keys.map(function(k){ return '<option value="' + k + '">' + esc(COURSES[k].n) + "</option>"; }).join("");
-  sel.value = "pearl";
-  document.getElementById("addName").value = "";
-  setupCourseChanged();
-  renderSetup();
-  show("v-setup");
-}
-function setupCourseChanged(){
-  var ck = document.getElementById("setCourse").value;
-  var nines = courseNines(ck), multi = !!COURSES[ck].nines;
-  document.getElementById("nineRow").style.display = multi ? "block" : "none";
-  if (multi) {
-    var opts = nines.map(function(n){ return '<option value="' + n.key + '">' + esc(n.name) + " (par " + sumA(n.pars) + ")</option>"; }).join("");
-    var s1 = document.getElementById("setNine1"), s2 = document.getElementById("setNine2");
-    s1.innerHTML = opts; s2.innerHTML = opts;
-    s1.value = nines[0].key; s2.value = nines[1].key;
-  }
-  setupNinesChanged();
-}
-function chosenNines(){
-  var ck = document.getElementById("setCourse").value;
-  var nines = courseNines(ck);
-  if (!COURSES[ck].nines) return [nines[0], nines[1]];
-  var k1 = document.getElementById("setNine1").value, k2 = document.getElementById("setNine2").value;
-  function byKey(k){ for (var i = 0; i < nines.length; i++) if (nines[i].key === k) return nines[i]; return nines[0]; }
-  return [byKey(k1), byKey(k2)];
-}
-function setupNinesChanged(){
-  var ns = chosenNines();
-  document.getElementById("setParInfo").textContent = ns[0].name + " (par " + sumA(ns[0].pars) + ") then " + ns[1].name + " (par " + sumA(ns[1].pars) + ") — total par " + (sumA(ns[0].pars) + sumA(ns[1].pars)) + ".";
-}
-function cartCounts(){
-  var c = { 1: 0, 2: 0, 3: 0, 4: 0 };
-  setup.order.forEach(function(nm){ c[setup.cartOf[nm]]++; });
-  return c;
-}
-function defaultCart(){
-  var c = cartCounts(), i;
-  for (i = 1; i <= 4; i++) if (c[i] === 1) return i;       // finish a pair first
-  for (i = 1; i <= 4; i++) if (c[i] === 0) return i;       // then an empty cart
-  for (i = 1; i <= 4; i++) if (c[i] < 4) return i;         // then anywhere with room
-  return 1;
-}
-function togglePlayer(nm){
-  var i = setup.order.indexOf(nm);
-  if (i >= 0) { setup.order.splice(i, 1); delete setup.cartOf[nm]; }
-  else { setup.order.push(nm); setup.cartOf[nm] = defaultCart(); }
-  renderSetup();
-}
-function addName(toBook){
-  var inp = document.getElementById("addName");
-  var nm = inp.value.trim();
-  if (!nm) return;
-  if (S.players[nm] && !toBook) { window.alert(nm + " is already in the book — tap their name above instead of adding a guest."); return; }
-  if (setup.order.indexOf(nm) < 0) { setup.order.push(nm); setup.cartOf[nm] = defaultCart(); }
-  if (toBook) { setup.inbook[nm] = true; delete setup.guest[nm]; }
-  else { setup.guest[nm] = true; delete setup.inbook[nm]; }
-  inp.value = "";
-  renderSetup();
-}
-function setCart(nm, c){
-  var counts = cartCounts();
-  if (setup.cartOf[nm] !== c && counts[c] >= 4) { window.alert("Cart " + c + " is full — 4 is the most a cart can hold."); return; }
-  setup.cartOf[nm] = c;
-  renderSetup();
-}
-function renderSetup(){
-  var names = Object.keys(S.players).sort();
-  Object.keys(setup.guest).concat(Object.keys(setup.inbook)).forEach(function(nm){ if (names.indexOf(nm) < 0) names.push(nm); });
-  document.getElementById("rosterChips").innerHTML = names.map(function(nm){
-    var on = setup.order.indexOf(nm) >= 0;
-    var tag = setup.guest[nm] ? '<span class="tag">GUEST</span>' : (setup.inbook[nm] && !S.players[nm] ? '<span class="tag">NEW</span>' : "");
-    return '<span class="chip' + (on ? " on" : "") + '" onclick="togglePlayer(' + JSON.stringify(nm) + ')">' + esc(nm) + tag + "</span>";
-  }).join("");
-  var ed = document.getElementById("cartEditor");
-  if (!setup.order.length) ed.innerHTML = '<p style="color:#5b665e;">Nobody picked yet — tap some names above.</p>';
-  else ed.innerHTML = setup.order.map(function(nm){
-    var btns = "";
-    for (var c = 1; c <= 4; c++) btns += '<button class="' + (setup.cartOf[nm] === c ? "on" : "") + '" onclick="setCart(' + JSON.stringify(nm) + "," + c + ')">' + c + "</button>";
-    return '<div class="cassign"><span class="nm">' + esc(nm) + (setup.guest[nm] ? ' <span style="color:#b45309;font-size:12px;font-weight:800;">GUEST</span>' : "") + '</span><span class="cs">' + btns + "</span></div>";
-  }).join("");
-}
-function startRound(){
-  var msg = document.getElementById("setupMsg");
-  var ck = document.getElementById("setCourse").value;
-  var ns = chosenNines();
-  if (COURSES[ck].nines && ns[0].key === ns[1].key) { msg.textContent = "Pick two different nines."; return; }
-  if (!setup.order.length) { msg.textContent = "Pick at least one player."; return; }
-  var counts = cartCounts();
-  for (var c = 1; c <= 4; c++) if (counts[c] > 4) { msg.textContent = "Cart " + c + " has more than 4 players."; return; }
-  msg.textContent = "";
-  var startRatings = {};
-  setup.order.forEach(function(nm){ startRatings[nm] = (!setup.guest[nm] && S.players[nm]) ? clone(S.players[nm]) : null; });
-  var carts = [];
-  for (c = 1; c <= 4; c++) {
-    var ps = setup.order.filter(function(nm){ return setup.cartOf[nm] === c; });
-    if (!ps.length) continue;
-    carts.push({ players: ps.map(function(nm){
-      return { name: nm, guest: !!setup.guest[nm], scores: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-               np: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false] };
-    }), photoFront: null, photoBack: null, confirmed: false });
-  }
-  S.current = { id: "r" + Date.now(), date: document.getElementById("setDate").value || todayStr(),
-    courseKey: ck, courseName: COURSES[ck].n,
-    nines: [ { key: ns[0].key, name: ns[0].name, pars: ns[0].pars.slice() }, { key: ns[1].key, name: ns[1].name, pars: ns[1].pars.slice() } ],
-    carts: carts, startRatings: startRatings, applied: false, preBook: null, postBook: null };
-  save();
-  openBoard();
-}
+    <!-- === CARD/SUMMARY SCREENS === -->
+    <div id="v-card" class="g-view">
+        <div class="flex-r" style="margin-bottom:10px;">
+            <div class="tx-xl">CARD</div><button class="g-btn g-btn-sm" style="width:auto;"
+                onclick="App.nav('v-dash')">BACK TO GAME</button>
+        </div>
 
-/* ---------- BOARD ---------- */
-function openBoard(){
-  var r = S.current; if (!r) { goHome(); return; }
-  document.getElementById("boardTitle").textContent = r.courseName + " — " + prettyDate(r.date);
-  document.getElementById("boardSub").textContent = r.nines[0].name + " / " + r.nines[1].name + " · par " + sumA(roundPars(r)) + " · " + allPlayers(r).length + " players in " + r.carts.length + (r.carts.length === 1 ? " cart" : " carts");
-  document.getElementById("boardCarts").innerHTML = r.carts.map(function(ct, i){
-    var entered = 0, total = 0;
-    ct.players.forEach(function(pl){ entered += pEntered(pl); total += 18; });
-    var st = ct.confirmed ? '<span style="color:#15803d;">✓ CONFIRMED IN</span>'
-      : entered === 0 ? '<span style="color:#92400e;">… not started</span>'
-      : '<span style="color:#92400e;">… ' + entered + " of " + total + " scores in</span>";
-    return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Cart ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
-      + '<div class="how">' + (ct.photoFront || ct.photoBack ? "📷 card photo on file · " : "") + 'Scores go on the confirm grid — by photo &amp; tap, by typing, or live hole by hole</div>'
-      + '<div class="st">' + st + '</div>'
-      + '<button class="btn ' + (ct.confirmed ? "btn-ghost" : "btn-green") + '" onclick="openCart(' + i + ')">' + (ct.confirmed ? "LOOK / FIX THIS CART" : "OPEN THIS CART →") + "</button></div>";
-  }).join("");
-  show("v-board");
-}
-function discardRound(){
-  if (!window.confirm("Throw away the round in progress? The book is not touched.")) return;
-  S.current = null; save(); goHome();
-}
+        <!-- Scorecard Container -->
+        <div id="card-con-body" class="card-con"></div>
 
-/* ---------- ONE CART: photos + confirm grid ---------- */
-function openCart(i){
-  curCart = i;
-  var r = S.current, ct = r.carts[i];
-  document.getElementById("cartTitle").textContent = "Cart " + (i + 1) + " — " + ct.players.map(function(pl){ return pl.name; }).join(" & ");
-  document.getElementById("cartSub").textContent = courseLabel(r) + " · " + prettyDate(r.date);
-  document.getElementById("fileFront").value = "";
-  document.getElementById("fileBack").value = "";
-  var rn = document.getElementById("readNote");
-  if (!READ_ENDPOINT) { rn.style.display = "block"; rn.textContent = "Automatic reading arrives with the reader setup — for now, tap in the scores from the card."; }
-  else rn.style.display = "none";
-  renderCart();
-  show("v-cart");
-}
-function renderCart(){
-  var r = S.current, ct = r.carts[curCart];
-  var fi = document.getElementById("photoFrontImg"), bi = document.getElementById("photoBackImg");
-  if (ct.photoFront) { fi.src = ct.photoFront; fi.style.display = "block"; } else fi.style.display = "none";
-  if (ct.photoBack) { bi.src = ct.photoBack; bi.style.display = "block"; } else bi.style.display = "none";
-  document.getElementById("cartGrid").innerHTML = gridHTML(r, ct.players, true);
-  var blanks = 0, nps = 0, lines = [];
-  ct.players.forEach(function(pl){
-    blanks += pBlanks(pl); nps += pNP(pl);
-    lines.push(pl.name + ": gross " + pGross(pl) + " · " + pPoints(pl, roundPars(r)) + " pts");
-  });
-  document.getElementById("cartSummary").textContent = lines.join("   ·   ");
-  var btn = document.getElementById("cartConfirmBtn"), hint = document.getElementById("cartConfirmHint");
-  if (ct.confirmed) { btn.textContent = "✓ CONFIRMED — TAP TO CONFIRM AGAIN AFTER FIXES"; btn.disabled = false; hint.textContent = "This cart is in. Any fix you make here needs a fresh confirm."; }
-  else if (blanks > 0) { btn.disabled = true; btn.textContent = "✓ CONFIRM THIS CART"; hint.textContent = blanks + (blanks === 1 ? " empty cell" : " empty cells") + " left — fill every hole, or mark it not played from the number pad."; }
-  else { btn.disabled = false; btn.textContent = "✓ CONFIRM THIS CART"; hint.textContent = nps > 0 ? nps + (nps === 1 ? " hole" : " holes") + " marked not played — it will be flagged on the merge, and that player gets no ratings update." : "Every hole is filled. Confirm it and this cart is in."; }
-}
-function handlePhoto(input, which){
-  var f = input.files && input.files[0];
-  if (!f || !S.current) return;
-  var url = URL.createObjectURL(f);
-  var img = new Image();
-  img.onload = function(){
-    var sc = Math.min(1, 1200 / img.width);
-    var cv = document.createElement("canvas");
-    cv.width = Math.max(1, Math.round(img.width * sc));
-    cv.height = Math.max(1, Math.round(img.height * sc));
-    cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
-    URL.revokeObjectURL(url);
-    var ct = S.current.carts[curCart];
-    if (which === 0) ct.photoFront = cv.toDataURL("image/jpeg", 0.72); else ct.photoBack = cv.toDataURL("image/jpeg", 0.72);
-    ct.confirmed = false;
-    save(); renderCart();
-    maybeRead(which);
-  };
-  img.src = url;
-}
-/* The reader seam: with READ_ENDPOINT set, POST each nine's photo; the reply's
-   scores pre-fill that nine. Not exercised in v1 (endpoint empty). */
-function maybeRead(which){
-  if (!READ_ENDPOINT || !S.current) return;
-  var ct = S.current.carts[curCart];
-  var data = which === 0 ? ct.photoFront : ct.photoBack;
-  if (!data) return;
-  fetch(READ_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nine: which, players: ct.players.map(function(pl){ return pl.name; }), image: data }) })
-    .then(function(resp){ return resp.json(); })
-    .then(function(res){
-      if (!res || !res.scores) return;
-      res.scores.forEach(function(row, pi){
-        var pl = ct.players[pi]; if (!pl || !row) return;
-        row.forEach(function(v, hi){
-          if (v >= 1 && v <= 15) { pl.scores[which * 9 + hi] = v; pl.np[which * 9 + hi] = false; }
-        });
-      });
-      save(); renderCart();
-    })
-    .catch(function(){ /* read failed — the tap-in grid is the fallback, as designed */ });
-}
-function confirmCart(){
-  var ct = S.current.carts[curCart];
-  if (ct.players.some(function(pl){ return pBlanks(pl) > 0; })) return;
-  ct.confirmed = true;
-  save();
-  openBoard();
-}
+        <!-- === SPACER AND RESULTS === -->
+        <div style="height:20px; width:100%;"></div>
 
-/* The confirm grid: two nine tables, pars on top, points dots under each score. */
-function gridHTML(r, players, editable){
-  var pars = roundPars(r), html = "";
-  [0, 9].forEach(function(off){
-    var nine = r.nines[off === 0 ? 0 : 1];
-    html += '<table class="grid"><tr><th style="text-align:left;padding-left:7px;">' + esc(nine.name).toUpperCase() + "</th>";
-    for (var h = 0; h < 9; h++) html += "<th>" + (off + h + 1) + "</th>";
-    html += "<th>" + (off === 0 ? "OUT" : "IN") + "</th><th>PTS</th></tr>";
-    html += '<tr><td class="nm" style="color:#7a857d;font-weight:600;">Par</td>';
-    for (h = 0; h < 9; h++) html += '<td class="par">' + pars[off + h] + "</td>";
-    html += '<td class="tt">' + sumA(pars.slice(off, off + 9)) + '</td><td class="tt">—</td></tr>';
-    players.forEach(function(pl, pi){
-      html += '<tr><td class="nm">' + esc(pl.name) + "</td>";
-      var g9 = 0, p9 = 0;
-      for (h = 0; h < 9; h++) {
-        var idx = off + h, g = pl.scores[idx];
-        var cls = "cell", inner;
-        if (pl.np[idx]) { cls += " np"; inner = "NP"; }
-        else if (g == null) { cls += (editable ? " amber" : ""); inner = "·"; }
-        else inner = g;
-        if (!pl.np[idx] && g != null) { g9 += g; p9 += ptsFor(g, pars[idx]); }
-        var oc = editable ? ' onclick="openPad(' + pi + "," + idx + ')"' : "";
-        html += '<td class="' + cls + '"' + oc + ">" + inner + '<span class="pts">' + (pl.np[idx] ? "" : dots(ptsFor(g, pars[idx]))) + "</span></td>";
-      }
-      html += '<td class="tt">' + g9 + '</td><td class="tt">' + p9 + "</td></tr>";
-    });
-    html += "</table>";
-  });
-  return html;
-}
+        <div class="box" style="margin-top:0;">
+            <div class="tx-sm" style="color:#10B981">SEGMENT RESULTS</div>
+            <div id="res-txt" style="font-family:monospace; margin-top:10px; font-size:14px; line-height:1.5;"></div>
+        </div>
 
-/* ---------- keypad ---------- */
-function openPad(pi, hole){
-  padT = { pi: pi, hole: hole };
-  var r = S.current, pl = r.carts[curCart].players[pi];
-  document.getElementById("padTitle").textContent = pl.name + " — hole " + (hole + 1) + " (par " + roundPars(r)[hole] + ")";
-  document.getElementById("padModal").classList.add("on");
-}
-function padClose(){ document.getElementById("padModal").classList.remove("on"); }
-function padApply(fn){
-  if (!padT || !S.current) return;
-  var pl = S.current.carts[curCart].players[padT.pi];
-  fn(pl, padT.hole);
-  S.current.carts[curCart].confirmed = false;
-  save(); renderCart(); padClose();
-}
-function padSet(v){ padApply(function(pl, h){ pl.scores[h] = v; pl.np[h] = false; }); }
-function padClear(){ padApply(function(pl, h){ pl.scores[h] = null; pl.np[h] = false; }); }
-function padNP(){ padApply(function(pl, h){ pl.scores[h] = null; pl.np[h] = true; }); }
+        <div id="points-panel"></div>
 
-/* ---------- MERGE ---------- */
-function sheetHTML(r){
-  var st = standings(r);
-  var html = gridHTML(r, allPlayers(r), false);
-  html += '<table class="stand" style="margin-top:10px;"><tr><th>Player</th><th style="text-align:right;">Gross</th><th style="text-align:right;">Points</th><th style="text-align:right;">vs Rating</th><th style="text-align:right;">Place</th></tr>';
-  st.forEach(function(x){
-    var vs = x.vs == null ? '<span style="color:#77837a;">no rating</span>'
-      : '<span class="' + (x.vs >= 0 ? "pos" : "neg") + '">' + (x.vs >= 0 ? "+" : "−") + fmt(Math.abs(x.vs)) + "</span>";
-    var pc = x.place != null && x.place <= 3 ? ' class="p' + x.place + '"' : "";
-    html += "<tr" + pc + "><td><b>" + esc(x.name) + "</b>" + (x.guest ? ' <span style="color:#b45309;font-size:12px;font-weight:800;">GUEST</span>' : "")
-      + (x.np ? ' <span style="color:#9a3412;font-size:12px;font-weight:800;">' + x.np + " NP</span>" : "")
-      + "</td><td class='r'>" + x.gross + "</td><td class='r'>" + x.points + "</td><td class='r'>" + vs + "</td><td class='r'><span class='place'>" + placeLabel(x) + "</span></td></tr>";
-  });
-  html += "</table>";
-  if (st.some(function(x){ return x.vs == null; })) html += '<p style="font-size:13px;color:#5b665e;margin-top:8px;">* Guests and first-timers have no rating to beat, so their place is by points. Places in the book game are by +/− vs rating; ties stand as ties.</p>';
-  return html;
-}
-function openMerge(){
-  var r = S.current; if (!r) { goHome(); return; }
-  document.getElementById("mergeTitle").textContent = "Merge — " + r.courseName + ", " + prettyDate(r.date);
-  document.getElementById("mergeSlots").innerHTML = r.carts.map(function(ct, i){
-    return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Cart ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
-      + '<div class="st" style="color:' + (ct.confirmed ? "#15803d" : "#92400e") + ';">' + (ct.confirmed ? "✓ IN — confirmed" : "… not confirmed yet — open the cart and confirm it") + "</div></div>";
-  }).join("");
-  var flags = [];
-  allPlayers(r).forEach(function(pl){
-    if (pNP(pl) > 0) flags.push(esc(pl.name) + " has " + pNP(pl) + " hole" + (pNP(pl) === 1 ? "" : "s") + " marked not played — no ratings update for " + esc(pl.name) + " this round.");
-    else if (pBlanks(pl) > 0) flags.push(esc(pl.name) + " still has empty cells.");
-  });
-  document.getElementById("mergeFlags").innerHTML = flags.length ? '<div class="flagbox"><h3>⚠ Before you finish</h3>' + flags.map(function(f){ return "<p>• " + f + "</p>"; }).join("") + "</div>" : "";
-  document.getElementById("mergeSheet").innerHTML = sheetHTML(r);
-  var allIn = r.carts.every(function(ct){ return ct.confirmed; });
-  var ab = document.getElementById("applyBtn");
-  ab.disabled = !allIn;
-  ab.innerHTML = allIn ? "APPLY RATINGS →<span class=\"small\">See the before &amp; after first — nothing saves until you confirm</span>"
-    : "APPLY RATINGS →<span class=\"small\">Waiting on every cart to be confirmed in</span>";
-  show("v-merge");
-}
-function archiveCurrent(applied){
-  var r = S.current;
-  r.applied = applied;
-  r.postBook = applied ? clone(S.players) : null;
-  S.rounds.unshift(r);
-  S.current = null;
-  save();
-}
-function saveNoApply(){
-  if (!S.current) return;
-  if (!window.confirm("Save this round's sheet and leave the ratings book untouched?")) return;
-  archiveCurrent(false);
-  var r = S.rounds[0];
-  openSheetView(r);
-}
+        <div class="box" style="background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3);">
+            <div style="font-size:11px; color:#F59E0B; font-weight:700;">ℹ️ IPHONE TIP</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:4px;">If tapping SEND doesn't open messages, the
+                scorecard is already copied. Just open Messages and Paste.</div>
+        </div>
 
-/* ---------- APPLY RATINGS ---------- */
-function openApply(){
-  var r = S.current; if (!r) { goHome(); return; }
-  var st = standings(r);
-  var rows = "", notes = [];
-  st.forEach(function(x){
-    if (x.guest) { notes.push(esc(x.name) + " played as a guest — " + x.points + " points, no rating, nothing to update."); return; }
-    if (!x.complete) { notes.push(esc(x.name) + " didn't complete 18 holes — no ratings update."); return; }
-    var e = S.players[x.name];
-    if (e) {
-      var ne = updatedEntry(e, x.points);
-      rows += "<tr><td><b>" + esc(x.name) + "</b></td><td class='r'>" + fmt(avgOf(e)) + " <span style='color:#77837a;'>(" + e.rounds + " rds)</span></td><td class='r'>" + x.points + "</td><td class='r'><b>" + fmt(avgOf(ne)) + "</b> <span style='color:#77837a;'>(" + ne.rounds + " rds)</span></td></tr>";
-    } else {
-      rows += "<tr><td><b>" + esc(x.name) + "</b></td><td class='r'><span style='color:#77837a;'>no rating yet</span></td><td class='r'>" + x.points + "</td><td class='r'><b>" + fmt(x.points) + "</b> <span style='color:#77837a;'>(1 rd — first rated round)</span></td></tr>";
-    }
-  });
-  document.getElementById("applyTable").innerHTML = '<table class="stand"><tr><th>Player</th><th style="text-align:right;">Rating now</th><th style="text-align:right;">Points today</th><th style="text-align:right;">New rating</th></tr>' + rows + "</table>";
-  document.getElementById("applyNotes").innerHTML = notes.length ? '<div class="note">' + notes.map(function(n){ return "• " + n; }).join("<br>") + "</div>" : "";
-  show("v-apply");
-}
-function doApply(){
-  var r = S.current; if (!r) return;
-  var st = standings(r);
-  r.preBook = clone(S.players);            // the snapshot that makes UNDO exact
-  st.forEach(function(x){
-    if (x.guest || !x.complete) return;
-    var e = S.players[x.name];
-    S.players[x.name] = e ? updatedEntry(e, x.points) : { total: x.points, rounds: 1 };
-  });
-  S.lastAppliedId = r.id;
-  archiveCurrent(true);
-  openSheetView(r);
-}
+        <button class="g-btn" style="background:#334155; border:1px solid #F59E0B; color:#F59E0B; margin-bottom:12px;"
+            onclick="App.nav('v-recap')">📊 ROUND RECAP</button>
 
-/* ---------- FINISHED SHEET VIEW ---------- */
-function openSheet(id){
-  var r = findRound(id); if (!r) return;
-  openSheetView(r);
-}
-function openSheetView(r){
-  sheetRound = r;
-  document.getElementById("sheetTitle").textContent = r.courseName + " — " + prettyDate(r.date);
-  document.getElementById("sheetBody").innerHTML = sheetHTML(r);
-  var book = r.postBook || S.players;
-  document.getElementById("sheetRatingsTitle").textContent = r.applied ? "The book after this round" : "Ratings — this round didn't change the book";
-  document.getElementById("sheetRatings").innerHTML = bookTableHTML(book);
-  document.getElementById("sheetImg").style.display = "none";
-  var ub = document.getElementById("sheetUndoBtn");
-  ub.style.display = (r.applied && r.id === S.lastAppliedId && r.preBook) ? "block" : "none";
-  show("v-sheet");
-}
+        <button id="sms-btn" class="g-btn" style="margin-bottom:12px;" onclick="App.share()">TXT+IMG 🚀</button>
+        
+        <button id="sms-score-btn" class="g-btn" style="background:#0F172A; border:1px solid #FFFFFF; color:#FFFFFF; margin-bottom:12px;"
+            onclick="App.shareSimpleScorecard()">SHARE SCORECARD ONLY 📄</button>
+        
+        <button id="export-btn" class="g-btn" style="background:#0F172A; border:1px solid #10B981; color:#10B981; margin-bottom:12px;"
+            onclick="App.exportRound()">📤 EXPORT ROUND</button>
 
-/* ---------- SHEET IMAGE (canvas) ---------- */
-function drawSheet(r){
-  var pars = roundPars(r), st = standings(r), players = allPlayers(r);
-  var book = r.postBook || S.players;
-  var brows = bookRows(book);
-  var W = 1000, M = 28, nameW = 168, holeW = 62, totW = 74, ptsW = 62;
-  var tableW = nameW + holeW * 9 + totW + ptsW;
-  var rowH = 34;
-  var H = 118 + (players.length + 2) * rowH + 16 + (players.length + 2) * rowH + 30 + (st.length + 1) * 36 + 34 + (brows.length + 1) * 32 + 52;
-  var cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-  var x = cv.getContext("2d");
-  x.fillStyle = "#ffffff"; x.fillRect(0, 0, W, H);
-  x.fillStyle = "#14532d"; x.fillRect(0, 0, W, 86);
-  x.fillStyle = "#ffffff"; x.font = "800 30px -apple-system, Arial, sans-serif"; x.textAlign = "left";
-  x.fillText("⛳ POINTS CARD — " + r.courseName, M, 40);
-  x.font = "500 19px -apple-system, Arial, sans-serif";
-  x.fillText(prettyDate(r.date) + " · " + r.nines[0].name + " / " + r.nines[1].name + " · par " + sumA(pars), M, 68);
-  var y = 118;
-  function nineTable(off){
-    var nine = r.nines[off === 0 ? 0 : 1];
-    x.fillStyle = "#eef2ee"; x.fillRect(M, y, tableW, rowH);
-    x.fillStyle = "#44504a"; x.font = "700 15px -apple-system, Arial, sans-serif";
-    x.fillText(nine.name.toUpperCase(), M + 8, y + 22);
-    x.textAlign = "center";
-    for (var h = 0; h < 9; h++) x.fillText(String(off + h + 1), M + nameW + holeW * h + holeW / 2, y + 22);
-    x.fillText(off === 0 ? "OUT" : "IN", M + nameW + holeW * 9 + totW / 2, y + 22);
-    x.fillText("PTS", M + nameW + holeW * 9 + totW + ptsW / 2, y + 22);
-    x.textAlign = "left"; y += rowH;
-    x.fillStyle = "#7a857d"; x.font = "500 17px -apple-system, Arial, sans-serif";
-    x.fillText("Par", M + 8, y + 23);
-    x.textAlign = "center";
-    for (h = 0; h < 9; h++) x.fillText(String(pars[off + h]), M + nameW + holeW * h + holeW / 2, y + 23);
-    x.font = "800 17px -apple-system, Arial, sans-serif";
-    x.fillText(String(sumA(pars.slice(off, off + 9))), M + nameW + holeW * 9 + totW / 2, y + 23);
-    x.fillText("—", M + nameW + holeW * 9 + totW + ptsW / 2, y + 23);
-    x.textAlign = "left"; y += rowH;
-    players.forEach(function(pl){
-      var g9 = 0, p9 = 0;
-      x.fillStyle = "#1c2420"; x.font = "700 17px -apple-system, Arial, sans-serif";
-      x.fillText(pl.name, M + 8, y + 23);
-      x.textAlign = "center"; x.font = "500 18px -apple-system, Arial, sans-serif";
-      for (h = 0; h < 9; h++) {
-        var idx = off + h, g = pl.scores[idx];
-        if (pl.np[idx]) { x.fillStyle = "#9a3412"; x.fillText("NP", M + nameW + holeW * h + holeW / 2, y + 23); x.fillStyle = "#1c2420"; }
-        else if (g == null) x.fillText("·", M + nameW + holeW * h + holeW / 2, y + 23);
-        else { x.fillText(String(g), M + nameW + holeW * h + holeW / 2, y + 23); g9 += g; p9 += ptsFor(g, pars[idx]); }
-      }
-      x.font = "800 18px -apple-system, Arial, sans-serif";
-      x.fillText(String(g9), M + nameW + holeW * 9 + totW / 2, y + 23);
-      x.fillText(String(p9), M + nameW + holeW * 9 + totW + ptsW / 2, y + 23);
-      x.textAlign = "left"; y += rowH;
-    });
-    x.strokeStyle = "#d5dbd5"; x.strokeRect(M, y - (players.length + 2) * rowH, tableW, (players.length + 2) * rowH);
-    y += 16;
-  }
-  nineTable(0); nineTable(9);
-  x.fillStyle = "#14532d"; x.font = "800 21px -apple-system, Arial, sans-serif";
-  x.fillText("Places — points vs rating", M, y + 6); y += 30;
-  st.forEach(function(sx){
-    x.font = "700 18px -apple-system, Arial, sans-serif"; x.fillStyle = "#1c2420";
-    x.fillText(placeLabel(sx) + "  " + sx.name + (sx.guest ? " (guest)" : ""), M + 8, y + 24);
-    x.textAlign = "right"; x.font = "500 18px -apple-system, Arial, sans-serif";
-    var vsTxt = sx.vs == null ? "no rating" : (sx.vs >= 0 ? "+" : "−") + fmt(Math.abs(sx.vs));
-    x.fillText("Gross " + sx.gross + " · " + sx.points + " pts · " + vsTxt, M + tableW, y + 24);
-    x.textAlign = "left"; y += 36;
-  });
-  y += 10;
-  x.fillStyle = "#14532d"; x.font = "800 21px -apple-system, Arial, sans-serif";
-  x.fillText(r.applied ? "Ratings after this round" : "Ratings (unchanged by this round)", M, y + 6); y += 32;
-  x.font = "500 17px -apple-system, Arial, sans-serif"; x.fillStyle = "#1c2420";
-  brows.forEach(function(bw){
-    x.fillText(bw.name, M + 8, y + 22);
-    x.textAlign = "right";
-    x.fillText(fmt(bw.avg) + "  (" + bw.rounds + " rds)", M + tableW, y + 22);
-    x.textAlign = "left"; y += 32;
-  });
-  y += 18;
-  x.fillStyle = "#77837a"; x.font = "500 14px -apple-system, Arial, sans-serif";
-  x.fillText("Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only. " + SEED_NOTE + ".", M, y + 14);
-  return cv;
-}
-function shareSheet(){
-  if (!sheetRound) return;
-  var cv = drawSheet(sheetRound);
-  var img = document.getElementById("sheetImg");
-  img.src = cv.toDataURL("image/png");
-  img.style.display = "block";
-  if (cv.toBlob) cv.toBlob(function(blob){
-    if (!blob) return;
-    var file = null;
-    try { file = new File([blob], "points-sheet.png", { type: "image/png" }); } catch (e) {}
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file] }).catch(function(){});
-    else { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "points-sheet.png"; document.body.appendChild(a); a.click(); a.remove(); }
-  });
-}
+        <button class="g-btn" style="background:#F59E0B; color:black; margin-bottom:20px;" onclick="App.ronnieSimple()">R SIMPLE 🔥</button>
+    </div>
 
-/* ---------- boot ---------- */
-function boot(){
-  load();
-  renderHome();
-  show("v-home");
-}
-if (typeof document !== "undefined" && document.getElementById && document.getElementById("v-home")) boot();
-</script>
+    <!-- === ROUND RECAP === -->
+    <div id="v-recap" class="g-view">
+        <div class="flex-r" style="margin-bottom:16px;">
+            <div class="tx-xl">ROUND RECAP</div>
+            <button class="g-btn g-btn-sm" style="width:auto; background:#334155;"
+                onclick="App.nav('v-card')">CLOSE</button>
+        </div>
+        <div id="recap-body"></div>
+    </div>
+
+    <script src="data/courses.js?v=202611121430"></script>
+    <script src="js/app.js?v=202611110815"></script>
+    <script src="js/app2.js?v=202611092330"></script>
+    <script src="js/app3.js?v=202611121530"></script>
+    <script src="js/tee-names.js?v=202611121300"></script>
+    <script src="js/shotgun.js?v=202611050650"></script>
+    <script src="js/special.js?v=202611121520"></script>
 </body>
+
 </html>
