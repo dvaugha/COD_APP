@@ -1533,6 +1533,7 @@ Object.assign(App, {
                     if (note) { note.style.display = 'block'; note.textContent = 'No scores to copy yet.'; }
                     return;
                 }
+                this._pktText = pkt.text;
                 let ok = false;
                 try { await navigator.clipboard.writeText(pkt.text); ok = true; } catch (e) { ok = false; }
                 if (!ok) {
@@ -1560,6 +1561,19 @@ Object.assign(App, {
             renderPointsPanel: function () {
                 const panel = document.getElementById('points-panel');
                 if (!panel) return;
+                // v285.14: a copied packet goes stale the moment the scores no
+                // longer match it (new round, edited score) — reset the button
+                // so COPIED ✓ always means the clipboard holds THIS card.
+                const pktB0 = document.getElementById('pkt-btn');
+                if (pktB0 && this._pktText) {
+                    const curPkt = this.scorePacket();
+                    if (!curPkt || curPkt.text !== this._pktText) {
+                        pktB0.innerText = '📋 COPY SCORECARD DATA FOR RICK';
+                        const pn = document.getElementById('pkt-note'); if (pn) pn.style.display = 'none';
+                        const pf = document.getElementById('pkt-fallback'); if (pf) pf.style.display = 'none';
+                        this._pktText = null;
+                    }
+                }
                 const pktB = document.getElementById('pkt-btn');
                 if (!this.ptsApplicable()) { panel.innerHTML = ''; if (pktB) pktB.style.display = 'none'; return; }
                 const rows = this.ptsSorted(this.ptsRoundRows());
