@@ -187,6 +187,7 @@
     <p>Gold dots under a score are its points. Tap any cell to set it. Empty cells show gold; a hole nobody played can be marked <b>not played</b> from the number pad.</p>
     <div id="cartGrid"></div>
     <p class="cap" id="cartSummary"></p>
+    <button class="btn btn-dark" onclick="fillTestScores()">🎲&nbsp; FILL TEST SCORES<span class="small">Random scores for every player in this cart — just for trying the app out</span></button>
     <button class="btn btn-green" id="cartConfirmBtn" onclick="confirmCart()">✓&nbsp; CONFIRM THIS CART</button>
     <p class="cap" id="cartConfirmHint"></p>
   </div>
@@ -747,6 +748,20 @@ function padApply(fn){
 function padSet(v){ padApply(function(pl, h){ pl.scores[h] = v; pl.np[h] = false; }); }
 function padClear(){ padApply(function(pl, h){ pl.scores[h] = null; pl.np[h] = false; }); }
 function padNP(){ padApply(function(pl, h){ pl.scores[h] = null; pl.np[h] = true; }); }
+function fillTestScores(){
+  var r = S.current; if (!r) return;
+  var ct = r.carts[curCart], pars = roundPars(r);
+  ct.players.forEach(function(pl){
+    for (var h = 0; h < 18; h++){
+      var x = Math.random(), d = x < 0.12 ? -1 : (x < 0.50 ? 0 : (x < 0.82 ? 1 : 2));
+      var v = pars[h] + d;
+      if (v < 2) v = 2; if (v > 7) v = 7;
+      pl.scores[h] = v; pl.np[h] = false;
+    }
+  });
+  ct.confirmed = false;
+  save(); renderCart();
+}
 
 /* ---------- MERGE ---------- */
 function sheetHTML(r){
