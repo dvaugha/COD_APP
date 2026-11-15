@@ -164,9 +164,23 @@
     <p id="boardSub"></p>
     <div id="boardCarts"></div>
   </div>
+  <button class="btn btn-dark" onclick="openImport()">📥&nbsp; IMPORT A CART<span class="small">Paste a scorecard packet texted to you — no typing</span></button>
   <button class="btn btn-green" onclick="openMerge()">MERGE &amp; FINISH →<span class="small">Combined sheet, places, and the ratings update</span></button>
   <button class="btn btn-ghost" onclick="show('v-home')">← Home (the round stays saved)</button>
   <button class="btn btn-red" onclick="discardRound()">Throw this round away</button>
+</div>
+
+<!-- IMPORT A CART FROM A PACKET -->
+<div class="view" id="v-import">
+  <div class="card">
+    <h2>Import a cart</h2>
+    <p>Copy the scorecard packet from the text message, paste it here, and tap <b>READ THE PACKET</b>. The cart lands on the confirm grid filled in — check it against the picture, then confirm it like any other cart.</p>
+    <textarea id="impText" rows="7" placeholder="Paste the packet here — it starts with PC1" style="width:100%; box-sizing:border-box; font-family:monospace; font-size:13px; padding:10px; border:1px solid #cbd5e1; border-radius:10px;"></textarea>
+    <p class="cap" id="impMsg" style="font-weight:700;"></p>
+    <div id="impPreview"></div>
+    <button class="btn btn-green" id="impBtn" onclick="doImport()">READ THE PACKET</button>
+  </div>
+  <button class="btn btn-ghost" onclick="openBoard()">← Back to the carts</button>
 </div>
 
 <!-- ONE CART: PHOTOS + CONFIRM GRID -->
@@ -174,6 +188,7 @@
   <div class="card">
     <h2 id="cartTitle">Cart</h2>
     <p id="cartSub"></p>
+    <div class="note" id="cartSourceNote" style="display:none;"></div>
     <h3>📷 The paper card — two photos</h3>
     <p>Shoot each nine flat, in shade — and get close: fill the frame with your cart's rows. The photos stay with this round as the record.</p>
     <label class="lbl">Front nine photo</label>
@@ -610,7 +625,7 @@ function openBoard(){
       : entered === 0 ? '<span style="color:#92400e;">… not started</span>'
       : '<span style="color:#92400e;">… ' + entered + " of " + total + " scores in</span>";
     return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Cart ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
-      + '<div class="how">' + (ct.photoFront || ct.photoBack ? "📷 card photo on file · " : "") + 'Scores go on the confirm grid — by photo &amp; tap, by typing, or live hole by hole</div>'
+      + '<div class="how">' + (ct.source === "packet" ? "📥 from a COD packet · " : "") + (ct.photoFront || ct.photoBack ? "📷 card photo on file · " : "") + 'Scores go on the confirm grid — by photo &amp; tap, by typing, or live hole by hole</div>'
       + '<div class="st">' + st + '</div>'
       + '<button class="btn ' + (ct.confirmed ? "btn-ghost" : "btn-green") + '" onclick="openCart(' + i + ')">' + (ct.confirmed ? "LOOK / FIX THIS CART" : "OPEN THIS CART →") + "</button></div>";
   }).join("");
@@ -627,6 +642,9 @@ function openCart(i){
   var r = S.current, ct = r.carts[i];
   document.getElementById("cartTitle").textContent = "Cart " + (i + 1) + " — " + ct.players.map(function(pl){ return pl.name; }).join(" & ");
   document.getElementById("cartSub").textContent = courseLabel(r) + " · " + prettyDate(r.date);
+  var sn = document.getElementById("cartSourceNote");
+  if (ct.source === "packet") { sn.style.display = "block"; sn.textContent = "📥 This cart came in as a packet from a COD scorecard. Check every cell against the picture, then confirm."; }
+  else sn.style.display = "none";
   document.getElementById("fileFront").value = "";
   document.getElementById("fileBack").value = "";
   var rn = document.getElementById("readNote");
@@ -728,6 +746,191 @@ function confirmCart(){
   ct.confirmed = true;
   save();
   openBoard();
+}
+
+/* ---------- IMPORT A CART FROM A PACKET (v1.7) ----------
+   A cart scored in COD (Scorecard Only) travels as a text packet:
+     PC1
+     Course: Sea Trail Maples (maples) · Nov 16, 2026
+     Danny V (Dan): 4,5,... = 76
+   The per-player total is the tamper/cut-off check: the scores must foot to it. */
+var impPending = null;
+
+function openImport(){
+  impPending = null;
+  document.getElementById("impText").value = "";
+  document.getElementById("impMsg").textContent = "";
+  document.getElementById("impPreview").innerHTML = "";
+  document.getElementById("impBtn").textContent = "READ THE PACKET";
+  show("v-import");
+}
+
+function parsePacket(text){
+  var lines = String(text || "").split(/\r?\n/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length; });
+  var start = -1;
+  for (var i = 0; i < Math.min(lines.length, 4); i++) if (lines[i] === "PC1") { start = i; break; }
+  if (start < 0) return { ok: false, err: "That doesn't look like a scorecard packet — it should start with PC1. Copy the whole packet text and try again." };
+  lines = lines.slice(start);
+  if (lines.length < 3) return { ok: false, err: "The packet looks cut off — only " + lines.length + (lines.length === 1 ? " line" : " lines") + ". Copy the whole packet and try again." };
+  var cm = lines[1].match(/\(([a-z0-9_]+)\)/i);
+  if (!cm) return { ok: false, err: "Can't tell which course this packet is for. Copy the whole packet and try again." };
+  var courseKey = cm[1].toLowerCase();
+  var nm = lines[1].match(/Nines:\s*([a-z0-9_]+)\s*\/\s*([a-z0-9_]+)/i);
+  var nines = nm ? [nm[1].toLowerCase(), nm[2].toLowerCase()] : null;
+  var players = [];
+  for (var li = 2; li < lines.length; li++) {
+    var pm = lines[li].match(/^(.+?):\s*([0-9,\-\s]+?)\s*=\s*(\d+)\s*$/);
+    if (!pm) {
+      // Trailing chatter after the last player ("Thanks!") ends the packet;
+      // anything that looks like a score line but doesn't parse is an error.
+      if (players.length && !/[:=]/.test(lines[li])) break;
+      return { ok: false, err: "Can't read this line: \u201C" + lines[li] + "\u201D — the packet may be cut off or altered. Ask for it to be copied again." };
+    }
+    var rawName = pm[1].trim();
+    var label = rawName, cod = null;
+    var par = rawName.match(/^(.+?)\s*\((.+?)\)\s*$/);
+    if (par) { label = par[1].trim(); cod = par[2].trim(); }
+    var toks = pm[2].split(",").map(function(s){ return s.trim(); });
+    if (toks.length !== 18) return { ok: false, err: label + " has " + toks.length + " scores in the packet, not 18 — it looks cut off. Ask for it to be copied again." };
+    var scores = [], total = 0, missing = 0, bad = null;
+    for (var t = 0; t < 18; t++) {
+      if (toks[t] === "-") { scores.push(null); missing++; continue; }
+      var v = parseInt(toks[t], 10);
+      if (isNaN(v) || v < 1 || v > 15 || String(v) !== toks[t]) { bad = toks[t]; break; }
+      scores.push(v); total += v;
+    }
+    if (bad !== null) return { ok: false, err: label + " has a score that isn't a whole number (\u201C" + bad + "\u201D). The packet may have been altered — ask for a fresh copy." };
+    if (missing) return { ok: false, err: label + " is missing " + missing + (missing === 1 ? " hole" : " holes") + " in the packet — the round wasn't finished when it was copied. Ask for a copy after the round." };
+    if (total !== parseInt(pm[3], 10)) return { ok: false, err: label + "'s scores add to " + total + " but the packet says " + pm[3] + " — it may be cut off or altered. Ask for a fresh copy." };
+    players.push({ label: label, cod: cod, scores: scores, total: total, resolved: null });
+  }
+  if (!players.length) return { ok: false, err: "No players in this packet. Copy the whole packet and try again." };
+  if (players.length > 4) return { ok: false, err: "This packet has " + players.length + " players — a cart holds at most 4." };
+  return { ok: true, courseKey: courseKey, nines: nines, players: players };
+}
+
+function resolvePacketName(pp, pool){
+  var tries = [pp.label, pp.cod].filter(Boolean);
+  var i, j;
+  for (i = 0; i < tries.length; i++) for (j = 0; j < pool.length; j++) if (pool[j] === tries[i]) return pool[j];
+  for (i = 0; i < tries.length; i++) for (j = 0; j < pool.length; j++) if (pool[j].toLowerCase() === tries[i].toLowerCase()) return pool[j];
+  var hits = [];
+  for (i = 0; i < tries.length; i++) {
+    var t = tries[i].toLowerCase();
+    if (t.length < 3) continue;
+    for (j = 0; j < pool.length; j++) {
+      var p = pool[j].toLowerCase();
+      if ((p.indexOf(t) === 0 || t.indexOf(p) === 0) && hits.indexOf(pool[j]) < 0) hits.push(pool[j]);
+    }
+  }
+  if (hits.length === 1) return hits[0];
+  var byInit = {};
+  pool.forEach(function(n){ var k = n.charAt(0).toLowerCase(); (byInit[k] = byInit[k] || []).push(n); });
+  for (i = 0; i < tries.length; i++) {
+    var k = tries[i].charAt(0).toLowerCase();
+    if (byInit[k] && byInit[k].length === 1) return byInit[k][0];
+  }
+  return null;
+}
+
+function cartIndexOfPlayer(r, name){
+  for (var i = 0; i < r.carts.length; i++)
+    for (var j = 0; j < r.carts[i].players.length; j++)
+      if (r.carts[i].players[j].name === name) return i;
+  return -1;
+}
+
+function doImport(){
+  var r = S.current; if (!r) return;
+  var msg = document.getElementById("impMsg"), prev = document.getElementById("impPreview"), btn = document.getElementById("impBtn");
+  if (impPending) { finishImport(); return; }
+  msg.style.color = "#b91c1c";
+  var pk = parsePacket(document.getElementById("impText").value);
+  if (!pk.ok) { msg.textContent = pk.err; prev.innerHTML = ""; return; }
+  if (pk.courseKey !== r.courseKey) {
+    msg.textContent = "This packet is for " + (COURSES[pk.courseKey] ? COURSES[pk.courseKey].n : pk.courseKey) + ", but this round is " + r.courseName + ". Import it into the right round.";
+    return;
+  }
+  var swapNote = "";
+  if (pk.nines && COURSES[r.courseKey].nines) {
+    var rk = [r.nines[0].key, r.nines[1].key];
+    if (pk.nines[0] === rk[1] && pk.nines[1] === rk[0]) {
+      pk.players.forEach(function(pp){ pp.scores = pp.scores.slice(9).concat(pp.scores.slice(0, 9)); });
+      swapNote = "They played the " + pk.nines[0] + " nine first and this round was set up the other way — the two nines were swapped to match.";
+    } else if (pk.nines[0] !== rk[0] || pk.nines[1] !== rk[1]) {
+      msg.textContent = "This packet is for the " + pk.nines.join(" / ") + " nines, but this round is " + rk.join(" / ") + ". Fix the round setup or ask for the right packet.";
+      return;
+    }
+  }
+  var pool = [];
+  r.carts.forEach(function(ct){ ct.players.forEach(function(pl){ if (pool.indexOf(pl.name) < 0) pool.push(pl.name); }); });
+  Object.keys(S.players).forEach(function(n){ if (pool.indexOf(n) < 0) pool.push(n); });
+  var anyUnresolved = false;
+  pk.players.forEach(function(pp){ pp.resolved = resolvePacketName(pp, pool); if (!pp.resolved) anyUnresolved = true; });
+  var target = -1, mixed = false;
+  pk.players.forEach(function(pp){
+    if (!pp.resolved) return;
+    var ci = cartIndexOfPlayer(r, pp.resolved);
+    if (ci >= 0) { if (target < 0) target = ci; else if (target !== ci) mixed = true; }
+  });
+  if (mixed) { msg.textContent = "These players are set up in different carts in this round. Fix the carts in setup, or import into a fresh round."; return; }
+  var conflict = false;
+  if (target >= 0) {
+    var tc = r.carts[target];
+    conflict = tc.confirmed || tc.players.some(function(pl){ return pEntered(pl) > 0; });
+  }
+  var pars = roundPars(r);
+  var html = "";
+  if (swapNote) html += '<p class="cap" style="font-weight:700;">' + esc(swapNote) + "</p>";
+  html += pk.players.map(function(pp, i){
+    var pts = 0; for (var h = 0; h < 18; h++) pts += ptsFor(pp.scores[h], pars[h]);
+    var line = "<b>" + esc(pp.label) + "</b>" + (pp.cod && pp.cod !== pp.label ? " (" + esc(pp.cod) + ")" : "") + " — gross " + pp.total + " · " + pts + " pts → ";
+    if (pp.resolved) return "<p>" + line + "<b>" + esc(pp.resolved) + "</b></p>";
+    var opts = pool.map(function(n){ return '<option value="' + esc(n) + '">' + esc(n) + "</option>"; }).join("");
+    opts += '<option value="' + esc(pp.label) + '">' + esc(pp.label) + " (new — add as guest)</option>";
+    return "<p>" + line + '<select id="impSel' + i + '">' + opts + "</select></p>";
+  }).join("");
+  if (conflict) html += '<p style="color:#b91c1c;font-weight:700;">Cart ' + (target + 1) + " already has scores in this round. Importing replaces them with the packet's.</p>";
+  if (!anyUnresolved && !conflict) {
+    impPending = { pk: pk, target: target };
+    finishImport();
+    return;
+  }
+  impPending = { pk: pk, target: target };
+  msg.style.color = "#166534";
+  msg.textContent = anyUnresolved ? "Almost there — pick who's who, then import." : "Check it over, then import.";
+  prev.innerHTML = html;
+  btn.textContent = conflict ? "REPLACE CART " + (target + 1) + "'S SCORES" : "IMPORT THIS CART";
+}
+
+function finishImport(){
+  var r = S.current; if (!r || !impPending) return;
+  var pk = impPending.pk, target = impPending.target;
+  pk.players.forEach(function(pp, i){
+    if (!pp.resolved) {
+      var sel = document.getElementById("impSel" + i);
+      pp.resolved = sel ? sel.value : pp.label;
+    }
+  });
+  var players = pk.players.map(function(pp){
+    return { name: pp.resolved, guest: !S.players[pp.resolved], scores: pp.scores.slice(),
+             np: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false] };
+  });
+  players.forEach(function(pl){
+    if (!(pl.name in r.startRatings)) r.startRatings[pl.name] = (!pl.guest && S.players[pl.name]) ? clone(S.players[pl.name]) : null;
+  });
+  var idx;
+  if (target >= 0) {
+    var old = r.carts[target];
+    r.carts[target] = { players: players, photoFront: old.photoFront || null, photoBack: old.photoBack || null, confirmed: false, source: "packet" };
+    idx = target;
+  } else {
+    r.carts.push({ players: players, photoFront: null, photoBack: null, confirmed: false, source: "packet" });
+    idx = r.carts.length - 1;
+  }
+  impPending = null;
+  save();
+  openCart(idx);
 }
 
 /* The confirm grid: two nine tables, pars on top, points dots under each score. */
