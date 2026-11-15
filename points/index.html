@@ -528,6 +528,7 @@ function defaultCart(){
   for (i = 1; i <= 4; i++) if (c[i] < 4) return i;         // then anywhere with room
   return 1;
 }
+function q(s){ return "'" + String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'"; }
 function togglePlayer(nm){
   var i = setup.order.indexOf(nm);
   if (i >= 0) { setup.order.splice(i, 1); delete setup.cartOf[nm]; }
@@ -557,13 +558,13 @@ function renderSetup(){
   document.getElementById("rosterChips").innerHTML = names.map(function(nm){
     var on = setup.order.indexOf(nm) >= 0;
     var tag = setup.guest[nm] ? '<span class="tag">GUEST</span>' : (setup.inbook[nm] && !S.players[nm] ? '<span class="tag">NEW</span>' : "");
-    return '<span class="chip' + (on ? " on" : "") + '" onclick="togglePlayer(' + JSON.stringify(nm) + ')">' + esc(nm) + tag + "</span>";
+    return '<span class="chip' + (on ? " on" : "") + '" onclick="togglePlayer(' + q(nm) + ')">' + esc(nm) + tag + "</span>";
   }).join("");
   var ed = document.getElementById("cartEditor");
   if (!setup.order.length) ed.innerHTML = '<p style="color:#5b665e;">Nobody picked yet — tap some names above.</p>';
   else ed.innerHTML = setup.order.map(function(nm){
     var btns = "";
-    for (var c = 1; c <= 4; c++) btns += '<button class="' + (setup.cartOf[nm] === c ? "on" : "") + '" onclick="setCart(' + JSON.stringify(nm) + "," + c + ')">' + c + "</button>";
+    for (var c = 1; c <= 4; c++) btns += '<button class="' + (setup.cartOf[nm] === c ? "on" : "") + '" onclick="setCart(' + q(nm) + "," + c + ')">' + c + "</button>";
     return '<div class="cassign"><span class="nm">' + esc(nm) + (setup.guest[nm] ? ' <span style="color:#b45309;font-size:12px;font-weight:800;">GUEST</span>' : "") + '</span><span class="cs">' + btns + "</span></div>";
   }).join("");
 }
