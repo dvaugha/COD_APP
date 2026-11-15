@@ -843,12 +843,21 @@ function cartIndexOfPlayer(r, name){
 function doImport(){
   var r = S.current; if (!r) return;
   var msg = document.getElementById("impMsg"), prev = document.getElementById("impPreview"), btn = document.getElementById("impBtn");
-  if (impPending) { finishImport(); return; }
+  if (impPending) { if (impPending.switchTo) { doCourseSwitch(); return; } finishImport(); return; }
   msg.style.color = "#b91c1c";
   var pk = parsePacket(document.getElementById("impText").value);
   if (!pk.ok) { msg.textContent = pk.err; prev.innerHTML = ""; return; }
   if (pk.courseKey !== r.courseKey) {
-    msg.textContent = "This packet is for " + (COURSES[pk.courseKey] ? COURSES[pk.courseKey].n : pk.courseKey) + ", but this round is " + r.courseName + ". Import it into the right round.";
+    var pristine = r.carts.every(function(ct){ return !ct.confirmed && ct.players.every(function(pl){ return pEntered(pl) === 0; }); });
+    if (COURSES[pk.courseKey] && pristine) {
+      impPending = { switchTo: pk.courseKey, pk: pk };
+      msg.style.color = "#92400e";
+      msg.textContent = "This packet is for " + COURSES[pk.courseKey].n + ", but this round is set to " + r.courseName + ". Nothing is scored yet, so the round can switch to match the packet.";
+      prev.innerHTML = "";
+      btn.textContent = "SWITCH TO " + COURSES[pk.courseKey].n.toUpperCase() + " & IMPORT";
+      return;
+    }
+    msg.textContent = "This packet is for " + (COURSES[pk.courseKey] ? COURSES[pk.courseKey].n : pk.courseKey) + ", but this round is " + r.courseName + (pristine ? "" : " and scores are already in") + ". Import it into the right round.";
     return;
   }
   var swapNote = "";
@@ -901,6 +910,30 @@ function doImport(){
   msg.textContent = anyUnresolved ? "Almost there — pick who's who, then import." : "Check it over, then import.";
   prev.innerHTML = html;
   btn.textContent = conflict ? "REPLACE CART " + (target + 1) + "'S SCORES" : "IMPORT THIS CART";
+}
+
+/* One-tap course switch (v1.8): the packet's course wins when the round is
+   still empty — re-point the round, then run the import again. */
+function doCourseSwitch(){
+  var r = S.current; if (!r || !impPending || !impPending.switchTo) return;
+  var ck = impPending.switchTo, pk = impPending.pk;
+  var nines = courseNines(ck);
+  var pick = null;
+  if (pk.nines) {
+    var a = null, b = null;
+    nines.forEach(function(n){ if (n.key === pk.nines[0]) a = n; if (n.key === pk.nines[1]) b = n; });
+    if (a && b) pick = [a, b];
+  }
+  if (!pick) pick = [nines[0], nines[1]];
+  r.courseKey = ck;
+  r.courseName = COURSES[ck].n;
+  r.nines = [ { key: pick[0].key, name: pick[0].name, pars: pick[0].pars.slice() },
+              { key: pick[1].key, name: pick[1].name, pars: pick[1].pars.slice() } ];
+  impPending = null;
+  save();
+  document.getElementById("impBtn").textContent = "READ THE PACKET";
+  document.getElementById("impMsg").textContent = "";
+  doImport();
 }
 
 function finishImport(){
