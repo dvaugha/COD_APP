@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval';">
-    <title>COD Golf v285.12</title>
+    <title>COD Golf v285.13</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="180x180" href="/COD_APP/apple-touch-icon.png">
@@ -72,7 +72,7 @@
     <!-- === SETUP SCREEN === -->
     <div id="v-setup" class="g-view active">
         <div class="flex-r" style="justify-content:center; margin-bottom:10px;">
-            <div class="tx-xl">COD Golf v285.12</div>
+            <div class="tx-xl">COD Golf v285.13</div>
         </div>
 
         <div class="box" style="text-align:center; padding:16px;">
@@ -288,7 +288,7 @@
 
         <div style="margin-top:24px; text-align:center;">
             <button class="g-btn g-btn-sm" style="background:transparent; border:1px solid #EF4444; color:#EF4444; width:auto; font-weight:500;" onclick="App.hardReset()">⚠️ Reset App Data</button>
-            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v285.12</div>
+            <div style="font-size:10px; color:#FFFFFF; margin-top:8px;">v285.13</div>
         </div>
         <div style="height:50px;"></div>
     </div>
@@ -539,7 +539,15 @@
         
         <button id="sms-score-btn" class="g-btn" style="background:#0F172A; border:1px solid #FFFFFF; color:#FFFFFF; margin-bottom:12px;"
             onclick="App.shareSimpleScorecard()">SHARE SCORECARD ONLY 📄</button>
-        
+
+        <button id="pkt-btn" class="g-btn" style="display:none; background:#0F172A; border:1px solid #38BDF8; color:#38BDF8; margin-bottom:6px;"
+            onclick="App.copyScorePacket()">📋 COPY SCORECARD DATA FOR RICK</button>
+        <div id="pkt-note" style="display:none; font-size:12px; color:#7DD3FC; margin-bottom:12px; text-align:center;"></div>
+        <div id="pkt-fallback" style="display:none; margin-bottom:12px;">
+            <div style="font-size:11px; color:#F59E0B; margin-bottom:4px;">Copy didn't take — press and hold the text below to copy it:</div>
+            <textarea id="pkt-text" readonly rows="6" style="width:100%; box-sizing:border-box; font-size:11px; background:#0F172A; color:#E2E8F0; border:1px solid #334155; border-radius:8px; padding:8px;"></textarea>
+        </div>
+
         <button id="export-btn" class="g-btn" style="background:#0F172A; border:1px solid #10B981; color:#10B981; margin-bottom:12px;"
             onclick="App.exportRound()">📤 EXPORT ROUND</button>
 
@@ -559,7 +567,7 @@
     <script src="data/courses.js?v=202611121430"></script>
     <script src="js/app.js?v=202611151335"></script>
     <script src="js/app2.js?v=202611151335"></script>
-    <script src="js/app3.js?v=202611121530"></script>
+    <script src="js/app3.js?v=202611151530"></script>
     <script src="js/tee-names.js?v=202611121300"></script>
     <script src="js/shotgun.js?v=202611050650"></script>
     <script src="js/special.js?v=202611151335"></script>

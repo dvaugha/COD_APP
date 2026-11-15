@@ -1490,12 +1490,81 @@ Object.assign(App, {
                 if (dash) dash.style.paddingBottom = '54px';
             },
 
+            // ===== SCORECARD PACKET (v285.13) — copy this cart's scores as text for Rick's Points app =====
+            scorePacket: function () {
+                if (!this.ptsApplicable()) return null;
+                const c = CS[this.d.crs] || CS['cc'];
+                const store = this.ptsLoad();
+                const MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const now = new Date();
+                const dateStr = MN[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+                let head = 'Course: ' + (c.origN || c.n || this.d.crs) + ' (' + this.d.crs + ')';
+                if (this.d.nines) head += ' · Nines: ' + this.d.nines[0] + '/' + this.d.nines[1];
+                head += ' · ' + dateStr;
+                const lines = ['PC1', head];
+                const meta = [];
+                [0, 1, 2, 3].forEach(i => {
+                    const name = this.d.ps[i];
+                    if (!name) return;
+                    const vals = [];
+                    let total = 0, entered = 0;
+                    for (let h = 1; h <= 18; h++) {
+                        const sc = (this.d.s[h] && typeof this.d.s[h][i] === 'number') ? this.d.s[h][i] : null;
+                        if (sc === null) vals.push('-');
+                        else { vals.push(String(sc)); total += sc; entered++; }
+                    }
+                    if (!entered) return;
+                    const entry = this.ptsEntryFor(store, name);
+                    const label = entry ? entry.label : name;
+                    const disp = (label !== name) ? (label + ' (' + name + ')') : name;
+                    lines.push(disp + ': ' + vals.join(',') + ' = ' + total);
+                    meta.push({ name: label, entered: entered });
+                });
+                if (!meta.length) return null;
+                return { text: lines.join('\n'), players: meta };
+            },
+
+            copyScorePacket: async function () {
+                const btn = document.getElementById('pkt-btn');
+                const note = document.getElementById('pkt-note');
+                const fb = document.getElementById('pkt-fallback');
+                const pkt = this.scorePacket();
+                if (!pkt) {
+                    if (note) { note.style.display = 'block'; note.textContent = 'No scores to copy yet.'; }
+                    return;
+                }
+                let ok = false;
+                try { await navigator.clipboard.writeText(pkt.text); ok = true; } catch (e) { ok = false; }
+                if (!ok) {
+                    try {
+                        const ta = document.createElement('textarea');
+                        ta.value = pkt.text;
+                        ta.style.position = 'fixed'; ta.style.opacity = '0';
+                        document.body.appendChild(ta); ta.select();
+                        ok = document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    } catch (e) { ok = false; }
+                }
+                const names = pkt.players.map(p => p.name).join(' & ');
+                const holes = Math.min.apply(null, pkt.players.map(p => p.entered));
+                if (ok) {
+                    if (btn) btn.innerText = 'COPIED ✓ — SCORECARD DATA FOR RICK';
+                    if (note) { note.style.display = 'block'; note.textContent = names + ' · ' + (holes >= 18 ? '18 holes' : holes + ' of 18 holes') + ' · ready to paste into a text to Rick'; }
+                    if (fb) fb.style.display = 'none';
+                } else {
+                    if (note) { note.style.display = 'block'; note.textContent = "Copy didn't take — use the box below."; }
+                    if (fb) { fb.style.display = 'block'; const t = document.getElementById('pkt-text'); if (t) t.value = pkt.text; }
+                }
+            },
+
             renderPointsPanel: function () {
                 const panel = document.getElementById('points-panel');
                 if (!panel) return;
-                if (!this.ptsApplicable()) { panel.innerHTML = ''; return; }
+                const pktB = document.getElementById('pkt-btn');
+                if (!this.ptsApplicable()) { panel.innerHTML = ''; if (pktB) pktB.style.display = 'none'; return; }
                 const rows = this.ptsSorted(this.ptsRoundRows());
-                if (!rows.length || rows.every(r => r.holes === 0)) { panel.innerHTML = ''; return; }
+                if (!rows.length || rows.every(r => r.holes === 0)) { panel.innerHTML = ''; if (pktB) pktB.style.display = 'none'; return; }
+                if (pktB) pktB.style.display = '';
                 let html = `<div class="box" style="margin-top:0; border:1px solid rgba(245, 158, 11, 0.4);">
                     <div class="tx-sm" style="color:#F59E0B">🏆 POINTS GAME</div>`;
                 rows.forEach(r => {
