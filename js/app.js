@@ -304,8 +304,10 @@ const App = {
                 this.save();
             },
 
-            speak: function (text, callback) {
-                if (!this.d.voiceEnabled || !window.speechSynthesis || this.d.gameType === 'single') return;
+            speak: function (text, callback, force) {
+                // 'single' (Scorecard Only) is voice-muted by design; force=true is
+                // the one exception — the hole-completion naming (v285.12).
+                if (!this.d.voiceEnabled || !window.speechSynthesis || (this.d.gameType === 'single' && !force)) return;
                 window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(text);
                 if (callback) u.onend = callback;
@@ -651,6 +653,23 @@ const App = {
                 this.uDash();
                 this.checkAuto();
             },
+            holeDoneMsg: function () {
+                // HOLE NAMING (v285.11, shared v285.12): "Hole N complete — on to
+                // Hole M", wrap-aware (back-nine starts go 18 -> 1; the last played
+                // hole ends the round). Used by checkAuto and by special.js.
+                const doneH = parseInt(this.d.h);
+                let nextH = null;
+                if (parseInt(this.d.start) === 10) { nextH = doneH === 18 ? 1 : (doneH === 9 ? null : doneH + 1); }
+                else { nextH = doneH === 18 ? null : doneH + 1; }
+                try {
+                    // Shotgun starts (Scorecard Only): play order is relative, and
+                    // getRelHole/getAbsHole are the generalized shotgun versions.
+                    const rel = this.getRelHole(doneH);
+                    if (rel >= 18) nextH = null;
+                    else if (parseInt(this.d.start) !== 1 && parseInt(this.d.start) !== 10) nextH = this.getAbsHole(rel + 1);
+                } catch (e) {}
+                return nextH ? ('Hole ' + doneH + ' complete — on to Hole ' + nextH) : ('Hole ' + doneH + ' complete — round finished!');
+            },
             checkAuto: function () {
                 const s = this.d.s[this.d.h];
                 if (!s) return;
@@ -677,13 +696,9 @@ const App = {
                     // completed and where play goes next, on screen and out loud —
                     // if the group has physically moved on while the app sat a hole
                     // behind, hearing the wrong hole named is the tell.
-                    const doneH = parseInt(this.d.h);
-                    let nextH = null;
-                    if (parseInt(this.d.start) === 10) { nextH = doneH === 18 ? 1 : (doneH === 9 ? null : doneH + 1); }
-                    else { nextH = doneH === 18 ? null : doneH + 1; }
-                    const doneMsg = nextH ? ('Hole ' + doneH + ' complete — on to Hole ' + nextH) : ('Hole ' + doneH + ' complete — round finished!');
+                    const doneMsg = this.holeDoneMsg();
                     if (banner) { banner.textContent = doneMsg; banner.classList.add('show'); }
-                    this.speak(doneMsg);
+                    this.speak(doneMsg, null, true);
                     if (this.tmr) clearTimeout(this.tmr);
                     this.tmr = setTimeout(() => { 
                         try {
@@ -773,6 +788,27 @@ const App = {
                 }
                 b.textContent = 'HOLE ' + this.d.h + ' — ENTER SCORES';
                 b.style.display = 'block';
+            },
+            syncHoleBanners: function () {
+                // v285.12: the hole banners are DERIVED from current state here, on
+                // every dashboard render (uDash calls this), because app.js's own
+                // navH/mod/setPar are replaced by shotgun.js copies in the live app —
+                // event hooks placed in them never run (Dan's stale HOLE 1 banner,
+                // Nov 15). Deriving from state means no entry or navigation path —
+                // arrows, auto-advance, test fill, resume — can leave a banner stale.
+                if (!this.d || !this.d.ps || !this.d.ps.some(function (x) { return x; })) return;
+                const haB = document.getElementById('hole-arrival-banner');
+                const mhB = document.getElementById('missed-hole-banner');
+                if (this.d.roundEnded) {
+                    if (haB) haB.style.display = 'none';
+                    if (mhB) mhB.style.display = 'none';
+                    return;
+                }
+                try { this.checkMissedHole(); } catch (e) {}
+                const s = this.d.s[this.d.h];
+                const curEmpty = !s || Object.keys(s).length === 0;
+                if (curEmpty) this.showArrivalBanner();
+                else if (haB) haB.style.display = 'none';
             },
 
             testFill: function () {

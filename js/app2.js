@@ -535,6 +535,7 @@ Object.assign(App, {
                 this.updateJunkUI();
                 this.checkStandingsBtn();
                 try { this.renderPointsBanner(); } catch (e) { }
+                try { this.syncHoleBanners(); } catch (e) { }
             },
 
             updateStrokeAlert: function () {

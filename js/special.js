@@ -229,6 +229,8 @@
                         var banner = document.getElementById('auto-adv-banner');
                         if (anyEntered) {
                             if (banner) banner.classList.add('show');
+                            // v285.12: name the completed hole, same as the stock check.
+                            try { var dm = this.holeDoneMsg(); if (banner) banner.textContent = dm; this.speak(dm, null, true); } catch (e) {}
                             if (this.tmr) clearTimeout(this.tmr);
                             var self = this;
                             this.tmr = setTimeout(function () {
