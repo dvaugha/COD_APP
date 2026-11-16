@@ -140,7 +140,7 @@
     <h2>Round History</h2>
     <div id="historyList"></div>
   </div>
-  <p class="fine">POINTS CARD v2.0 · Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only, per Rick's book.<br>The paper card is the record. This app is the adding machine.</p>
+  <p class="fine">POINTS CARD v2.1 · Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only, per Rick's book.<br>The paper card is the record. This app is the adding machine.</p>
 </div>
 
 <!-- NEW ROUND SETUP -->
@@ -317,6 +317,7 @@
   </div>
   <div id="liveBoxes"></div>
   <div id="liveRows"></div>
+  <button class="btn btn-dark" id="liveFillBtn" style="display:none;" onclick="liveFill5()">🎲&nbsp; FILL NEXT 5 HOLES<span class="small">Practice only — fills this hole and the next four for the whole group, so you can fast-forward and see the turn, the flags, and the finish</span></button>
   <div class="rowflex">
     <button class="btn btn-ghost" id="livePrevBtn" onclick="liveNav(-1)">← PREV HOLE</button>
     <button class="btn btn-ghost" id="liveNextBtn" onclick="liveNav(1)">NEXT HOLE →</button>
@@ -353,6 +354,8 @@
    across however many carts), LIVE hole-by-hole entry for the group the
    collector's phone rides with, per-group intake on the board, and a
    PRACTICE sandbox (own storage key; can never touch the real book).
+   v2.1 (Nov 16, 2026): FILL NEXT 5 HOLES on the live screen — practice
+   only, hard-guarded on PRACTICE, fills blanks only, lands 5 holes on.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -903,6 +906,7 @@ function renderLive(){
   document.getElementById("liveReviewBtn").innerHTML = done
     ? "✓ REVIEW &amp; CONFIRM THIS GROUP<span class=\"small\">The whole card on the grid — confirm it and this group is in</span>"
     : "REVIEW THE CARD<span class=\"small\">The whole card on the grid — fix any cell, then confirm</span>";
+  document.getElementById("liveFillBtn").style.display = PRACTICE ? "" : "none";
 }
 function liveGo(h){
   liveHole = h;
@@ -921,6 +925,27 @@ function liveClear(pi){
   var ct = S.current.carts[curCart], pl = ct.players[pi];
   pl.scores[liveHole] = null; pl.np[liveHole] = false;
   ct.confirmed = false;
+  save(); renderLive();
+}
+/* Practice-only fast-forward (v2.1): fill this hole and the next four for the
+   whole group with plausible scores, then land on the hole after. Scores a
+   player already typed stay typed. Hard-guarded on PRACTICE — the button is
+   hidden in a real round, and this refuses to run there even if called. */
+function liveFill5(){
+  if (!PRACTICE || !S.current) return;
+  var r = S.current, ct = r.carts[curCart], pars = roundPars(r);
+  var start = liveHole, end = Math.min(start + 4, 17);
+  ct.players.forEach(function(pl){
+    for (var h = start; h <= end; h++) {
+      if (pl.scores[h] != null || pl.np[h]) continue;
+      var x = Math.random(), d = x < 0.12 ? -1 : (x < 0.50 ? 0 : (x < 0.82 ? 1 : 2));
+      var v = pars[h] + d;
+      if (v < 2) v = 2; if (v > 7) v = 7;
+      pl.scores[h] = v;
+    }
+  });
+  ct.confirmed = false; ct.liveUsed = true;
+  liveHole = Math.min(end + 1, 17); ct.liveHole = liveHole;
   save(); renderLive();
 }
 
