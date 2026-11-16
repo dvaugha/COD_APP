@@ -88,6 +88,24 @@
   textarea { font-size: 12.5px; min-height: 96px; font-family: ui-monospace, Menlo, monospace; }
   input[type=file] { font-size: 15px; margin: 10px 0; width: 100%; }
   label.lbl { display: block; font-size: 13.5px; font-weight: 700; color: #44504a; margin-top: 12px; }
+  #practiceBar { display: none; background: #b91c1c; color: #fff; border-radius: 10px; padding: 11px 12px; margin-bottom: 12px; font-size: 15px; line-height: 1.4; }
+  #practiceBar button { display: block; width: 100%; margin-top: 9px; padding: 12px; border: none; border-radius: 9px; background: #fff; color: #b91c1c; font-size: 16px; font-weight: 800; cursor: pointer; }
+  .livebanner { background: #14532d; color: #fff; border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 12px; }
+  .livebanner .hole { font-size: 46px; font-weight: 800; letter-spacing: 1px; line-height: 1.05; }
+  .livebanner .par { font-size: 17px; font-weight: 600; opacity: .92; margin-top: 2px; }
+  .scorerow { background: #fff; border: 1px solid #dde3dc; border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+  .scorerow .who { display: flex; justify-content: space-between; align-items: baseline; }
+  .scorerow .nm { font-size: 19px; font-weight: 800; }
+  .scorerow .run { font-size: 13.5px; color: #5b665e; font-weight: 600; }
+  .scorerow .cur { font-size: 15px; color: #37413b; margin: 5px 0 8px; }
+  .scorerow .cur b { font-size: 20px; }
+  .scorebtns { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  .scorebtns button { padding: 14px 0; font-size: 19px; font-weight: 800; border: 2px solid #d5dbd5; background: #f7f9f7; border-radius: 10px; cursor: pointer; }
+  .scorebtns button.on { background: #15803d; border-color: #15803d; color: #fff; }
+  .scorebtns button.clr { color: #991b1b; font-size: 15px; }
+  .turnbox { background: #eef6ff; border: 2px solid #2563eb; border-radius: 12px; padding: 13px; margin-bottom: 12px; font-size: 15.5px; line-height: 1.5; }
+  .missbox { background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; padding: 13px; margin-bottom: 12px; font-size: 15px; line-height: 1.45; }
+  .missbox button { display: block; width: 100%; margin-top: 9px; padding: 12px; border: none; border-radius: 9px; background: #f59e0b; color: #231a02; font-size: 16px; font-weight: 800; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -95,6 +113,11 @@
   <div class="ttl">⛳ POINTS CARD</div>
   <div class="sub">The points book — paper in, finished sheet out</div>
 </header>
+
+<div id="practiceBar">
+  🧪 <b>PRACTICE — this is a test copy of the book.</b> Nothing here can change the real book, and it all disappears when you exit.
+  <button onclick="exitPractice()">EXIT PRACTICE — THROW IT AWAY</button>
+</div>
 
 <!-- HOME / THE BOOK -->
 <div class="view on" id="v-home">
@@ -109,14 +132,15 @@
     <div id="bookTable"></div>
     <p class="cap" id="bookNote"></p>
   </div>
-  <button class="btn btn-green" id="newRoundBtn" onclick="startSetup()">➕&nbsp; NEW ROUND<span class="small">Pick the course, who's playing, and the carts</span></button>
+  <button class="btn btn-green" id="newRoundBtn" onclick="startSetup()">➕&nbsp; NEW ROUND<span class="small">Pick the course, who's playing, and the groups</span></button>
+  <button class="btn btn-amber" id="practiceBtn" onclick="enterPractice()">🧪&nbsp; PRACTICE — TRY THE APP<span class="small">A test copy of the book: run a whole round, learn every screen — nothing real is touched</span></button>
   <button class="btn btn-dark" onclick="openBackup()">💾&nbsp; BACKUP / RESTORE<span class="small">Move the whole book as one packet — send it to Dan, or bring one back</span></button>
   <button class="btn btn-amber" id="undoBtn" style="display:none;" onclick="undoLast()">↩&nbsp; UNDO LAST ROUND'S RATINGS<span class="small">Puts the book back exactly as it was before that round</span></button>
   <div class="card">
     <h2>Round History</h2>
     <div id="historyList"></div>
   </div>
-  <p class="fine">POINTS CARD · Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only, per Rick's book.<br>The paper card is the record. This app is the adding machine.</p>
+  <p class="fine">POINTS CARD v2.0 · Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only, per Rick's book.<br>The paper card is the record. This app is the adding machine.</p>
 </div>
 
 <!-- NEW ROUND SETUP -->
@@ -148,9 +172,12 @@
     </div>
   </div>
   <div class="card">
-    <h2>The carts</h2>
-    <p>Pairs by default — tap a number to move a player. 1 to 4 per cart.</p>
+    <h2>The groups</h2>
+    <p>A group is one tee time — 2 to 4 players, riding however they split up. Tap a number to move a player. 1 to 4 per group.</p>
     <div id="cartEditor"></div>
+    <label class="lbl">Scoring live? Which group is this phone riding with?</label>
+    <p>That group can be entered hole by hole during the round. The other groups come in the usual ways — paper, photo, or a packet.</p>
+    <div id="livePick"></div>
     <p class="cap" id="setupMsg" style="color:#b91c1c;font-weight:700;"></p>
   </div>
   <button class="btn btn-green" onclick="startRound()">START THE ROUND →</button>
@@ -164,33 +191,33 @@
     <p id="boardSub"></p>
     <div id="boardCarts"></div>
   </div>
-  <button class="btn btn-dark" onclick="openImport()">📥&nbsp; IMPORT A CART<span class="small">Paste a scorecard packet texted to you — no typing</span></button>
+  <button class="btn btn-dark" onclick="openImport()">📥&nbsp; IMPORT A GROUP<span class="small">Paste a scorecard packet texted to you — no typing</span></button>
   <button class="btn btn-green" onclick="openMerge()">MERGE &amp; FINISH →<span class="small">Combined sheet, places, and the ratings update</span></button>
-  <button class="btn btn-ghost" onclick="show('v-home')">← Home (the round stays saved)</button>
+  <button class="btn btn-ghost" onclick="goHome()">← Home (the round stays saved)</button>
   <button class="btn btn-red" onclick="discardRound()">Throw this round away</button>
 </div>
 
 <!-- IMPORT A CART FROM A PACKET -->
 <div class="view" id="v-import">
   <div class="card">
-    <h2>Import a cart</h2>
-    <p>Copy the scorecard packet from the text message, paste it here, and tap <b>READ THE PACKET</b>. The cart lands on the confirm grid filled in — check it against the picture, then confirm it like any other cart.</p>
+    <h2>Import a group</h2>
+    <p>Copy the scorecard packet from the text message, paste it here, and tap <b>READ THE PACKET</b>. The group lands on the confirm grid filled in — check it against the picture, then confirm it like any other group.</p>
     <textarea id="impText" rows="7" placeholder="Paste the packet here — it starts with PC1" style="width:100%; box-sizing:border-box; font-family:monospace; font-size:13px; padding:10px; border:1px solid #cbd5e1; border-radius:10px;"></textarea>
     <p class="cap" id="impMsg" style="font-weight:700;"></p>
     <div id="impPreview"></div>
     <button class="btn btn-green" id="impBtn" onclick="doImport()">READ THE PACKET</button>
   </div>
-  <button class="btn btn-ghost" onclick="openBoard()">← Back to the carts</button>
+  <button class="btn btn-ghost" onclick="openBoard()">← Back to the groups</button>
 </div>
 
-<!-- ONE CART: PHOTOS + CONFIRM GRID -->
+<!-- ONE GROUP: PHOTOS + CONFIRM GRID -->
 <div class="view" id="v-cart">
   <div class="card">
     <h2 id="cartTitle">Cart</h2>
     <p id="cartSub"></p>
     <div class="note" id="cartSourceNote" style="display:none;"></div>
     <h3>📷 The paper card — two photos</h3>
-    <p>Shoot each nine flat, in shade — and get close: fill the frame with your cart's rows. The photos stay with this round as the record.</p>
+    <p>Shoot each nine flat, in shade — and get close: fill the frame with your group's rows. The photos stay with this round as the record.</p>
     <label class="lbl">Front nine photo</label>
     <input type="file" id="fileFront" accept="image/*" capture="environment" onchange="handlePhoto(this,0)">
     <img class="cardphoto" id="photoFrontImg" style="display:none;" alt="Front nine card photo">
@@ -205,18 +232,18 @@
     <p>Gold dots under a score are its points. Tap any cell to set it. Empty cells show gold; a hole nobody played can be marked <b>not played</b> from the number pad.</p>
     <div id="cartGrid"></div>
     <p class="cap" id="cartSummary"></p>
-    <button class="btn btn-dark" onclick="fillTestScores()">🎲&nbsp; FILL TEST SCORES<span class="small">Random scores for every player in this cart — just for trying the app out</span></button>
-    <button class="btn btn-green" id="cartConfirmBtn" onclick="confirmCart()">✓&nbsp; CONFIRM THIS CART</button>
+    <button class="btn btn-dark" onclick="fillTestScores()">🎲&nbsp; FILL TEST SCORES<span class="small">Random scores for every player in this group — just for trying the app out</span></button>
+    <button class="btn btn-green" id="cartConfirmBtn" onclick="confirmCart()">✓&nbsp; CONFIRM THIS GROUP</button>
     <p class="cap" id="cartConfirmHint"></p>
   </div>
-  <button class="btn btn-ghost" onclick="openBoard()">← Back to the carts</button>
+  <button class="btn btn-ghost" onclick="openBoard()">← Back to the groups</button>
 </div>
 
 <!-- MERGE -->
 <div class="view" id="v-merge">
   <div class="card">
     <h2 id="mergeTitle">Merge</h2>
-    <p>Every cart has a slot. The ratings can't update until every slot is confirmed in — no cart gets forgotten.</p>
+    <p>Every group has a slot. The ratings can't update until every slot is confirmed in — no group gets forgotten.</p>
     <div id="mergeSlots"></div>
     <div id="mergeFlags"></div>
   </div>
@@ -226,7 +253,7 @@
   </div>
   <button class="btn btn-green" id="applyBtn" onclick="openApply()">APPLY RATINGS →<span class="small">See the before &amp; after first — nothing saves until you confirm</span></button>
   <button class="btn btn-dark" onclick="saveNoApply()">SAVE THE ROUND, SKIP RATINGS<span class="small">For a shortened or just-for-fun round — sheet kept, book untouched</span></button>
-  <button class="btn btn-ghost" onclick="openBoard()">← Back to the carts</button>
+  <button class="btn btn-ghost" onclick="openBoard()">← Back to the groups</button>
 </div>
 
 <!-- APPLY RATINGS -->
@@ -282,6 +309,22 @@
   <button class="btn btn-ghost" onclick="goHome()">← Home</button>
 </div>
 
+<!-- LIVE ENTRY — HOLE BY HOLE (v2.0) -->
+<div class="view" id="v-live">
+  <div class="livebanner">
+    <div class="hole" id="liveHoleLabel">HOLE 1</div>
+    <div class="par" id="liveParLabel">Par 4</div>
+  </div>
+  <div id="liveBoxes"></div>
+  <div id="liveRows"></div>
+  <div class="rowflex">
+    <button class="btn btn-ghost" id="livePrevBtn" onclick="liveNav(-1)">← PREV HOLE</button>
+    <button class="btn btn-ghost" id="liveNextBtn" onclick="liveNav(1)">NEXT HOLE →</button>
+  </div>
+  <button class="btn btn-dark" id="liveReviewBtn" onclick="openCart(curCart)">REVIEW THE CARD<span class="small">The whole card on the grid — fix any cell, then confirm</span></button>
+  <button class="btn btn-ghost" onclick="openBoard()">← Back to the groups</button>
+</div>
+
 <!-- KEYPAD MODAL -->
 <div class="modal" id="padModal">
   <div class="sheetm">
@@ -300,12 +343,16 @@
 <script>
 "use strict";
 /* ============================================================
-   POINTS CARD v1 — Rick's collector app.
+   POINTS CARD — Rick's collector app.
    Paper card -> photo -> confirm grid -> merge -> ratings -> sheet.
    The automatic photo read plugs in at READ_ENDPOINT: when it is
    non-empty, each nine's photo is POSTed there and the JSON reply
    { scores: [[per-hole scores for player 1], [player 2], ...] }
-   pre-fills that nine on the grid. Empty in v1: tap-in only.
+   pre-fills that nine on the grid.
+   v2.0 (Nov 16, 2026): groups (a group = one tee time, up to 4 players
+   across however many carts), LIVE hole-by-hole entry for the group the
+   collector's phone rides with, per-group intake on the board, and a
+   PRACTICE sandbox (own storage key; can never touch the real book).
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -322,6 +369,9 @@ var SEED = [
 ];
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
+var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
+var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
+var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
 
 var S = null;            // the whole book: {version, players{name:{total,rounds}}, rounds[], current, lastAppliedId}
@@ -395,13 +445,14 @@ function seedState(){
 }
 function save(){
   if (!LS) return;
-  try { LS.setItem(LSKEY, JSON.stringify(S)); }
+  var key = PRACTICE ? LSPKEY : LSKEY;
+  try { LS.setItem(key, JSON.stringify(S)); }
   catch (e) {
     /* storage full (photos) — retry with the current round's photos dropped, book intact */
     try {
       var c = clone(S);
       if (c.current) c.current.carts.forEach(function(ct){ ct.photoFront = null; ct.photoBack = null; ct.photosDropped = true; });
-      LS.setItem(LSKEY, JSON.stringify(c));
+      LS.setItem(key, JSON.stringify(c));
     } catch (e2) { /* book still lives in memory; the backup packet is the safety net */ }
   }
 }
@@ -415,7 +466,36 @@ function show(id){
   var vs = document.querySelectorAll(".view");
   for (var i = 0; i < vs.length; i++) vs[i].classList.remove("on");
   document.getElementById(id).classList.add("on");
+  var pb = document.getElementById("practiceBar");
+  if (pb) pb.style.display = PRACTICE ? "block" : "none";
   window.scrollTo(0, 0);
+}
+
+/* ---------- PRACTICE MODE (v2.0) ----------
+   A sandbox copy of the book under its own storage key. Entering practice
+   clones the real book aside (realS) and loads the clone; every save()
+   while PRACTICE is on writes only the practice key, so the real book on
+   disk is never touched. Exiting wipes the practice key and restores the
+   real book from memory. Backup/restore are refused while practicing. */
+function enterPractice(){
+  if (PRACTICE) return;
+  realS = S;
+  PRACTICE = true;
+  var p = null;
+  if (LS) { try { var raw = LS.getItem(LSPKEY); if (raw) { var o = JSON.parse(raw); if (o && o.players && o.rounds) p = o; } } catch (e) {} }
+  S = p || clone(realS);
+  save();
+  renderHome();
+  show("v-home");
+}
+function exitPractice(){
+  if (!PRACTICE) return;
+  if (S.current && !window.confirm("Throw away the practice round in progress and exit practice? The real book was never touched.")) return;
+  if (LS) { try { LS.removeItem(LSPKEY); } catch (e) {} }
+  PRACTICE = false;
+  S = realS; realS = null;
+  renderHome();
+  show("v-home");
 }
 function goHome(){ renderHome(); show("v-home"); }
 
@@ -443,6 +523,8 @@ function renderHome(){
   } else { rb.style.display = "none"; nrb.style.display = "block"; }
   var ub = document.getElementById("undoBtn");
   ub.style.display = (S.lastAppliedId && findRound(S.lastAppliedId)) ? "block" : "none";
+  var pb2 = document.getElementById("practiceBtn");
+  if (pb2) pb2.style.display = PRACTICE ? "none" : "block";
   var hl = document.getElementById("historyList");
   if (!S.rounds.length) hl.innerHTML = '<p style="color:#5b665e;">No rounds yet. The first finished round lands here.</p>';
   else hl.innerHTML = S.rounds.map(function(r){
@@ -468,6 +550,7 @@ function undoLast(){
 
 /* ---------- BACKUP / RESTORE ---------- */
 function openBackup(){
+  if (PRACTICE) { window.alert("You're in PRACTICE — backup and restore are turned off here so a practice copy can never overwrite the real book. Exit practice first."); return; }
   document.getElementById("backupOut").value = JSON.stringify(S);
   document.getElementById("backupMsg").textContent = "";
   document.getElementById("restoreMsg").textContent = "";
@@ -486,6 +569,7 @@ function copyBackup(){
   else { document.execCommand && document.execCommand("copy"); done(); }
 }
 function doRestore(){
+  if (PRACTICE) { window.alert("You're in PRACTICE — restore is turned off here. Exit practice first."); return; }
   var msg = document.getElementById("restoreMsg");
   var o = null;
   try { o = JSON.parse(document.getElementById("restoreIn").value); } catch (e) {}
@@ -498,7 +582,7 @@ function doRestore(){
 
 /* ---------- SETUP ---------- */
 function startSetup(){
-  setup = { order: [], guest: {}, inbook: {}, cartOf: {} };
+  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0 };
   document.getElementById("setDate").value = todayStr();
   var sel = document.getElementById("setCourse");
   var keys = Object.keys(COURSES).sort(function(a, b){ return COURSES[a].n < COURSES[b].n ? -1 : 1; });
@@ -565,8 +649,12 @@ function addName(toBook){
 }
 function setCart(nm, c){
   var counts = cartCounts();
-  if (setup.cartOf[nm] !== c && counts[c] >= 4) { window.alert("Cart " + c + " is full — 4 is the most a cart can hold."); return; }
+  if (setup.cartOf[nm] !== c && counts[c] >= 4) { window.alert("Group " + c + " is full — 4 is the most a group can hold."); return; }
   setup.cartOf[nm] = c;
+  renderSetup();
+}
+function setLiveCart(c){
+  setup.liveCart = (setup.liveCart === c) ? 0 : c;
   renderSetup();
 }
 function renderSetup(){
@@ -584,6 +672,12 @@ function renderSetup(){
     for (var c = 1; c <= 4; c++) btns += '<button class="' + (setup.cartOf[nm] === c ? "on" : "") + '" onclick="setCart(' + q(nm) + "," + c + ')">' + c + "</button>";
     return '<div class="cassign"><span class="nm">' + esc(nm) + (setup.guest[nm] ? ' <span style="color:#b45309;font-size:12px;font-weight:800;">GUEST</span>' : "") + '</span><span class="cs">' + btns + "</span></div>";
   }).join("");
+  var counts = cartCounts(), lp = "";
+  for (var gc = 1; gc <= 4; gc++) {
+    if (!counts[gc]) continue;
+    lp += '<span class="chip' + (setup.liveCart === gc ? " on" : "") + '" onclick="setLiveCart(' + gc + ')">⭐ Group ' + gc + (setup.liveCart === gc ? " — this phone rides here" : "") + "</span>";
+  }
+  document.getElementById("livePick").innerHTML = lp || '<p style="color:#5b665e;">Pick the players first — then say which group this phone rides with.</p>';
 }
 function startRound(){
   var msg = document.getElementById("setupMsg");
@@ -592,14 +686,15 @@ function startRound(){
   if (COURSES[ck].nines && ns[0].key === ns[1].key) { msg.textContent = "Pick two different nines."; return; }
   if (!setup.order.length) { msg.textContent = "Pick at least one player."; return; }
   var counts = cartCounts();
-  for (var c = 1; c <= 4; c++) if (counts[c] > 4) { msg.textContent = "Cart " + c + " has more than 4 players."; return; }
+  for (var c = 1; c <= 4; c++) if (counts[c] > 4) { msg.textContent = "Group " + c + " has more than 4 players."; return; }
   msg.textContent = "";
   var startRatings = {};
   setup.order.forEach(function(nm){ startRatings[nm] = (!setup.guest[nm] && S.players[nm]) ? clone(S.players[nm]) : null; });
-  var carts = [];
+  var carts = [], liveIdx = -1;
   for (c = 1; c <= 4; c++) {
     var ps = setup.order.filter(function(nm){ return setup.cartOf[nm] === c; });
     if (!ps.length) continue;
+    if (c === setup.liveCart) liveIdx = carts.length;
     carts.push({ players: ps.map(function(nm){
       return { name: nm, guest: !!setup.guest[nm], scores: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
                np: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false] };
@@ -608,7 +703,7 @@ function startRound(){
   S.current = { id: "r" + Date.now(), date: document.getElementById("setDate").value || todayStr(),
     courseKey: ck, courseName: COURSES[ck].n,
     nines: [ { key: ns[0].key, name: ns[0].name, pars: ns[0].pars.slice() }, { key: ns[1].key, name: ns[1].name, pars: ns[1].pars.slice() } ],
-    carts: carts, startRatings: startRatings, applied: false, preBook: null, postBook: null };
+    carts: carts, liveCart: liveIdx, startRatings: startRatings, applied: false, preBook: null, postBook: null };
   save();
   openBoard();
 }
@@ -617,17 +712,26 @@ function startRound(){
 function openBoard(){
   var r = S.current; if (!r) { goHome(); return; }
   document.getElementById("boardTitle").textContent = r.courseName + " — " + prettyDate(r.date);
-  document.getElementById("boardSub").textContent = r.nines[0].name + " / " + r.nines[1].name + " · par " + sumA(roundPars(r)) + " · " + allPlayers(r).length + " players in " + r.carts.length + (r.carts.length === 1 ? " cart" : " carts");
+  document.getElementById("boardSub").textContent = r.nines[0].name + " / " + r.nines[1].name + " · par " + sumA(roundPars(r)) + " · " + allPlayers(r).length + " players in " + r.carts.length + (r.carts.length === 1 ? " group" : " groups");
   document.getElementById("boardCarts").innerHTML = r.carts.map(function(ct, i){
     var entered = 0, total = 0;
     ct.players.forEach(function(pl){ entered += pEntered(pl); total += 18; });
     var st = ct.confirmed ? '<span style="color:#15803d;">✓ CONFIRMED IN</span>'
       : entered === 0 ? '<span style="color:#92400e;">… not started</span>'
       : '<span style="color:#92400e;">… ' + entered + " of " + total + " scores in</span>";
-    return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Cart ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
-      + '<div class="how">' + (ct.source === "packet" ? "📥 from a COD packet · " : "") + (ct.photoFront || ct.photoBack ? "📷 card photo on file · " : "") + 'Scores go on the confirm grid — by photo &amp; tap, by typing, or live hole by hole</div>'
+    var chips = "";
+    if (i === r.liveCart) chips += "⭐ this phone's group · ";
+    if (ct.liveUsed) chips += "▶ scored live · ";
+    if (ct.source === "packet") chips += "📥 from a COD packet · ";
+    if (ct.photoFront || ct.photoBack) chips += "📷 card photo on file · ";
+    var liveBtn = (i === r.liveCart && !ct.confirmed)
+      ? '<button class="btn btn-green" onclick="openLive(' + i + ')">▶&nbsp; ENTER SCORES LIVE<span class="small">Hole by hole, as you play</span></button>' : "";
+    return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Group ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
+      + '<div class="how">' + chips + 'Scores land on the confirm grid — live, by photo &amp; tap, by typing, or by packet</div>'
       + '<div class="st">' + st + '</div>'
-      + '<button class="btn ' + (ct.confirmed ? "btn-ghost" : "btn-green") + '" onclick="openCart(' + i + ')">' + (ct.confirmed ? "LOOK / FIX THIS CART" : "OPEN THIS CART →") + "</button></div>";
+      + liveBtn
+      + '<div class="rowflex"><button class="btn ' + (ct.confirmed ? "btn-ghost" : "btn-dark") + '" onclick="openCart(' + i + ')">' + (ct.confirmed ? "LOOK / FIX" : "📷 PHOTO / GRID") + '</button>'
+      + '<button class="btn btn-ghost" onclick="openImport()">📥 PACKET</button></div></div>';
   }).join("");
   show("v-board");
 }
@@ -640,10 +744,10 @@ function discardRound(){
 function openCart(i){
   curCart = i;
   var r = S.current, ct = r.carts[i];
-  document.getElementById("cartTitle").textContent = "Cart " + (i + 1) + " — " + ct.players.map(function(pl){ return pl.name; }).join(" & ");
+  document.getElementById("cartTitle").textContent = "Group " + (i + 1) + " — " + ct.players.map(function(pl){ return pl.name; }).join(" & ");
   document.getElementById("cartSub").textContent = courseLabel(r) + " · " + prettyDate(r.date);
   var sn = document.getElementById("cartSourceNote");
-  if (ct.source === "packet") { sn.style.display = "block"; sn.textContent = "📥 This cart came in as a packet from a COD scorecard. Check every cell against the picture, then confirm."; }
+  if (ct.source === "packet") { sn.style.display = "block"; sn.textContent = "📥 This group came in as a packet from a COD scorecard. Check every cell against the picture, then confirm."; }
   else sn.style.display = "none";
   document.getElementById("fileFront").value = "";
   document.getElementById("fileBack").value = "";
@@ -666,9 +770,9 @@ function renderCart(){
   });
   document.getElementById("cartSummary").textContent = lines.join("   ·   ");
   var btn = document.getElementById("cartConfirmBtn"), hint = document.getElementById("cartConfirmHint");
-  if (ct.confirmed) { btn.textContent = "✓ CONFIRMED — TAP TO CONFIRM AGAIN AFTER FIXES"; btn.disabled = false; hint.textContent = "This cart is in. Any fix you make here needs a fresh confirm."; }
-  else if (blanks > 0) { btn.disabled = true; btn.textContent = "✓ CONFIRM THIS CART"; hint.textContent = blanks + (blanks === 1 ? " empty cell" : " empty cells") + " left — fill every hole, or mark it not played from the number pad."; }
-  else { btn.disabled = false; btn.textContent = "✓ CONFIRM THIS CART"; hint.textContent = nps > 0 ? nps + (nps === 1 ? " hole" : " holes") + " marked not played — it will be flagged on the merge, and that player gets no ratings update." : "Every hole is filled. Confirm it and this cart is in."; }
+  if (ct.confirmed) { btn.textContent = "✓ CONFIRMED — TAP TO CONFIRM AGAIN AFTER FIXES"; btn.disabled = false; hint.textContent = "This group is in. Any fix you make here needs a fresh confirm."; }
+  else if (blanks > 0) { btn.disabled = true; btn.textContent = "✓ CONFIRM THIS GROUP"; hint.textContent = blanks + (blanks === 1 ? " empty cell" : " empty cells") + " left — fill every hole, or mark it not played from the number pad."; }
+  else { btn.disabled = false; btn.textContent = "✓ CONFIRM THIS GROUP"; hint.textContent = nps > 0 ? nps + (nps === 1 ? " hole" : " holes") + " marked not played — it will be flagged on the merge, and that player gets no ratings update." : "Every hole is filled. Confirm it and this group is in."; }
 }
 function handlePhoto(input, which){
   var f = input.files && input.files[0];
@@ -748,6 +852,78 @@ function confirmCart(){
   openBoard();
 }
 
+/* ---------- LIVE ENTRY (v2.0) — hole by hole for the group this phone rides with.
+   State-derived like COD's banners: the missed-hole flag and the turn box are
+   computed from the scores on every render, never latched. liveHole persists
+   on the cart so leaving and coming back lands on the same hole. ---------- */
+var liveHole = 0;
+function holeEntered(pl, h){ return pl.scores[h] != null || pl.np[h]; }
+function firstOpenHole(ct){
+  for (var h = 0; h < 18; h++) if (ct.players.some(function(pl){ return !holeEntered(pl, h); })) return h;
+  return 17;
+}
+function openLive(i){
+  if (!S.current) { goHome(); return; }
+  curCart = i;
+  var ct = S.current.carts[i];
+  liveHole = (typeof ct.liveHole === "number") ? ct.liveHole : firstOpenHole(ct);
+  renderLive();
+  show("v-live");
+}
+function renderLive(){
+  var r = S.current, ct = r.carts[curCart], pars = roundPars(r);
+  var h = liveHole;
+  document.getElementById("liveHoleLabel").textContent = "HOLE " + (h + 1);
+  document.getElementById("liveParLabel").textContent = (h < 9 ? r.nines[0].name : r.nines[1].name) + " nine · Par " + pars[h] + " · hole " + (h + 1) + " of 18";
+  var boxes = "", mh, names;
+  for (mh = h - 1; mh >= 0; mh--) {
+    names = ct.players.filter(function(pl){ return !holeEntered(pl, mh); }).map(function(pl){ return pl.name; });
+    if (names.length) break;
+  }
+  if (mh >= 0) boxes += '<div class="missbox">⚠ <b>Hole ' + (mh + 1) + ' still needs a score</b> — ' + names.map(esc).join(", ") + '.<button onclick="liveGo(' + mh + ')">GO TO HOLE ' + (mh + 1) + "</button></div>";
+  if (h === 9 && ct.players.every(function(pl){ for (var k = 0; k < 9; k++) if (!holeEntered(pl, k)) return false; return true; })) {
+    boxes += '<div class="turnbox"><b>At the turn — OUT:</b><br>' + ct.players.map(function(pl){
+      var g = 0, p = 0;
+      for (var k = 0; k < 9; k++) if (!pl.np[k] && pl.scores[k] != null) { g += pl.scores[k]; p += ptsFor(pl.scores[k], pars[k]); }
+      return esc(pl.name) + " — gross " + g + " · " + p + " pts";
+    }).join("<br>") + "</div>";
+  }
+  var done = ct.players.every(function(pl){ return pBlanks(pl) === 0; });
+  if (done) boxes += '<div class="banner"><b>All 18 holes are in for this group.</b> Review the card on the grid, then confirm this group.</div>';
+  document.getElementById("liveBoxes").innerHTML = boxes;
+  document.getElementById("liveRows").innerHTML = ct.players.map(function(pl, pi){
+    var cur = pl.np[h] ? "<b>NP</b> — hole not played" : (pl.scores[h] != null ? "<b>" + pl.scores[h] + "</b> — " + ptsFor(pl.scores[h], pars[h]) + " pts on this hole" : "not in yet");
+    var btns = "";
+    for (var v = 1; v <= 7; v++) btns += '<button class="' + (pl.scores[h] === v && !pl.np[h] ? "on" : "") + '" onclick="liveSet(' + pi + "," + v + ')">' + v + "</button>";
+    btns += '<button class="clr" onclick="liveClear(' + pi + ')">✕</button>';
+    return '<div class="scorerow"><div class="who"><span class="nm">' + esc(pl.name) + '</span><span class="run">gross ' + pGross(pl) + " · " + pPoints(pl, pars) + ' pts so far</span></div><div class="cur">This hole: ' + cur + '</div><div class="scorebtns">' + btns + "</div></div>";
+  }).join("");
+  document.getElementById("livePrevBtn").disabled = (h === 0);
+  document.getElementById("liveNextBtn").disabled = (h === 17);
+  document.getElementById("liveReviewBtn").innerHTML = done
+    ? "✓ REVIEW &amp; CONFIRM THIS GROUP<span class=\"small\">The whole card on the grid — confirm it and this group is in</span>"
+    : "REVIEW THE CARD<span class=\"small\">The whole card on the grid — fix any cell, then confirm</span>";
+}
+function liveGo(h){
+  liveHole = h;
+  S.current.carts[curCart].liveHole = h;
+  save(); renderLive();
+}
+function liveNav(d){ var h = liveHole + d; if (h < 0 || h > 17) return; liveGo(h); }
+function liveSet(pi, v){
+  var ct = S.current.carts[curCart], pl = ct.players[pi];
+  pl.scores[liveHole] = v; pl.np[liveHole] = false;
+  ct.confirmed = false; ct.liveUsed = true;
+  if (ct.players.every(function(p){ return holeEntered(p, liveHole); }) && liveHole < 17) { liveHole++; ct.liveHole = liveHole; }
+  save(); renderLive();
+}
+function liveClear(pi){
+  var ct = S.current.carts[curCart], pl = ct.players[pi];
+  pl.scores[liveHole] = null; pl.np[liveHole] = false;
+  ct.confirmed = false;
+  save(); renderLive();
+}
+
 /* ---------- IMPORT A CART FROM A PACKET (v1.7) ----------
    A cart scored in COD (Scorecard Only) travels as a text packet:
      PC1
@@ -805,7 +981,7 @@ function parsePacket(text){
     players.push({ label: label, cod: cod, scores: scores, total: total, resolved: null });
   }
   if (!players.length) return { ok: false, err: "No players in this packet. Copy the whole packet and try again." };
-  if (players.length > 4) return { ok: false, err: "This packet has " + players.length + " players — a cart holds at most 4." };
+  if (players.length > 4) return { ok: false, err: "This packet has " + players.length + " players — a group holds at most 4." };
   return { ok: true, courseKey: courseKey, nines: nines, players: players };
 }
 
@@ -882,7 +1058,7 @@ function doImport(){
     var ci = cartIndexOfPlayer(r, pp.resolved);
     if (ci >= 0) { if (target < 0) target = ci; else if (target !== ci) mixed = true; }
   });
-  if (mixed) { msg.textContent = "These players are set up in different carts in this round. Fix the carts in setup, or import into a fresh round."; return; }
+  if (mixed) { msg.textContent = "These players are set up in different groups in this round. Fix the groups in setup, or import into a fresh round."; return; }
   var conflict = false;
   if (target >= 0) {
     var tc = r.carts[target];
@@ -899,7 +1075,7 @@ function doImport(){
     opts += '<option value="' + esc(pp.label) + '">' + esc(pp.label) + " (new — add as guest)</option>";
     return "<p>" + line + '<select id="impSel' + i + '">' + opts + "</select></p>";
   }).join("");
-  if (conflict) html += '<p style="color:#b91c1c;font-weight:700;">Cart ' + (target + 1) + " already has scores in this round. Importing replaces them with the packet's.</p>";
+  if (conflict) html += '<p style="color:#b91c1c;font-weight:700;">Group ' + (target + 1) + " already has scores in this round. Importing replaces them with the packet's.</p>";
   if (!anyUnresolved && !conflict) {
     impPending = { pk: pk, target: target };
     finishImport();
@@ -909,7 +1085,7 @@ function doImport(){
   msg.style.color = "#166534";
   msg.textContent = anyUnresolved ? "Almost there — pick who's who, then import." : "Check it over, then import.";
   prev.innerHTML = html;
-  btn.textContent = conflict ? "REPLACE CART " + (target + 1) + "'S SCORES" : "IMPORT THIS CART";
+  btn.textContent = conflict ? "REPLACE GROUP " + (target + 1) + "'S SCORES" : "IMPORT THIS GROUP";
 }
 
 /* One-tap course switch (v1.8): the packet's course wins when the round is
@@ -1051,8 +1227,8 @@ function openMerge(){
   var r = S.current; if (!r) { goHome(); return; }
   document.getElementById("mergeTitle").textContent = "Merge — " + r.courseName + ", " + prettyDate(r.date);
   document.getElementById("mergeSlots").innerHTML = r.carts.map(function(ct, i){
-    return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Cart ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
-      + '<div class="st" style="color:' + (ct.confirmed ? "#15803d" : "#92400e") + ';">' + (ct.confirmed ? "✓ IN — confirmed" : "… not confirmed yet — open the cart and confirm it") + "</div></div>";
+    return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Group ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
+      + '<div class="st" style="color:' + (ct.confirmed ? "#15803d" : "#92400e") + ';">' + (ct.confirmed ? "✓ IN — confirmed" : "… not confirmed yet — open the group and confirm it") + "</div></div>";
   }).join("");
   var flags = [];
   allPlayers(r).forEach(function(pl){
@@ -1065,7 +1241,7 @@ function openMerge(){
   var ab = document.getElementById("applyBtn");
   ab.disabled = !allIn;
   ab.innerHTML = allIn ? "APPLY RATINGS →<span class=\"small\">See the before &amp; after first — nothing saves until you confirm</span>"
-    : "APPLY RATINGS →<span class=\"small\">Waiting on every cart to be confirmed in</span>";
+    : "APPLY RATINGS →<span class=\"small\">Waiting on every group to be confirmed in</span>";
   show("v-merge");
 }
 function archiveCurrent(applied){
