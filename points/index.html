@@ -13,6 +13,7 @@
   header { background: #14532d; color: #fff; padding: 16px 14px 13px; text-align: center; border-radius: 0 0 14px 14px; margin: 0 -12px 14px; }
   header .ttl { font-size: 26px; font-weight: 800; letter-spacing: .5px; }
   header .sub { font-size: 13px; opacity: .9; margin-top: 2px; }
+  header .ver { font-size: 16px; font-weight: 800; background: rgba(255,255,255,.20); padding: 2px 10px; border-radius: 999px; vertical-align: 4px; letter-spacing: .3px; }
   .view { display: none; }
   .view.on { display: block; }
   .card { background: #fff; border: 1px solid #dde3dc; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
@@ -110,7 +111,7 @@
 </head>
 <body>
 <header>
-  <div class="ttl">⛳ POINTS CARD</div>
+  <div class="ttl">⛳ POINTS CARD <span class="ver" id="verTop"></span></div>
   <div class="sub">The points book — paper in, finished sheet out</div>
 </header>
 
@@ -140,7 +141,7 @@
     <h2>Round History</h2>
     <div id="historyList"></div>
   </div>
-  <p class="fine">POINTS CARD v2.1 · Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only, per Rick's book.<br>The paper card is the record. This app is the adding machine.</p>
+  <p class="fine">POINTS CARD <span id="verFoot"></span> · Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only, per Rick's book.<br>The paper card is the record. This app is the adding machine.</p>
 </div>
 
 <!-- NEW ROUND SETUP -->
@@ -356,6 +357,9 @@
    PRACTICE sandbox (own storage key; can never touch the real book).
    v2.1 (Nov 16, 2026): FILL NEXT 5 HOLES on the live screen — practice
    only, hard-guarded on PRACTICE, fills blanks only, lands 5 holes on.
+   v2.2 (Nov 16, 2026): version shown bold in the green header banner as
+   well as the footer, both stamped from the single APP_VERSION constant
+   (Dan's ask — the footer fine print alone was too easy to miss).
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -373,6 +377,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
+var APP_VERSION = "v2.2";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1435,6 +1440,8 @@ function shareSheet(){
 
 /* ---------- boot ---------- */
 function boot(){
+  document.getElementById("verTop").textContent = APP_VERSION;
+  document.getElementById("verFoot").textContent = APP_VERSION;
   load();
   renderHome();
   show("v-home");
