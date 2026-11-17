@@ -136,6 +136,7 @@
   <button class="btn btn-green" id="newRoundBtn" onclick="startSetup()">➕&nbsp; NEW ROUND<span class="small">Pick the course, who's playing, and the groups</span></button>
   <button class="btn btn-amber" id="practiceBtn" onclick="enterPractice()">🧪&nbsp; PRACTICE — TRY THE APP<span class="small">A test copy of the book: run a whole round, learn every screen — nothing real is touched</span></button>
   <button class="btn btn-dark" onclick="openBackup()">💾&nbsp; BACKUP / RESTORE<span class="small">Move the whole book as one packet — send it to Dan, or bring one back</span></button>
+  <button class="btn btn-dark" onclick="openNames()">✏️&nbsp; EDIT NAMES<span class="small">Fix a name everywhere it appears, or take a player out of the book</span></button>
   <button class="btn btn-amber" id="undoBtn" style="display:none;" onclick="undoLast()">↩&nbsp; UNDO LAST ROUND'S RATINGS<span class="small">Puts the book back exactly as it was before that round</span></button>
   <div class="card">
     <h2>Round History</h2>
@@ -316,6 +317,17 @@
   <button class="btn btn-ghost" onclick="goHome()">← Home</button>
 </div>
 
+<!-- EDIT NAMES (v2.6) -->
+<div class="view" id="v-names">
+  <div class="card">
+    <h2>Edit Names</h2>
+    <p><b>Rename</b> fixes a name everywhere — the book and every past round's sheet — so the history stays correct. Scores never change. <b>Remove</b> takes a player out of the book; rounds already played stay on their sheets.</p>
+    <div id="nameEditBox"></div>
+    <div id="namesList"></div>
+  </div>
+  <button class="btn btn-ghost" onclick="goHome()">← Home</button>
+</div>
+
 <!-- LIVE ENTRY — HOLE BY HOLE (v2.0) -->
 <div class="view" id="v-live">
   <div class="livebanner">
@@ -378,6 +390,15 @@
    Nov 14, 2026), plus N round(s) played in the app — latest: …"; the
    sheet image footer says "Book started from Rick's book (Nov 14,
    2026)" — origin, true forever.
+   v2.6 (Nov 17, 2026): EDIT NAMES (Rick's ask, via Dan) — home-screen
+   button to a names list. RENAME sweeps the book, every archived
+   round (player rows, startRatings, pre/post snapshots) and any round
+   in progress, so history stays correct; refuses a name already in
+   the book. REMOVE takes a player out of the book only — played
+   rounds stay on their sheets; refused while he's in a round in
+   progress. First clean-up targets (Dan): Doug → Doug M, Dillon S →
+   Dylan S, Charlie Richardson → Charlie R, Bruce Hogan → Bruce H,
+   Eddie Knotts → Eddie K (steady First + Last Initial format).
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -395,7 +416,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v2.5";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v2.6";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -579,6 +600,69 @@ function undoLast(){
   r.applied = false; r.preBook = null; r.postBook = null;
   S.lastAppliedId = null;
   save(); goHome();
+}
+
+/* ---------- EDIT NAMES (v2.6) ---------- */
+var namesEdit = null;    // name currently being renamed, or null
+var namesShown = [];     // sorted names as rendered (index-based buttons — names can hold apostrophes)
+function openNames(){ namesEdit = null; renderNames(); show("v-names"); }
+function renderNames(){
+  var box = document.getElementById("nameEditBox");
+  if (namesEdit && S.players[namesEdit]) {
+    box.innerHTML = '<div class="banner" style="display:block;">Renaming <b>' + esc(namesEdit) + '</b>' +
+      '<input type="text" id="nameNew" value="' + esc(namesEdit) + '" style="margin:10px 0;">' +
+      '<div class="rowflex"><button class="btn btn-green" onclick="saveRename()">SAVE THE NEW NAME</button>' +
+      '<button class="btn btn-ghost" onclick="cancelRename()">Cancel</button></div>' +
+      '<p class="cap">The new name replaces the old one in the book and on every past round\'s sheet in the app. Scores don\'t change.</p></div>';
+  } else box.innerHTML = "";
+  namesShown = Object.keys(S.players).sort();
+  document.getElementById("namesList").innerHTML = namesShown.map(function(nm, i){
+    var p = S.players[nm];
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #e3e8e4;">' +
+      '<span><b>' + esc(nm) + '</b> <span class="cap">' + p.rounds + (p.rounds === 1 ? " round" : " rounds") + '</span></span>' +
+      '<span><button class="chip" onclick="startRenameIdx(' + i + ')">Rename</button><button class="chip" onclick="removeNameIdx(' + i + ')">Remove</button></span></div>';
+  }).join("");
+}
+function startRenameIdx(i){ startRename(namesShown[i]); }
+function removeNameIdx(i){ removeName(namesShown[i]); }
+function startRename(nm){ namesEdit = nm; renderNames(); var inp = document.getElementById("nameNew"); if (inp) { inp.focus(); inp.select(); } }
+function cancelRename(){ namesEdit = null; renderNames(); }
+function saveRename(){
+  var inp = document.getElementById("nameNew"); if (!inp || !namesEdit) return;
+  var nn = inp.value.trim().replace(/\s+/g, " "), old = namesEdit;
+  if (!nn) { window.alert("The name can't be blank."); return; }
+  if (nn === old) { cancelRename(); return; }
+  if (S.players[nn]) { window.alert("“" + nn + "” is already in the book — pick a different name."); return; }
+  if (!window.confirm("Rename " + old + " to " + nn + "?\n\nThe name changes in the book and on every past round's sheet in the app. Scores don't change.")) return;
+  doRename(old, nn);
+  namesEdit = null;
+  save(); renderNames(); renderHome();
+}
+function sweepBookKeys(obj, old, nn){ if (obj && obj[old] !== undefined) { obj[nn] = obj[old]; delete obj[old]; } }
+function sweepRoundNames(r, old, nn){
+  r.carts.forEach(function(ct){ ct.players.forEach(function(pl){ if (pl.name === old && !pl.guest) pl.name = nn; }); });
+  if (r.startRatings && r.startRatings[old]) { r.startRatings[nn] = r.startRatings[old]; delete r.startRatings[old]; }
+  sweepBookKeys(r.preBook, old, nn);
+  sweepBookKeys(r.postBook, old, nn);
+}
+function doRename(old, nn){
+  S.players[nn] = S.players[old]; delete S.players[old];
+  S.rounds.forEach(function(r){ sweepRoundNames(r, old, nn); });
+  if (S.current) sweepRoundNames(S.current, old, nn);
+  return true;
+}
+function removeName(nm){
+  if (!S.players[nm]) return false;
+  if (S.current && allPlayers(S.current).some(function(pl){ return pl.name === nm && !pl.guest; })) {
+    window.alert(nm + " is in the round in progress — finish that round or throw it away first.");
+    return false;
+  }
+  var p = S.players[nm];
+  if (!window.confirm("Remove " + nm + " from the book?\n\nThe name leaves the ratings and the pick list. The " + p.rounds + (p.rounds === 1 ? " round" : " rounds") + " already played stay on their sheets.")) return false;
+  delete S.players[nm];
+  if (namesEdit === nm) namesEdit = null;
+  save(); renderNames(); renderHome();
+  return true;
 }
 
 /* ---------- BACKUP / RESTORE ---------- */
