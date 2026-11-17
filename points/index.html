@@ -370,6 +370,8 @@
    method — he caught the cart-era pairing default splitting a 3-player
    pick 2+1). Picks fill groups to the even split in order (6 → 3+3,
    5 → 3+2); picks are capped at the total; manual moves stay sticky.
+   v2.4 (Nov 16, 2026): Dan's wording — the live-group chip now reads
+   "this phone rides in this group" (was "this phone rides here").
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -387,7 +389,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v2.3";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v2.4";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -721,7 +723,7 @@ function renderSetup(){
   var counts = cartCounts(), lp = "";
   for (var gc = 1; gc <= 4; gc++) {
     if (!counts[gc]) continue;
-    lp += '<span class="chip' + (setup.liveCart === gc ? " on" : "") + '" onclick="setLiveCart(' + gc + ')">⭐ Group ' + gc + (setup.liveCart === gc ? " — this phone rides here" : "") + "</span>";
+    lp += '<span class="chip' + (setup.liveCart === gc ? " on" : "") + '" onclick="setLiveCart(' + gc + ')">⭐ Group ' + gc + (setup.liveCart === gc ? " — this phone rides in this group" : "") + "</span>";
   }
   document.getElementById("livePick").innerHTML = lp || '<p style="color:#5b665e;">Pick the players first — then say which group this phone rides with.</p>';
 }
