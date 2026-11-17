@@ -162,8 +162,14 @@
     <p class="cap" id="setParInfo"></p>
   </div>
   <div class="card">
+    <h2>How many are playing today?</h2>
+    <p>Tap the total first — the groups split as evenly as they can, and the names fill in as you pick them.</p>
+    <div id="totalPick"></div>
+    <p class="cap" id="splitInfo"></p>
+  </div>
+  <div class="card">
     <h2>Who's playing?</h2>
-    <p>Tap everyone in the game.</p>
+    <p>Tap everyone in the game — they fill the groups in order.</p>
     <div id="rosterChips"></div>
     <label class="lbl" for="addName">Someone else?</label>
     <input type="text" id="addName" placeholder="Name">
@@ -174,7 +180,7 @@
   </div>
   <div class="card">
     <h2>The groups</h2>
-    <p>A group is one tee time — 2 to 4 players, riding however they split up. Tap a number to move a player. 1 to 4 per group.</p>
+    <p>A group is one tee time, riding however they split up. The day's total splits them in order — tap a number to move a player. 1 to 4 per group.</p>
     <div id="cartEditor"></div>
     <label class="lbl">Scoring live? Which group is this phone riding with?</label>
     <p>That group can be entered hole by hole during the round. The other groups come in the usual ways — paper, photo, or a packet.</p>
@@ -360,6 +366,10 @@
    v2.2 (Nov 16, 2026): version shown bold in the green header banner as
    well as the footer, both stamped from the single APP_VERSION constant
    (Dan's ask — the footer fine print alone was too easy to miss).
+   v2.3 (Nov 16, 2026): setup asks the day's TOTAL first (2–12, Dan's
+   method — he caught the cart-era pairing default splitting a 3-player
+   pick 2+1). Picks fill groups to the even split in order (6 → 3+3,
+   5 → 3+2); picks are capped at the total; manual moves stay sticky.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -377,7 +387,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v2.2";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v2.3";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -590,7 +600,7 @@ function doRestore(){
 
 /* ---------- SETUP ---------- */
 function startSetup(){
-  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0 };
+  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0, total: 0 };
   document.getElementById("setDate").value = todayStr();
   var sel = document.getElementById("setCourse");
   var keys = Object.keys(COURSES).sort(function(a, b){ return COURSES[a].n < COURSES[b].n ? -1 : 1; });
@@ -630,18 +640,35 @@ function cartCounts(){
   setup.order.forEach(function(nm){ c[setup.cartOf[nm]]++; });
   return c;
 }
+/* Even split for the day's total (v2.3, Dan's method): as few groups as
+   possible, sizes within 1 of each other, bigger groups first.
+   5 → [3,2] · 6 → [3,3] · 7 → [4,3] · 10 → [4,3,3] · 12 → [4,4,4]. */
+function splitSizes(n){
+  if (!n) return [];
+  var g = Math.ceil(n / 4), base = Math.floor(n / g), r = n - base * g, out = [];
+  for (var i = 0; i < g; i++) out.push(base + (i < r ? 1 : 0));
+  return out;
+}
+function setTotal(n){
+  if (n < setup.order.length) { window.alert("You've already picked " + setup.order.length + " players — tap a picked name off before lowering the total."); return; }
+  setup.total = n;
+  renderSetup();
+}
 function defaultCart(){
-  var c = cartCounts(), i;
-  for (i = 1; i <= 4; i++) if (c[i] === 1) return i;       // finish a pair first
-  for (i = 1; i <= 4; i++) if (c[i] === 0) return i;       // then an empty cart
-  for (i = 1; i <= 4; i++) if (c[i] < 4) return i;         // then anywhere with room
+  var c = cartCounts(), sizes = splitSizes(setup.total), i;
+  for (i = 1; i <= sizes.length; i++) if (c[i] < sizes[i - 1]) return i;  // fill each group to its split size, in order
+  for (i = 1; i <= 4; i++) if (c[i] < 4) return i;                        // manual moves can unbalance it — anywhere with room
   return 1;
 }
 function q(s){ return "'" + String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'"; }
 function togglePlayer(nm){
   var i = setup.order.indexOf(nm);
   if (i >= 0) { setup.order.splice(i, 1); delete setup.cartOf[nm]; }
-  else { setup.order.push(nm); setup.cartOf[nm] = defaultCart(); }
+  else {
+    if (!setup.total) { window.alert("First — how many are playing today? Tap the total above the names."); return; }
+    if (setup.order.length >= setup.total) { window.alert("That's all " + setup.total + " for today — tap a picked name off first, or raise the total."); return; }
+    setup.order.push(nm); setup.cartOf[nm] = defaultCart();
+  }
   renderSetup();
 }
 function addName(toBook){
@@ -649,7 +676,11 @@ function addName(toBook){
   var nm = inp.value.trim();
   if (!nm) return;
   if (S.players[nm] && !toBook) { window.alert(nm + " is already in the book — tap their name above instead of adding a guest."); return; }
-  if (setup.order.indexOf(nm) < 0) { setup.order.push(nm); setup.cartOf[nm] = defaultCart(); }
+  if (setup.order.indexOf(nm) < 0) {
+    if (!setup.total) { window.alert("First — how many are playing today? Tap the total above the names."); return; }
+    if (setup.order.length >= setup.total) { window.alert("That's all " + setup.total + " for today — tap a picked name off first, or raise the total."); return; }
+    setup.order.push(nm); setup.cartOf[nm] = defaultCart();
+  }
   if (toBook) { setup.inbook[nm] = true; delete setup.guest[nm]; }
   else { setup.guest[nm] = true; delete setup.inbook[nm]; }
   inp.value = "";
@@ -666,6 +697,13 @@ function setLiveCart(c){
   renderSetup();
 }
 function renderSetup(){
+  var tp = "";
+  for (var tn = 2; tn <= 12; tn++) tp += '<span class="chip' + (setup.total === tn ? " on" : "") + '" onclick="setTotal(' + tn + ')">' + tn + "</span>";
+  document.getElementById("totalPick").innerHTML = tp;
+  var sizes = splitSizes(setup.total);
+  document.getElementById("splitInfo").textContent = !setup.total
+    ? "No total yet — the names wait for it."
+    : setup.total + " playing → " + (sizes.length === 1 ? "one group of " + sizes[0] : sizes.length + " groups: " + sizes.join(" and ")) + ". Tap names and they fill in order; the number buttons below still move anybody.";
   var names = Object.keys(S.players).sort();
   Object.keys(setup.guest).concat(Object.keys(setup.inbook)).forEach(function(nm){ if (names.indexOf(nm) < 0) names.push(nm); });
   document.getElementById("rosterChips").innerHTML = names.map(function(nm){
@@ -674,7 +712,7 @@ function renderSetup(){
     return '<span class="chip' + (on ? " on" : "") + '" onclick="togglePlayer(' + q(nm) + ')">' + esc(nm) + tag + "</span>";
   }).join("");
   var ed = document.getElementById("cartEditor");
-  if (!setup.order.length) ed.innerHTML = '<p style="color:#5b665e;">Nobody picked yet — tap some names above.</p>';
+  if (!setup.order.length) ed.innerHTML = '<p style="color:#5b665e;">' + (setup.total ? "Nobody picked yet — tap some names above." : "First tap how many are playing today — then the names, and they split into groups on their own.") + "</p>";
   else ed.innerHTML = setup.order.map(function(nm){
     var btns = "";
     for (var c = 1; c <= 4; c++) btns += '<button class="' + (setup.cartOf[nm] === c ? "on" : "") + '" onclick="setCart(' + q(nm) + "," + c + ')">' + c + "</button>";
