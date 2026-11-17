@@ -429,6 +429,11 @@
    so a COD packet label like "Eddie M" still lands on Eddie Mozingo
    (EM) instead of tangling with Eddie Knotts (EK) via the bare COD
    name "Eddie".
+   v2.10 (Nov 17, 2026): seed names synced to Rick's corrected packet
+   (sent to Dan the same morning): Dylan STYERS (not Steyers), Danny
+   VAUGHAN (not Vaughn), Bruce Hogan (BH) (not BK), and Gene's
+   neighbor is Charlie MOORE (CM) — not Charlie Beach. Figures still
+   the Nov 14 verified totals.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -439,14 +444,14 @@ var COURSES = {"byrd":{"n":"Byrd (Sea Trail)","r":"North Carolina","p":[4,3,5,4,
    [name, rounds, total points] — ratings are running averages of total/rounds. ---------- */
 var SEED = [
   ["Dave Gould (DG)", 8, 61.01], ["Doug Mathis (DM)", 25, 498.91], ["Eddie Mozingo (EM)", 17, 292.04], ["Carl Kraus (CK)", 1, 18.00],
-  ["Rick Turner (RT)", 27, 501.93], ["Danny Vaughn (DV)", 8, 151.02], ["Dean Scott (DS)", 9, 173.97], ["Eddie Knotts (EK)", 4, 79.00],
-  ["Chase", 1, 22.00], ["Charlie Richardson (CR)", 4, 93.00], ["Dylan Steyers (DS)", 5, 128.00], ["Gene Hardee (GH)", 5, 132.00],
-  ["Bruce Hogan (BK)", 1, 27.00], ["Ronnie Barbee (RB)", 21, 577.08], ["Thomas Wallace (TW)", 8, 240.00], ["Charlie Beach (CB)", 3, 101.01]
+  ["Rick Turner (RT)", 27, 501.93], ["Danny Vaughan (DV)", 8, 151.02], ["Dean Scott (DS)", 9, 173.97], ["Eddie Knotts (EK)", 4, 79.00],
+  ["Chase", 1, 22.00], ["Charlie Richardson (CR)", 4, 93.00], ["Dylan Styers (DS)", 5, 128.00], ["Gene Hardee (GH)", 5, 132.00],
+  ["Bruce Hogan (BH)", 1, 27.00], ["Ronnie Barbee (RB)", 21, 577.08], ["Thomas Wallace (TW)", 8, 240.00], ["Charlie Moore (CM)", 3, 101.01]
 ];
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v2.9";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v2.10";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
