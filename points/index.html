@@ -442,6 +442,9 @@
    Picker gains a ⭐ MOST PLAYED group on top: Rick's marked five
    (Arrowhead + the four Ocean Ridge courses) plus any course the
    book records 5+ rounds at, automatically (Dan's rule).
+   v2.12 (Nov 17, 2026): Dan added six more favorites — the three
+   Sea Trail courses (Byrd, Jones, Maples), Crow Creek, Rivers Edge,
+   and Tidewater. MOST PLAYED now starts with eleven.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -459,7 +462,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v2.11";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v2.12";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -746,7 +749,8 @@ var COURSE_REGIONS = ["North Carolina", "South Carolina", "Florida — The Villa
    the group; any course the book records FAVE_MIN_ROUNDS or more rounds
    at joins them automatically (Dan's rule, Nov 17, 2026). Once a course
    is in, it stays — round counts only grow. */
-var FAVE_SEED = ["arrowhead", "leopardschase", "panthersrun", "lionspaw", "tigerseye"];
+var FAVE_SEED = ["arrowhead", "leopardschase", "panthersrun", "lionspaw", "tigerseye",
+  "byrd", "jones", "maples", "cc", "re", "tidewater"];
 var FAVE_MIN_ROUNDS = 5;
 function faveKeys(){
   var counts = {};
