@@ -372,6 +372,12 @@
    5 → 3+2); picks are capped at the total; manual moves stay sticky.
    v2.4 (Nov 16, 2026): Dan's wording — the live-group chip now reads
    "this phone rides in this group" (was "this phone rides here").
+   v2.5 (Nov 16, 2026): the book note follows the book (Dan's catch —
+   "verified Nov 14" went stale the moment a round was added). With
+   rounds in history it now reads "Started from Rick's book (verified
+   Nov 14, 2026), plus N round(s) played in the app — latest: …"; the
+   sheet image footer says "Book started from Rick's book (Nov 14,
+   2026)" — origin, true forever.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -389,7 +395,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v2.4";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v2.5";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -524,6 +530,13 @@ function bookRows(book){
   return Object.keys(book).map(function(nm){ return { name: nm, total: book[nm].total, rounds: book[nm].rounds, avg: avgOf(book[nm]) }; })
     .sort(function(a, b){ return a.avg - b.avg; });
 }
+function bookNoteText(){
+  var tail = " Ratings are running averages — total points ÷ rounds.";
+  if (!S.rounds.length) return SEED_NOTE + "." + tail;
+  var n = S.rounds.length, last = S.rounds[0];
+  return "Started from Rick's book (verified Nov 14, 2026), plus " + n + (n === 1 ? " round" : " rounds") +
+    " played in the app — latest: " + last.courseName + ", " + prettyDate(last.date) + "." + tail;
+}
 function bookTableHTML(book){
   var rows = bookRows(book);
   var html = '<table class="stand"><tr><th>Player</th><th style="text-align:right;">Rating</th><th style="text-align:right;">Rounds</th><th style="text-align:right;">Total pts</th></tr>';
@@ -532,7 +545,7 @@ function bookTableHTML(book){
 }
 function renderHome(){
   document.getElementById("bookTable").innerHTML = bookTableHTML(S.players);
-  document.getElementById("bookNote").textContent = SEED_NOTE + ". Ratings are running averages — total points ÷ rounds.";
+  document.getElementById("bookNote").textContent = bookNoteText();
   var sb = document.getElementById("seedBanner");
   if (!S.rounds.length && !S.current) { sb.style.display = "block"; sb.innerHTML = "📖 <b>The book is loaded.</b> " + esc(SEED_NOTE) + " — every player's rating and rounds are in, ready for the next round."; }
   else sb.style.display = "none";
@@ -1460,7 +1473,7 @@ function drawSheet(r){
   });
   y += 18;
   x.fillStyle = "#77837a"; x.font = "500 14px -apple-system, Arial, sans-serif";
-  x.fillText("Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only. " + SEED_NOTE + ".", M, y + 14);
+  x.fillText("Points: eagle 4 · birdie 3 · par 2 · bogey 1 · double or worse 0 — gross only. Book started from Rick's book (Nov 14, 2026).", M, y + 14);
   return cv;
 }
 function shareSheet(){
