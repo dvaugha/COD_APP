@@ -418,6 +418,17 @@
    dropdown renders them as labeled groups, alphabetical inside each.
    Any course missing a known region still lists after the groups, so
    nothing can silently vanish from the picker.
+   v2.9 (Nov 17, 2026): the seed book now uses Rick's name format —
+   FULL NAME + (INITIALS) — after Rick renamed in his app and Dan
+   matched his book to Rick's packet (Dan: "I was wrong on how he
+   wanted these names"). Figures unchanged (Nov 14 verified totals);
+   "Charlie (Gene's neighbor)" is Charlie Beach (CB); Chase keeps his
+   short name — Rick's current book no longer lists him, but his
+   Nov 14 line stays in the seed until Dan says otherwise. Packet
+   name resolution: the prefix step now settles per try (label first)
+   so a COD packet label like "Eddie M" still lands on Eddie Mozingo
+   (EM) instead of tangling with Eddie Knotts (EK) via the bare COD
+   name "Eddie".
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -427,15 +438,15 @@ var COURSES = {"byrd":{"n":"Byrd (Sea Trail)","r":"North Carolina","p":[4,3,5,4,
 /* ---------- The seed: Rick's book, verified Nov 14, 2026.
    [name, rounds, total points] — ratings are running averages of total/rounds. ---------- */
 var SEED = [
-  ["Dave G", 8, 61.01], ["Doug", 25, 498.91], ["Eddie M", 17, 292.04], ["Carl K", 1, 18.00],
-  ["Rick T", 27, 501.93], ["Danny V", 8, 151.02], ["Dean S", 9, 173.97], ["Eddie Knotts", 4, 79.00],
-  ["Chase", 1, 22.00], ["Charlie Richardson", 4, 93.00], ["Dillon S", 5, 128.00], ["Gene H", 5, 132.00],
-  ["Bruce Hogan", 1, 27.00], ["Ronnie B", 21, 577.08], ["Thomas W", 8, 240.00], ["Charlie (Gene's neighbor)", 3, 101.01]
+  ["Dave Gould (DG)", 8, 61.01], ["Doug Mathis (DM)", 25, 498.91], ["Eddie Mozingo (EM)", 17, 292.04], ["Carl Kraus (CK)", 1, 18.00],
+  ["Rick Turner (RT)", 27, 501.93], ["Danny Vaughn (DV)", 8, 151.02], ["Dean Scott (DS)", 9, 173.97], ["Eddie Knotts (EK)", 4, 79.00],
+  ["Chase", 1, 22.00], ["Charlie Richardson (CR)", 4, 93.00], ["Dylan Steyers (DS)", 5, 128.00], ["Gene Hardee (GH)", 5, 132.00],
+  ["Bruce Hogan (BK)", 1, 27.00], ["Ronnie Barbee (RB)", 21, 577.08], ["Thomas Wallace (TW)", 8, 240.00], ["Charlie Beach (CB)", 3, 101.01]
 ];
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v2.8";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v2.9";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1188,16 +1199,16 @@ function resolvePacketName(pp, pool){
   var i, j;
   for (i = 0; i < tries.length; i++) for (j = 0; j < pool.length; j++) if (pool[j] === tries[i]) return pool[j];
   for (i = 0; i < tries.length; i++) for (j = 0; j < pool.length; j++) if (pool[j].toLowerCase() === tries[i].toLowerCase()) return pool[j];
-  var hits = [];
   for (i = 0; i < tries.length; i++) {
     var t = tries[i].toLowerCase();
     if (t.length < 3) continue;
+    var hits = [];
     for (j = 0; j < pool.length; j++) {
       var p = pool[j].toLowerCase();
       if ((p.indexOf(t) === 0 || t.indexOf(p) === 0) && hits.indexOf(pool[j]) < 0) hits.push(pool[j]);
     }
+    if (hits.length === 1) return hits[0];
   }
-  if (hits.length === 1) return hits[0];
   var byInit = {};
   pool.forEach(function(n){ var k = n.charAt(0).toLowerCase(); (byInit[k] = byInit[k] || []).push(n); });
   for (i = 0; i < tries.length; i++) {
