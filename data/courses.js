@@ -26,13 +26,18 @@ const CS_INDEX = {
     "rga": { n: "Raleigh Golf Association", r: "NC" },
     "rr": { n: "River Ridge", r: "NC" },
     "sandpiper": { n: "Sandpiper Bay", r: "NC" },
+    "lionspaw": { n: "Lion's Paw", r: "NC" },
+    "panthersrun": { n: "Panther's Run", r: "NC" },
     
     // SOUTH CAROLINA (SC)
     "prestwick": { n: "Prestwick CC", r: "SC" },
     "blackmoor": { n: "Blackmoor GC", r: "SC" },
     "river_hills": { n: "River Hills", r: "SC" },
     "grande_dunes": { n: "Grande Dunes Resort Course", r: "SC" },
-    "tidewater": { n: "Tidewater", r: "SC" }
+    "tidewater": { n: "Tidewater", r: "SC" },
+    "caledonia": { n: "Caledonia", r: "SC" },
+    "trueblue": { n: "True Blue", r: "SC" },
+    "diamondback": { n: "Diamondback", r: "SC" }
 };
 
 /**
