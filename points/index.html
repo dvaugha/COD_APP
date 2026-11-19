@@ -137,7 +137,10 @@
   .stepbtn.plus { background: #15803d; border-color: #15803d; color: #fff; font-size: 30px; }
   .stepbtn:active, .stepmid:active { transform: scale(.97); }
   .stepmid { flex: 1; background: #fff; border: 2px solid #d5dbd5; border-radius: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 7px 4px; }
-  .stepmid .sc { font-size: 31px; font-weight: 800; line-height: 1.05; color: #14532d; }
+  .stepmid .sc { font-size: 31px; font-weight: 800; line-height: 1.05; color: #1f2937; }
+  .stepmid .sc.und { color: #15803d; }
+  .stepmid .sc.bog { color: #b45309; }
+  .stepmid .sc.dbl { color: #b91c1c; }
   .stepmid .sc.dim { font-size: 24px; color: #7a8a7f; }
   .stepmid .sc.np { color: #b45309; }
   .stepmid .scp { font-size: 13px; color: #5b665e; font-weight: 600; }
@@ -699,7 +702,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.1.2";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.1.3";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -2352,10 +2355,14 @@ function kClear(pi){ var pl = K.players[pi]; pl.scores[kHole] = null; pl.np[kHol
    voice, auto-advance and standings behave exactly as before. */
 function stepRowHTML(pl, pi, pars, h, pre, runExtra, extra){
   var par = pars[h], entered = pl.scores[h] != null && !pl.np[h], pts = entered ? ptsFor(pl.scores[h], par) : 0;
+  /* v3.1.3 (Dan's ask): the entered number is colored by result vs par —
+     under par green, par grey (the base .sc color), bogey amber, double+ red. */
+  var sdiff = entered ? pl.scores[h] - par : 0;
+  var scls = sdiff < 0 ? "sc und" : sdiff === 0 ? "sc par" : sdiff === 1 ? "sc bog" : "sc dbl";
   var center = pl.np[h]
     ? '<span class="sc np">NP</span><span class="scp">hole not played</span>'
     : entered
-      ? '<span class="sc">' + pl.scores[h] + '</span><span class="scp">' + pts + (pts === 1 ? " pt" : " pts") + " on this hole · par " + par + "</span>"
+      ? '<span class="' + scls + '">' + pl.scores[h] + '</span><span class="scp">' + pts + (pts === 1 ? " pt" : " pts") + " on this hole · par " + par + "</span>"
       : '<span class="sc dim">Par ' + par + '</span><span class="scp">tap here for par</span>';
   var clr = (entered || pl.np[h]) ? '<button class="rowclr" onclick="' + pre + 'Clear(' + pi + ')" title="Clear this hole">✕</button>' : "";
   return '<div class="scorerow"><div class="who"><span class="nm">' + esc(pl.name) + '</span><span class="run">gross ' + pGross(pl) + " · " + pPoints(pl, pars) + ' pts so far' + (runExtra || "") + "</span>" + clr + '</div>'
