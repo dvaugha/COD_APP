@@ -377,8 +377,8 @@
     <div class="par" id="liveParLabel">Par 4</div>
   </div>
   <div id="liveBoxes"></div>
-  <div class="standstrip" id="liveStand" style="display:none;"></div>
   <div id="liveRows"></div>
+  <div class="standstrip" id="liveStand" style="display:none;"></div>
   <button class="btn btn-dark" id="liveFillBtn" style="display:none;" onclick="liveFill5()">🎲&nbsp; FILL NEXT 5 HOLES<span class="small">Practice only — fills this hole and the next four for the whole group, so you can fast-forward and see the turn, the flags, and the finish</span></button>
   <div class="rowflex">
     <button class="btn btn-ghost" id="livePrevBtn" onclick="liveNav(-1)">← PREV HOLE</button>
@@ -467,8 +467,8 @@
     <div class="par" id="kParLabel">Par 4</div>
   </div>
   <div id="kBoxes"></div>
-  <div class="standstrip" id="kStand"></div>
   <div id="kRows"></div>
+  <div class="standstrip" id="kStand"></div>
   <button class="btn btn-dark" id="kFillBtn" style="display:none;" onclick="kFill5()">🎲&nbsp; FILL NEXT 5 HOLES<span class="small">Practice only — fast-forward this group</span></button>
   <div class="rowflex">
     <button class="btn btn-ghost" id="kPrevBtn" onclick="kNav(-1)">← PREV HOLE</button>
@@ -699,7 +699,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.1.1";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.1.2";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
