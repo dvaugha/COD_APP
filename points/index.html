@@ -208,6 +208,10 @@
       </div>
     </div>
     <p class="cap" id="setParInfo"></p>
+    <label style="display:flex; gap:10px; align-items:flex-start; margin-top:10px; font-size:16px; font-weight:700; line-height:1.4;">
+      <input type="checkbox" id="setFlights" style="width:24px; height:24px; margin-top:1px;" onchange="setupFlightsToggle(this.checked)">
+      <span>FLIGHTS<span style="display:block; font-size:13px; font-weight:600; color:#5b665e;">Split the sheet's places into Flight A (top half by average) and Flight B. The groups ride exactly as set up — flights only change the places.</span></span>
+    </label>
   </div>
   <div class="card">
     <h2>The groups come first</h2>
@@ -705,7 +709,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.1.4";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.2";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1023,8 +1027,9 @@ function courseOptionsHTML(){
   return html;
 }
 function startSetup(){
-  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0, sel: 1, groups: 2, avg: {} };
+  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0, sel: 1, groups: 2, avg: {}, flights: false };
   document.getElementById("setDate").value = todayStr();
+  document.getElementById("setFlights").checked = false;
   var sel = document.getElementById("setCourse");
   sel.innerHTML = courseOptionsHTML();
   sel.value = "pearl";
@@ -1200,7 +1205,7 @@ function startRound(){
   S.current = { id: "r" + Date.now(), date: document.getElementById("setDate").value || todayStr(),
     courseKey: ck, courseName: COURSES[ck].n,
     nines: [ { key: ns[0].key, name: ns[0].name, pars: ns[0].pars.slice() }, { key: ns[1].key, name: ns[1].name, pars: ns[1].pars.slice() } ],
-    carts: carts, liveCart: liveIdx, startRatings: startRatings, startAvg: startAvg, applied: false, preBook: null, postBook: null };
+    carts: carts, liveCart: liveIdx, startRatings: startRatings, startAvg: startAvg, flights: !!setup.flights, applied: false, preBook: null, postBook: null };
   save();
   openBoard();
 }
@@ -1849,7 +1854,7 @@ function drawSheet(r){
   var W = 1000, M = 28, nameW = 168, holeW = 62, totW = 74, ptsW = 62;
   var tableW = nameW + holeW * 9 + totW + ptsW;
   var rowH = 34;
-  var H = 118 + (players.length + 2) * rowH + 16 + (players.length + 2) * rowH + 30 + (st.length + 1) * 36 + 34 + (brows.length + 1) * 32 + 52;
+  var H = 118 + (players.length + 2) * rowH + 16 + (players.length + 2) * rowH + 30 + (st.length + 1) * 36 + 34 + (brows.length + 1) * 32 + 52 + (flightMap(r) ? 96 : 0);
   var cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   var x = cv.getContext("2d");
   x.fillStyle = "#ffffff"; x.fillRect(0, 0, W, H);
@@ -1899,9 +1904,10 @@ function drawSheet(r){
   nineTable(0); nineTable(9);
   x.fillStyle = "#14532d"; x.font = "800 21px -apple-system, Arial, sans-serif";
   x.fillText("Places — points vs rating", M, y + 6); y += 30;
-  st.forEach(function(sx){
+  var fmS = flightMap(r);
+  function placeRow(sx, label){
     x.font = "700 18px -apple-system, Arial, sans-serif"; x.fillStyle = "#1c2420";
-    x.fillText(placeLabel(sx) + "  " + sx.name + (sx.guest ? " (guest)" : ""), M + 8, y + 24);
+    x.fillText(label + "  " + sx.name + (sx.guest ? " (guest)" : ""), M + 8, y + 24);
     x.textAlign = "right"; x.font = "500 18px -apple-system, Arial, sans-serif";
     var vsTxt = sx.vs == null ? "no rating" : (sx.vs >= 0 ? "+" : "−") + fmt(Math.abs(sx.vs));
     var mv = "";
@@ -1912,7 +1918,20 @@ function drawSheet(r){
     }
     x.fillText("Gross " + sx.gross + " · " + sx.points + " pts · " + vsTxt + mv, M + tableW, y + 24);
     x.textAlign = "left"; y += 36;
-  });
+  }
+  function flightHead(t){ x.fillStyle = "#14532d"; x.font = "800 18px -apple-system, Arial, sans-serif"; x.fillText(t, M + 8, y + 22); y += 32; x.fillStyle = "#1c2420"; }
+  if (!fmS) st.forEach(function(sx){ placeRow(sx, placeLabel(sx)); });
+  else {
+    ["A", "B"].forEach(function(f){
+      var rows = st.filter(function(sx){ return sx.place != null && fmS[sx.name] === f; });
+      if (!rows.length) return;
+      flightHead("FLIGHT " + f);
+      var prev = null, pl2 = 0;
+      rows.forEach(function(sx, i){ if (!prev || prev.vs !== sx.vs) pl2 = i + 1; prev = sx; placeRow(sx, ord(pl2)); });
+    });
+    var un = st.filter(function(sx){ return sx.place == null; });
+    if (un.length) { flightHead("ALSO PLAYED — NO FLIGHT"); un.forEach(function(sx){ placeRow(sx, placeLabel(sx)); }); }
+  }
   y += 10;
   x.fillStyle = "#14532d"; x.font = "800 21px -apple-system, Arial, sans-serif";
   x.fillText(r.applied ? "Ratings after this round" : "Ratings (unchanged by this round)", M, y + 6); y += 32;
@@ -2539,6 +2558,28 @@ function simulateGroupPacket(){
 }
 
 /* ---------- Finals (v3.0): places with average before -> after ---------- */
+/* ---------- FLIGHTS (v3.2, Dan's checkbox design) ---------- */
+function setupFlightsToggle(on){ if (typeof setup !== "undefined" && setup) setup.flights = !!on; }
+/* A pure function of the round's own snapshots, so the Finals, the
+   sheet image, and every re-render agree. Rated players only (a
+   startRatings entry — the same basis the places use); guests and
+   newcomers carry no flight. Order: average desc, then more rounds
+   in the book, then name. Top half A (the extra man when odd), rest B. */
+function flightMap(r){
+  if (!r || !r.flights || !r.startRatings) return null;
+  var ranked = allPlayers(r).filter(function(pl){ return r.startRatings[pl.name]; });
+  if (ranked.length < 2) return null;
+  ranked.sort(function(a, b){
+    var aa = avgOf(r.startRatings[a.name]), bb = avgOf(r.startRatings[b.name]);
+    if (bb !== aa) return bb - aa;
+    var ra = r.startRatings[a.name].rounds || 0, rb = r.startRatings[b.name].rounds || 0;
+    if (rb !== ra) return rb - ra;
+    return a.name < b.name ? -1 : 1;
+  });
+  var half = Math.ceil(ranked.length / 2), map = {};
+  ranked.forEach(function(pl, i){ map[pl.name] = i < half ? "A" : "B"; });
+  return map;
+}
 function finalsRows(r){
   return standings(r).map(function(x){
     var before = x.startAvg, after = null, delta = null;
@@ -2550,23 +2591,45 @@ function finalsRows(r){
 }
 function finalsHTML(r){
   if (!r.applied) return "";
+  var fm = flightMap(r);
   var html = '<h2 style="font-size:19px;margin-bottom:6px;">🏁 Finals — the day\'s places</h2>';
-  html += '<table class="stand"><tr><th>Place</th><th>Player</th><th style="text-align:right;">Pts</th><th style="text-align:right;">+/−</th><th style="text-align:right;">Average</th><th style="text-align:right;">Change</th></tr>';
-  finalsRows(r).forEach(function(fr){
+  function fRow(fr, place){
     var x = fr.x;
-    var pc = x.place != null && x.place <= 3 ? ' class="p' + x.place + '"' : "";
+    var pc = place != null && place <= 3 ? ' class="p' + place + '"' : "";
     var avgCell = (fr.before != null && fr.after != null) ? fmt(fr.before) + " → " + fmt(fr.after)
       : (fr.after != null ? "new · " + fmt(fr.after) : "—");
-    html += "<tr" + pc + "><td><span class='place'>" + placeLabel(x) + "</span></td><td><b>" + esc(x.name) + "</b>"
+    return "<tr" + pc + "><td><span class='place'>" + (place != null ? ord(place) : placeLabel(x)) + "</span></td><td><b>" + esc(x.name) + "</b>"
       + (x.guest ? ' <span style="color:#b45309;font-size:12px;font-weight:800;">GUEST</span>' : "")
       + "</td><td class='r'>" + x.points + "</td><td class='r'>"
       + (x.vs == null ? '<span style="color:#77837a;">—</span>' : '<span class="' + (x.vs >= 0 ? "pos" : "neg") + '">' + signed(x.vs) + "</span>")
       + "</td><td class='r'>" + avgCell + "</td><td class='r'>"
       + (fr.delta == null ? '<span style="color:#77837a;">—</span>' : '<span class="' + (fr.delta >= 0 ? "pos" : "neg") + '">' + signed(fr.delta) + "</span>")
       + "</td></tr>";
+  }
+  var TBL = '<table class="stand"><tr><th>Place</th><th>Player</th><th style="text-align:right;">Pts</th><th style="text-align:right;">+/−</th><th style="text-align:right;">Average</th><th style="text-align:right;">Change</th></tr>';
+  if (!fm) {
+    html += TBL;
+    finalsRows(r).forEach(function(fr){ html += fRow(fr, fr.x.place); });
+    html += "</table>";
+    html += '<p style="font-size:13px;color:#5b665e;margin-top:8px;">Places are by +/− vs the average each man carried in. Change is what today did to his average.</p>';
+    return html;
+  }
+  var rows = finalsRows(r);
+  ["A", "B"].forEach(function(f){
+    var fr2 = rows.filter(function(fr){ return fr.x.place != null && fm[fr.x.name] === f; });
+    if (!fr2.length) return;
+    html += '<p style="font-weight:800; font-size:15px; color:#14532d; margin:12px 0 2px;">FLIGHT ' + f + "</p>" + TBL;
+    var prev = null, pl2 = 0;
+    fr2.forEach(function(fr, i){ if (!prev || prev.x.vs !== fr.x.vs) pl2 = i + 1; prev = fr; html += fRow(fr, pl2); });
+    html += "</table>";
   });
-  html += "</table>";
-  html += '<p style="font-size:13px;color:#5b665e;margin-top:8px;">Places are by +/− vs the average each man carried in. Change is what today did to his average.</p>';
+  var un = rows.filter(function(fr){ return fr.x.place == null; });
+  if (un.length) {
+    html += '<p style="font-weight:800; font-size:15px; color:#14532d; margin:12px 0 2px;">ALSO PLAYED — NO FLIGHT</p>' + TBL;
+    un.forEach(function(fr){ html += fRow(fr, null); });
+    html += "</table>";
+  }
+  html += '<p style="font-size:13px;color:#5b665e;margin-top:8px;">Places are by +/− vs the average each man carried in, inside each flight. Flights were set by that same average — top half A, bottom half B.</p>';
   return html;
 }
 
