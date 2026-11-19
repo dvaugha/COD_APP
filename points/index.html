@@ -366,6 +366,7 @@
     <div class="par" id="liveParLabel">Par 4</div>
   </div>
   <div id="liveBoxes"></div>
+  <div class="standstrip" id="liveStand" style="display:none;"></div>
   <div id="liveRows"></div>
   <button class="btn btn-dark" id="liveFillBtn" style="display:none;" onclick="liveFill5()">🎲&nbsp; FILL NEXT 5 HOLES<span class="small">Practice only — fills this hole and the next four for the whole group, so you can fast-forward and see the turn, the flags, and the finish</span></button>
   <div class="rowflex">
@@ -482,7 +483,9 @@
     <h2>The merge code</h2>
     <div id="kfMergeBody"></div>
   </div>
-  <button class="btn btn-ghost" onclick="openKLive()">← Back to the holes</button>
+  <button class="btn btn-ghost" id="kfBackBtn" onclick="openKLive()">← Back to the holes</button>
+  <button class="btn btn-ghost" onclick="show('v-keeper')">🎯&nbsp; Keeper home</button>
+  <button class="btn btn-ghost" onclick="goHome()">← Home</button>
   <button class="btn btn-red" onclick="discardKeeper()">Throw this kept group away</button>
 </div>
 
@@ -632,6 +635,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    at apply. Finals: ranked places with average before -> after and
    the day's change, on the sheet view and the sheet image.
    QR libs inlined: qrcode-generator 1.4.4 + jsQR 1.4.0.
+   v3.0.1 (Nov 18, 2026): first live practice run found the keeper
+   finish screen was a dead end once the group was done (Back to the
+   holes bounces off a finished group) — it now has Keeper home and
+   Home buttons, and hides Back once done. The collector's live
+   screen gains the same group standings strip the keeper screen has.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -649,7 +657,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.0";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.0.1";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1322,6 +1330,8 @@ function renderLive(){
   if (ct.players.every(function(pl){ return holeEntered(pl, h); })) boxes = '<div class="donebanner">✓ HOLE ' + (h + 1) + ' COMPLETE</div>' + boxes;
   else if (h > 0 && ct.players.every(function(pl){ return holeEntered(pl, h - 1); })) boxes = '<div class="donebanner">✓ HOLE ' + h + ' COMPLETE</div>' + boxes;
   document.getElementById("liveBoxes").innerHTML = boxes;
+  var _ls = document.getElementById("liveStand");
+  if (_ls) { _ls.style.display = ""; _ls.innerHTML = liveStandHTML(ct.players, pars, r.startAvg); }
   document.getElementById("liveRows").innerHTML = ct.players.map(function(pl, pi){
     var cur = pl.np[h] ? "<b>NP</b> — hole not played" : (pl.scores[h] != null ? "<b>" + pl.scores[h] + "</b> — " + ptsFor(pl.scores[h], pars[h]) + " pts on this hole" : "not in yet");
     var btns = "";
@@ -2307,7 +2317,22 @@ function kPacket(){
   return lines.join("\n");
 }
 function openKFinish(){ if (!K) { show("v-keeper"); return; } renderKFinish(); show("v-kfinish"); }
+function liveStandHTML(players, pars, startAvg){
+  var rows = players.map(function(pl){
+    var pts = pPoints(pl, pars);
+    var sa = startAvg ? startAvg[pl.name] : null;
+    return { name: pl.name, points: pts, vs: sa != null ? pts - sa : null };
+  }).sort(function(a, b){
+    var av = a.vs == null ? -1e9 : a.vs, bv = b.vs == null ? -1e9 : b.vs;
+    return (bv - av) || (b.points - a.points);
+  });
+  return "<b>Group standings</b> — " + rows.map(function(x){
+    return esc(x.name) + " " + x.points + " pts" + (x.vs != null ? " (" + signed(x.vs) + ")" : "");
+  }).join(" · ");
+}
 function renderKFinish(){
+  var kb3 = document.getElementById("kfBackBtn");
+  if (kb3) kb3.style.display = K.done ? "none" : "";
   var shim = { nines: K.nines, courseName: K.courseName, courseKey: K.courseKey };
   document.getElementById("kfTitle").textContent = "Group finish — " + K.courseName;
   document.getElementById("kfGrid").innerHTML = gridHTML(shim, K.players, false);
