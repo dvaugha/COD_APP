@@ -654,6 +654,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    board now offers ENTER SCORES LIVE on every unconfirmed group
    (handy for entering a paper card hole by hole with running
    points), and the live screen names the group it is entering.
+   v3.0.5 (Nov 18, 2026): Dan's home screen said "latest: Maples"
+   though Sandpiper (Nov 18) was in his book — the hand-built packet
+   he restored stored rounds oldest-first while the app expects
+   newest-first. load(), enterPractice() and doRestore() now sort
+   rounds newest-first on entry (sortRounds), which also fixes the
+   Round History order. Ratings were never affected.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -671,7 +677,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.0.4";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.0.5";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -758,8 +764,11 @@ function save(){
     } catch (e2) { /* book still lives in memory; the backup packet is the safety net */ }
   }
 }
+/* Rounds are kept newest-first (apply unshifts). A restored packet can
+   arrive in any order, so every door a book enters by sorts them back. */
+function sortRounds(){ if (S && S.rounds) S.rounds.sort(function(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); }); }
 function load(){
-  if (LS) { try { var raw = LS.getItem(LSKEY); if (raw) { var o = JSON.parse(raw); if (o && o.players && o.rounds) { S = o; return; } } } catch (e) {} }
+  if (LS) { try { var raw = LS.getItem(LSKEY); if (raw) { var o = JSON.parse(raw); if (o && o.players && o.rounds) { S = o; sortRounds(); return; } } } catch (e) {} }
   S = seedState(); save();
 }
 
@@ -785,7 +794,7 @@ function enterPractice(){
   PRACTICE = true;
   var p = null;
   if (LS) { try { var raw = LS.getItem(LSPKEY); if (raw) { var o = JSON.parse(raw); if (o && o.players && o.rounds) p = o; } } catch (e) {} }
-  S = p || clone(realS);
+  S = p || clone(realS); sortRounds();
   save();
   renderHome();
   show("v-home");
@@ -949,7 +958,7 @@ function doRestore(){
     msg.style.color = "#b91c1c"; msg.textContent = "That packet doesn't look right — nothing was changed."; return;
   }
   if (!window.confirm("Replace the whole book on this phone with the pasted packet?")) return;
-  S = o; save(); goHome();
+  S = o; sortRounds(); save(); goHome();
 }
 
 /* ---------- SETUP ---------- */
