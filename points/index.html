@@ -132,6 +132,16 @@
   .standstrip b { font-size: 16px; }
   .npbtn { margin-top: 8px; padding: 8px 12px; font-size: 13.5px; font-weight: 800; border: 2px solid #ea580c; color: #9a3412; background: #fff7ed; border-radius: 9px; cursor: pointer; }
   .npbtn.on { background: #ea580c; color: #fff; }
+  .stepper { display: flex; gap: 8px; align-items: stretch; margin-top: 8px; }
+  .stepbtn { flex: 0 0 66px; font-size: 34px; font-weight: 800; line-height: 1; border-radius: 14px; border: 2px solid #d5dbd5; background: #f7f9f7; color: #b91c1c; cursor: pointer; padding: 12px 0; }
+  .stepbtn.plus { background: #15803d; border-color: #15803d; color: #fff; font-size: 30px; }
+  .stepbtn:active, .stepmid:active { transform: scale(.97); }
+  .stepmid { flex: 1; background: #fff; border: 2px solid #d5dbd5; border-radius: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 7px 4px; }
+  .stepmid .sc { font-size: 31px; font-weight: 800; line-height: 1.05; color: #14532d; }
+  .stepmid .sc.dim { font-size: 24px; color: #7a8a7f; }
+  .stepmid .sc.np { color: #b45309; }
+  .stepmid .scp { font-size: 13px; color: #5b665e; font-weight: 600; }
+  .rowclr { background: none; border: none; color: #b91c1c; font-size: 16px; font-weight: 800; cursor: pointer; padding: 2px 4px 2px 10px; }
 </style>
 </head>
 <body>
@@ -660,6 +670,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    newest-first. load(), enterPractice() and doRestore() now sort
    rounds newest-first on entry (sortRounds), which also fixes the
    Round History order. Ratings were never affected.
+   v3.1 (Nov 19, 2026): Dan asked for COD's score-entry format in the
+   points app — both live screens (collector + keeper) now use a
+   stepper row (stepRowHTML): big − on the left, big green + on the
+   right, and a center that shows the score and takes a tap for par.
+   From blank the steppers work off par; scores clamp 1–7; the 1–7
+   number strip is gone. No junk buttons (sandy/greenie) — points
+   only. Entry still flows through liveSet/kSet, so banners, voice,
+   auto-advance and standings are unchanged.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -677,7 +695,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.0.5";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.1";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1358,11 +1376,7 @@ function renderLive(){
   var _ls = document.getElementById("liveStand");
   if (_ls) { _ls.style.display = ""; _ls.innerHTML = liveStandHTML(ct.players, pars, r.startAvg); }
   document.getElementById("liveRows").innerHTML = ct.players.map(function(pl, pi){
-    var cur = pl.np[h] ? "<b>NP</b> — hole not played" : (pl.scores[h] != null ? "<b>" + pl.scores[h] + "</b> — " + ptsFor(pl.scores[h], pars[h]) + " pts on this hole" : "not in yet");
-    var btns = "";
-    for (var v = 1; v <= 7; v++) btns += '<button class="' + (pl.scores[h] === v && !pl.np[h] ? "on" : "") + '" onclick="liveSet(' + pi + "," + v + ')">' + v + "</button>";
-    btns += '<button class="clr" onclick="liveClear(' + pi + ')">✕</button>';
-    return '<div class="scorerow"><div class="who"><span class="nm">' + esc(pl.name) + '</span><span class="run">gross ' + pGross(pl) + " · " + pPoints(pl, pars) + ' pts so far' + liveVsText(pl, pars) + '</span></div><div class="cur">This hole: ' + cur + '</div><div class="scorebtns">' + btns + "</div></div>";
+    return stepRowHTML(pl, pi, pars, h, "live", liveVsText(pl, pars), "");
   }).join("");
   document.getElementById("livePrevBtn").disabled = (h === 0);
   document.getElementById("liveNextBtn").disabled = (h === 17);
@@ -2297,12 +2311,8 @@ function renderKLive(){
     return esc(x.name) + " " + x.points + " pts" + (x.vs != null ? " (" + signed(x.vs) + ")" : "");
   }).join(" · ");
   document.getElementById("kRows").innerHTML = K.players.map(function(pl, pi){
-    var cur = pl.np[h] ? "<b>NP</b> — hole not played" : (pl.scores[h] != null ? "<b>" + pl.scores[h] + "</b> — " + ptsFor(pl.scores[h], pars[h]) + " pts on this hole" : "not in yet");
-    var btns = "";
-    for (var v = 1; v <= 7; v++) btns += '<button class="' + (pl.scores[h] === v && !pl.np[h] ? "on" : "") + '" onclick="kSet(' + pi + "," + v + ')">' + v + "</button>";
-    btns += '<button class="clr" onclick="kClear(' + pi + ')">✕</button>';
-    return '<div class="scorerow"><div class="who"><span class="nm">' + esc(pl.name) + '</span><span class="run">gross ' + pGross(pl) + " · " + pPoints(pl, pars) + ' pts so far</span></div><div class="cur">This hole: ' + cur + '</div><div class="scorebtns">' + btns + '</div>'
-      + '<button class="npbtn' + (pl.np[h] ? " on" : "") + '" onclick="kNP(' + pi + ')">' + (pl.np[h] ? "NP — tap to undo" : "Hole not played (NP)") + "</button></div>";
+    var npb = '<button class="npbtn' + (pl.np[h] ? " on" : "") + '" onclick="kNP(' + pi + ')">' + (pl.np[h] ? "NP — tap to undo" : "Hole not played (NP)") + "</button>";
+    return stepRowHTML(pl, pi, pars, h, "k", "", npb);
   }).join("");
   document.getElementById("kPrevBtn").disabled = (h === 0);
   document.getElementById("kNextBtn").disabled = (h === 17);
@@ -2320,6 +2330,39 @@ function kSet(pi, v){
   kSave(); renderKLive();
 }
 function kClear(pi){ var pl = K.players[pi]; pl.scores[kHole] = null; pl.np[kHole] = false; kSave(); renderKLive(); }
+/* ---------- COD-style stepper entry (v3.1, Dan's ask Nov 19, 2026) ----------
+   Both live screens (collector + keeper) use one row: a big − button, a
+   center that shows the score and takes a tap for PAR, and a big + button.
+   From blank, the steppers work off par (first + = one over, first − = one
+   under); from an entered score they step from it. Scores clamp to 1–7.
+   All entry still flows through liveSet/kSet, so completion banners, the
+   voice, auto-advance and standings behave exactly as before. */
+function stepRowHTML(pl, pi, pars, h, pre, runExtra, extra){
+  var par = pars[h], entered = pl.scores[h] != null && !pl.np[h], pts = entered ? ptsFor(pl.scores[h], par) : 0;
+  var center = pl.np[h]
+    ? '<span class="sc np">NP</span><span class="scp">hole not played</span>'
+    : entered
+      ? '<span class="sc">' + pl.scores[h] + '</span><span class="scp">' + pts + (pts === 1 ? " pt" : " pts") + " on this hole · par " + par + "</span>"
+      : '<span class="sc dim">Par ' + par + '</span><span class="scp">tap here for par</span>';
+  var clr = (entered || pl.np[h]) ? '<button class="rowclr" onclick="' + pre + 'Clear(' + pi + ')" title="Clear this hole">✕</button>' : "";
+  return '<div class="scorerow"><div class="who"><span class="nm">' + esc(pl.name) + '</span><span class="run">gross ' + pGross(pl) + " · " + pPoints(pl, pars) + ' pts so far' + (runExtra || "") + "</span>" + clr + '</div>'
+    + '<div class="stepper"><button class="stepbtn minus" onclick="' + pre + 'Step(' + pi + ',-1)">−</button>'
+    + '<button class="stepmid" onclick="' + pre + 'Set(' + pi + "," + par + ')">' + center + "</button>"
+    + '<button class="stepbtn plus" onclick="' + pre + 'Step(' + pi + ',1)">+</button></div>'
+    + (extra || "") + "</div>";
+}
+function liveStep(pi, d){
+  var ct = S.current.carts[curCart], pl = ct.players[pi], pars = roundPars(S.current);
+  var base = (pl.scores[liveHole] != null && !pl.np[liveHole]) ? pl.scores[liveHole] : pars[liveHole];
+  var v = base + d; if (v < 1) v = 1; if (v > 7) v = 7;
+  liveSet(pi, v);
+}
+function kStep(pi, d){
+  var pl = K.players[pi], pars = kPars();
+  var base = (pl.scores[kHole] != null && !pl.np[kHole]) ? pl.scores[kHole] : pars[kHole];
+  var v = base + d; if (v < 1) v = 1; if (v > 7) v = 7;
+  kSet(pi, v);
+}
 function kNP(pi){ var pl = K.players[pi]; if (pl.np[kHole]) { pl.np[kHole] = false; } else { pl.np[kHole] = true; pl.scores[kHole] = null; } kSave(); renderKLive(); }
 function kFill5(){
   if (!PRACTICE || !K) return;
