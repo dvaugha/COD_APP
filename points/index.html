@@ -640,6 +640,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    holes bounces off a finished group) — it now has Keeper home and
    Home buttons, and hides Back once done. The collector's live
    screen gains the same group standings strip the keeper screen has.
+   v3.0.2 (Nov 18, 2026): the finish screen now recomputes "done" on
+   every render, so ticking the paper-check box hides Back and lights
+   the keeper-home banner in the same visit, not only on re-entry
+   (found on the v3.0.1 live spot-check).
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -657,7 +661,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.0.1";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.0.2";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -2331,6 +2335,12 @@ function liveStandHTML(players, pars, startAvg){
   }).join(" · ");
 }
 function renderKFinish(){
+  /* Recompute done here, not only in openKFinish: ticking the verify box
+     calls renderKFinish directly, and the Back button + keeper-home
+     banner must reflect the finished state in the same visit. */
+  var allIn3 = K.players.every(function(pl){ return pl.scores.every(function(s){ return s != null; }); });
+  var nd3 = !!(K.verified && allIn3);
+  if (nd3 !== K.done) { K.done = nd3; kSave(); }
   var kb3 = document.getElementById("kfBackBtn");
   if (kb3) kb3.style.display = K.done ? "none" : "";
   var shim = { nines: K.nines, courseName: K.courseName, courseKey: K.courseKey };
