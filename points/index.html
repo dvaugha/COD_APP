@@ -212,7 +212,7 @@
   </div>
   <div class="card">
     <h2>Scoring live?</h2>
-    <p>If this phone rides with one group, mark it — that group can be entered hole by hole during the round. The other groups come in the usual ways — paper, photo, packet, or a keeper's merge code.</p>
+    <p>If this phone rides with one group, mark it. Any group can be entered hole by hole on the live screen from the round board — handy for typing in a paper card with the running points showing. The other ways still work too: photo, packet, or a keeper's merge code.</p>
     <div id="livePick"></div>
     <p class="cap" id="setupMsg" style="color:#b91c1c;font-weight:700;"></p>
   </div>
@@ -361,6 +361,7 @@
 
 <!-- LIVE ENTRY — HOLE BY HOLE (v2.0) -->
 <div class="view" id="v-live">
+  <div class="cap" id="liveGroupLabel" style="text-align:center;font-weight:800;font-size:15px;padding-top:4px;"></div>
   <div class="livebanner">
     <div class="hole" id="liveHoleLabel">HOLE 1</div>
     <div class="par" id="liveParLabel">Par 4</div>
@@ -648,6 +649,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    did nothing because only the title row was clickable. The whole
    group card now opens the group, and an empty group (e.g. one added
    by accident) can be removed with the ✕ button on its card.
+   v3.0.4 (Nov 18, 2026): Dan asked why live scoring was only for the
+   phone's own group — the machinery was always cart-generic, so the
+   board now offers ENTER SCORES LIVE on every unconfirmed group
+   (handy for entering a paper card hole by hole with running
+   points), and the live screen names the group it is entering.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -665,7 +671,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.0.3";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.0.4";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1169,8 +1175,8 @@ function openBoard(){
     if (ct.liveUsed) chips += "▶ scored live · ";
     if (ct.source === "packet") chips += "📥 from a COD packet · ";
     if (ct.photoFront || ct.photoBack) chips += "📷 card photo on file · ";
-    var liveBtn = (i === r.liveCart && !ct.confirmed)
-      ? '<button class="btn btn-green" onclick="openLive(' + i + ')">▶&nbsp; ENTER SCORES LIVE<span class="small">Hole by hole, as you play</span></button>' : "";
+    var liveBtn = !ct.confirmed
+      ? '<button class="btn ' + (i === r.liveCart ? "btn-green" : "btn-dark") + '" onclick="openLive(' + i + ')">▶&nbsp; ENTER SCORES LIVE<span class="small">' + (i === r.liveCart ? "Hole by hole, as you play" : "The hole-by-hole screen, with running points") + '</span></button>' : "";
     return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Group ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
       + '<div class="how">' + chips + 'Scores land on the confirm grid — live, by photo &amp; tap, by typing, or by packet</div>'
       + '<div class="st">' + st + '</div>'
@@ -1320,6 +1326,7 @@ function renderLive(){
   var h = liveHole;
   document.getElementById("liveHoleLabel").textContent = "HOLE " + (h + 1);
   document.getElementById("liveHoleLabel").parentNode.className = "livebanner" + (ct.players.every(function(pl){ return !holeEntered(pl, h); }) ? " fresh" : "");
+  document.getElementById("liveGroupLabel").textContent = "Group " + (curCart + 1) + (curCart === r.liveCart ? " ⭐ — this phone's group" : "") + " — " + ct.players.map(function(pl){ return pl.name; }).join(", ");
   document.getElementById("liveParLabel").textContent = (h < 9 ? r.nines[0].name : r.nines[1].name) + " nine · Par " + pars[h] + " · hole " + (h + 1) + " of 18";
   var boxes = "", mh, names;
   for (mh = h - 1; mh >= 0; mh--) {
