@@ -664,6 +664,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    board now offers ENTER SCORES LIVE on every unconfirmed group
    (handy for entering a paper card hole by hole with running
    points), and the live screen names the group it is entering.
+   v3.1.1 (Nov 19, 2026): in setup, when the open group reaches 4
+   players it now hops on its own to the next group with room
+   (maybeAdvance, called from togglePlayer and addName) — one less
+   tap to remember. Manual group moves (setCart) are untouched.
    v3.0.5 (Nov 18, 2026): Dan's home screen said "latest: Maples"
    though Sandpiper (Nov 18) was in his book — the hand-built packet
    he restored stored rounds oldest-first while the app expects
@@ -695,7 +699,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.1";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.1.1";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1073,12 +1077,20 @@ function defaultCart(){
   return 1;
 }
 function q(s){ return "'" + String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'"; }
+/* When the open group reaches 4, hop to the next group with room —
+   one less tap for the collector to remember (Dan's ask, Nov 19, 2026). */
+function maybeAdvance(){
+  var counts = cartCounts();
+  if (counts[setup.sel] !== 4) return;
+  for (var c = setup.sel + 1; c <= setup.groups; c++) if (counts[c] < 4) { setup.sel = c; return; }
+}
 function togglePlayer(nm){
   var i = setup.order.indexOf(nm);
   if (i >= 0) { setup.order.splice(i, 1); delete setup.cartOf[nm]; }
   else {
     setup.order.push(nm); setup.cartOf[nm] = setup.sel;
     if (cartCounts()[setup.sel] === 4) toast("4 in Group " + setup.sel);
+    maybeAdvance();
   }
   renderSetup();
 }
@@ -1090,6 +1102,7 @@ function addName(toBook){
   if (setup.order.indexOf(nm) < 0) {
     setup.order.push(nm); setup.cartOf[nm] = setup.sel;
     if (cartCounts()[setup.sel] === 4) toast("4 in Group " + setup.sel);
+    maybeAdvance();
   }
   if (toBook) { setup.inbook[nm] = true; delete setup.guest[nm]; }
   else { setup.guest[nm] = true; delete setup.inbook[nm]; }
