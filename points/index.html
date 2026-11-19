@@ -709,7 +709,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.2.1";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.3";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1027,7 +1027,7 @@ function courseOptionsHTML(){
   return html;
 }
 function startSetup(){
-  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0, sel: 1, groups: 2, avg: {}, flights: false };
+  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0, sel: 1, groups: 2, avg: {}, flights: false, keeperOf: {} };
   document.getElementById("setDate").value = todayStr();
   document.getElementById("setFlights").checked = false;
   var sel = document.getElementById("setCourse");
@@ -1170,6 +1170,16 @@ function renderSetup(){
         : '<span class="avgchip' + (a == null ? " none" : "") + '" onclick="event.stopPropagation(); setupAvgTap(' + q(nm) + ')">' + (a == null ? "avg ?" : "avg " + fmt(a)) + "</span>");
       return '<div class="gname" onclick="event.stopPropagation(); togglePlayer(' + q(nm) + ')"><span class="nm">' + esc(nm) + '</span><span style="display:flex;gap:8px;align-items:center;">' + chip + '<span class="out">POP OUT</span></span></div>';
     }).join("");
+    if (members.length) {
+      var krole = keeperFor(g), kopts = groupAppMen(g).concat(["paper"]);
+      gh += '<div style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;"><span style="font-size:13px; font-weight:700; color:#5b665e;">KEEPS THIS GROUP:</span>'
+        + (kopts.length > 1
+          ? '<button class="btn btn-ghost" style="padding:6px 12px;" onclick="event.stopPropagation(); cycleKeeper(' + g + ')">' + keeperLabel(krole) + " ⟳</button>"
+          : '<span style="font-weight:700;">' + keeperLabel(krole) + "</span>")
+        + (groupAppMen(g).indexOf("me") >= 0 && groupAppMen(g).indexOf("doug") >= 0
+          ? '<span style="font-size:13px; color:#92400e; font-weight:700;">You and Doug are together — one keeper covers this group.</span>' : "")
+        + "</div>";
+    }
     gh += "</div>";
   }
   document.getElementById("groupCards").innerHTML = gh;
@@ -1193,7 +1203,7 @@ function startRound(){
     startRatings[nm] = (!setup.guest[nm] && S.players[nm]) ? clone(S.players[nm]) : null;
     startAvg[nm] = setupAvgOf(nm);
   });
-  var carts = [], liveIdx = -1;
+  var carts = [], liveIdx = -1, keepers = [];
   for (var c = 1; c <= 4; c++) {
     var ps = setup.order.filter(function(nm){ return setup.cartOf[nm] === c; });
     if (!ps.length) continue;
@@ -1201,11 +1211,12 @@ function startRound(){
     carts.push({ players: ps.map(function(nm){
       return { name: nm, guest: !!setup.guest[nm], scores: nulls18(), np: falses18() };
     }), photoFront: null, photoBack: null, confirmed: false });
+    keepers.push(keeperFor(c));
   }
   S.current = { id: "r" + Date.now(), date: document.getElementById("setDate").value || todayStr(),
     courseKey: ck, courseName: COURSES[ck].n,
     nines: [ { key: ns[0].key, name: ns[0].name, pars: ns[0].pars.slice() }, { key: ns[1].key, name: ns[1].name, pars: ns[1].pars.slice() } ],
-    carts: carts, liveCart: liveIdx, startRatings: startRatings, startAvg: startAvg, flights: !!setup.flights, applied: false, preBook: null, postBook: null };
+    carts: carts, liveCart: liveIdx, startRatings: startRatings, startAvg: startAvg, flights: !!setup.flights, keepers: keepers, applied: false, preBook: null, postBook: null };
   save();
   openBoard();
 }
@@ -1777,7 +1788,7 @@ function openMerge(){
   var r = S.current; if (!r) { goHome(); return; }
   document.getElementById("mergeTitle").textContent = "Merge — " + r.courseName + ", " + prettyDate(r.date);
   document.getElementById("mergeSlots").innerHTML = r.carts.map(function(ct, i){
-    return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Group ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + '</div>'
+    return '<div class="slot' + (ct.confirmed ? " in" : "") + '"><div class="who">Group ' + (i + 1) + " — " + ct.players.map(function(pl){ return esc(pl.name); }).join(" &amp; ") + (r.keepers && r.keepers[i] ? ' <span style="color:#5b665e;">· ' + keeperPhrase(r.keepers[i]) + "</span>" : "") + '</div>'
       + '<div class="st" style="color:' + (ct.confirmed ? "#15803d" : "#92400e") + ';">' + (ct.confirmed ? "✓ IN — confirmed" : "… not confirmed yet — open the group and confirm it") + "</div></div>";
   }).join("");
   var flags = [];
@@ -2649,6 +2660,41 @@ function finalsHTML(r){
   return html;
 }
 
+/* ---------- Keeper plan (v3.3, Dan's pick) ---------- */
+var KEEPER_NAMES = { dan: "Danny Vaughan (DV)", doug: "Doug Mathis (DM)", rick: "Rick Turner (RT)" };
+function groupAppMen(g){
+  if (typeof setup === "undefined" || !setup) return [];
+  var mem = setup.order.filter(function(nm){ return setup.cartOf[nm] === g; });
+  var out = [];
+  if (mem.indexOf(KEEPER_NAMES.dan) >= 0 || setup.liveCart === g) out.push("me");
+  if (mem.indexOf(KEEPER_NAMES.doug) >= 0) out.push("doug");
+  if (mem.indexOf(KEEPER_NAMES.rick) >= 0) out.push("rick");
+  return out;
+}
+function keeperFor(g){
+  var men = groupAppMen(g);
+  var ov = (typeof setup !== "undefined" && setup && setup.keeperOf) ? setup.keeperOf[g] : null;
+  if (ov === "paper") return "paper";
+  if (ov && men.indexOf(ov) >= 0) return ov;
+  return men.length ? men[0] : "paper";
+}
+function keeperLabel(role){
+  return role === "me" ? "You (this phone)" : role === "doug" ? "Doug" : role === "rick" ? "Rick" : "Paper card";
+}
+function keeperShort(role){
+  return role === "me" ? "you" : role === "doug" ? "Doug" : role === "rick" ? "Rick" : "paper";
+}
+function keeperPhrase(role){
+  return role === "me" ? "kept on this phone" : role === "doug" ? "Doug keeps" : role === "rick" ? "Rick keeps" : "paper card";
+}
+function cycleKeeper(g){
+  var opts = groupAppMen(g).concat(["paper"]);
+  if (opts.length < 2) return;
+  var cur = keeperFor(g), i = opts.indexOf(cur);
+  setup.keeperOf[g] = opts[(i + 1) % opts.length];
+  renderSetup();
+}
+
 /* ---------- live-view extras + view wraps (v3.0) ---------- */
 function liveVsText(pl, pars){
   var r = S.current;
@@ -2672,12 +2718,18 @@ var _openBoardV3 = openBoard;
 openBoard = function(){
   _openBoardV3();
   var r = S.current; if (!r) return;
+  if (r.keepers && r.keepers.length === r.carts.length) {
+    var bs = document.getElementById("boardSub");
+    if (bs) bs.textContent += " · Plan — " + r.carts.map(function(ct, i){ return "G" + (i + 1) + " " + keeperShort(r.keepers[i]); }).join(" · ");
+  }
   var slots = document.querySelectorAll("#boardCarts .slot");
   r.carts.forEach(function(ct, i){
     if (ct.confirmed || i === r.liveCart || !slots[i]) return;
+    if (r.keepers && r.keepers[i] === "paper") return;
+    var who = r.keepers && r.keepers[i] === "doug" ? "DOUG" : r.keepers && r.keepers[i] === "rick" ? "RICK" : "THE KEEPER";
     var b = document.createElement("button");
     b.className = "btn btn-dark"; b.style.marginTop = "8px";
-    b.innerHTML = "📱&nbsp; SETUP CODE FOR THE KEEPER<span class=\"small\">Show this code — the keeper scans it and his phone is set up with this group</span>";
+    b.innerHTML = "📱&nbsp; SETUP CODE FOR " + who + "<span class=\"small\">Show this code — the keeper scans it and his phone is set up with this group</span>";
     b.onclick = function(){ showSetupCode(i); };
     slots[i].appendChild(b);
   });
