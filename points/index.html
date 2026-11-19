@@ -342,6 +342,7 @@
     <img class="cardphoto" id="sheetImg" style="display:none;" alt="Finished sheet image">
     <button class="btn btn-green" onclick="shareSheet()">🖼&nbsp; SAVE / SHARE THE SHEET IMAGE</button>
     <button class="btn btn-amber" id="sheetUndoBtn" style="display:none;" onclick="undoLast()">↩&nbsp; UNDO THIS ROUND'S RATINGS</button>
+    <button class="btn" style="background:#b91c1c;color:#fff;" onclick="deleteRound()">🗑&nbsp; DELETE THIS ROUND<span class="small">Gone for good — if it was the last round applied, its ratings come out too</span></button>
   </div>
   <button class="btn btn-ghost" onclick="goHome()">← Home</button>
 </div>
@@ -709,7 +710,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.3";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.4";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -2693,6 +2694,25 @@ function cycleKeeper(g){
   var cur = keeperFor(g), i = opts.indexOf(cur);
   setup.keeperOf[g] = opts[(i + 1) % opts.length];
   renderSetup();
+}
+
+/* ---------- Delete a round (v3.4) ---------- */
+function deleteRound(){
+  var r = sheetRound; if (!r) return;
+  var label = r.courseName + " (" + prettyDate(r.date) + ")";
+  if (r.applied && !(r.id === S.lastAppliedId && r.preBook)) {
+    window.alert("This round was applied to the ratings, and later rounds were applied after it — so it can't just be deleted. Undo the later rounds first (newest round first, from its sheet), then delete this one.");
+    return;
+  }
+  var msg = r.applied
+    ? "Delete " + label + "? Its ratings come out too — the book goes back to exactly what it was before this round. This can't be undone."
+    : "Delete " + label + "? It never changed the ratings. This can't be undone.";
+  if (!window.confirm(msg)) return;
+  if (r.applied) { S.players = clone(r.preBook); S.lastAppliedId = null; }
+  S.rounds = S.rounds.filter(function(x){ return x.id !== r.id; });
+  if (S.current && S.current.id === r.id) S.current = null;
+  sheetRound = null;
+  save(); goHome();
 }
 
 /* ---------- live-view extras + view wraps (v3.0) ---------- */
