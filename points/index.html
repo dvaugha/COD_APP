@@ -113,7 +113,7 @@
   .donebanner .small { display: block; font-size: 14px; font-weight: 600; opacity: .92; margin-top: 3px; }
   .toast { position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%) translateY(20px); background: #1f2937; color: #fff; font-size: 17px; font-weight: 800; padding: 13px 22px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; z-index: 90; box-shadow: 0 6px 18px rgba(0,0,0,.28); white-space: nowrap; }
   .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .grpcard { border: 2px solid #d5dbd5; border-radius: 12px; padding: 12px; margin: 10px 0; background: #fff; }
+  .grpcard { border: 2px solid #d5dbd5; border-radius: 12px; padding: 12px; margin: 10px 0; background: #fff; cursor: pointer; }
   .grpcard.open { border-color: #1d4ed8; background: #eff6ff; }
   .grpcard .ghead { display: flex; justify-content: space-between; align-items: baseline; cursor: pointer; }
   .grpcard .ghead .gt { font-size: 18px; font-weight: 800; }
@@ -644,6 +644,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    every render, so ticking the paper-check box hides Back and lights
    the keeper-home banner in the same visit, not only on re-entry
    (found on the v3.0.1 live spot-check).
+   v3.0.3 (Nov 18, 2026): Dan's first hands-on — tapping Group 2's card
+   did nothing because only the title row was clickable. The whole
+   group card now opens the group, and an empty group (e.g. one added
+   by accident) can be removed with the ✕ button on its card.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -661,7 +665,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.0.2";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.0.3";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1099,14 +1103,15 @@ function renderSetup(){
   var counts = cartCounts(), gh = "";
   for (var g = 1; g <= setup.groups; g++) {
     var members = setup.order.filter(function(nm){ return setup.cartOf[nm] === g; });
-    gh += '<div class="grpcard' + (setup.sel === g ? " open" : "") + '"><div class="ghead" onclick="selectGroup(' + g + ')"><span class="gt">GROUP ' + g + '</span><span class="gh">' + members.length + (members.length === 1 ? " player" : " players") + (setup.sel === g ? " · OPEN — names pop in here" : " · tap to open") + "</span></div>";
-    if (!members.length) gh += '<p style="color:#5b665e;margin-top:6px;">Nobody in yet — open this group and tap names below.</p>';
+    gh += '<div class="grpcard' + (setup.sel === g ? " open" : "") + '" onclick="selectGroup(' + g + ')"><div class="ghead"><span class="gt">GROUP ' + g + '</span><span class="gh">' + members.length + (members.length === 1 ? " player" : " players") + (setup.sel === g ? " · OPEN — names pop in here" : " · tap to open") + "</span></div>";
+    if (!members.length) { gh += '<p style="color:#5b665e;margin-top:6px;">Nobody in yet — tap anywhere on this card to open it, then tap names below.</p>';
+      if (setup.groups > 1) gh += '<button class="btn btn-ghost" style="color:#b91c1c;" onclick="event.stopPropagation(); removeSetupGroup(' + g + ')">✕ REMOVE THIS EMPTY GROUP</button>'; }
     gh += members.map(function(nm){
       var a = setupAvgOf(nm);
       var chip = setup.guest[nm] ? '<span class="avgchip gst">guest</span>'
         : (setup.inbook[nm] && !S.players[nm] ? '<span class="avgchip none">new — round 1</span>'
         : '<span class="avgchip' + (a == null ? " none" : "") + '" onclick="event.stopPropagation(); setupAvgTap(' + q(nm) + ')">' + (a == null ? "avg ?" : "avg " + fmt(a)) + "</span>");
-      return '<div class="gname" onclick="togglePlayer(' + q(nm) + ')"><span class="nm">' + esc(nm) + '</span><span style="display:flex;gap:8px;align-items:center;">' + chip + '<span class="out">POP OUT</span></span></div>';
+      return '<div class="gname" onclick="event.stopPropagation(); togglePlayer(' + q(nm) + ')"><span class="nm">' + esc(nm) + '</span><span style="display:flex;gap:8px;align-items:center;">' + chip + '<span class="out">POP OUT</span></span></div>';
     }).join("");
     gh += "</div>";
   }
@@ -1901,6 +1906,15 @@ function shareSheet(){
    ================================================================ */
 
 /* ---------- small shared helpers ---------- */
+function removeSetupGroup(g){
+  if (!setup || setup.groups <= 1) return;
+  if (setup.order.some(function(nm){ return setup.cartOf[nm] === g; })) return; /* empty groups only */
+  setup.order.forEach(function(nm){ if (setup.cartOf[nm] > g) setup.cartOf[nm]--; });
+  if (setup.liveCart === g) setup.liveCart = 0; else if (setup.liveCart > g) setup.liveCart--;
+  if (setup.sel === g) setup.sel = Math.max(1, g - 1); else if (setup.sel > g) setup.sel--;
+  setup.groups--;
+  renderSetup();
+}
 function toast(msg){
   var t = document.getElementById("toast"); if (!t) return;
   t.textContent = msg; t.classList.add("on");
