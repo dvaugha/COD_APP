@@ -141,6 +141,9 @@
   .stepmid .sc.und { color: #15803d; }
   .stepmid .sc.bog { color: #b45309; }
   .stepmid .sc.dbl { color: #b91c1c; }
+  table.grid td.cell.und { color: #15803d; font-weight: 800; }
+  table.grid td.cell.bog { color: #b45309; font-weight: 800; }
+  table.grid td.cell.dbl { color: #b91c1c; font-weight: 800; }
   .stepmid .sc.dim { font-size: 24px; color: #7a8a7f; }
   .stepmid .sc.np { color: #b45309; }
   .stepmid .scp { font-size: 13px; color: #5b665e; font-weight: 600; }
@@ -702,7 +705,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.1.3";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.1.4";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1687,7 +1690,7 @@ function gridHTML(r, players, editable){
         var cls = "cell", inner;
         if (pl.np[idx]) { cls += " np"; inner = "NP"; }
         else if (g == null) { cls += (editable ? " amber" : ""); inner = "·"; }
-        else inner = g;
+        else { inner = g; var gd = g - pars[idx]; cls += gd < 0 ? " und" : gd === 0 ? " par" : gd === 1 ? " bog" : " dbl"; }
         if (!pl.np[idx] && g != null) { g9 += g; p9 += ptsFor(g, pars[idx]); }
         var oc = editable ? ' onclick="openPad(' + pi + "," + idx + ')"' : "";
         html += '<td class="' + cls + '"' + oc + ">" + inner + '<span class="pts">' + (pl.np[idx] ? "" : dots(ptsFor(g, pars[idx]))) + "</span></td>";
@@ -1883,7 +1886,7 @@ function drawSheet(r){
         var idx = off + h, g = pl.scores[idx];
         if (pl.np[idx]) { x.fillStyle = "#9a3412"; x.fillText("NP", M + nameW + holeW * h + holeW / 2, y + 23); x.fillStyle = "#1c2420"; }
         else if (g == null) x.fillText("·", M + nameW + holeW * h + holeW / 2, y + 23);
-        else { x.fillText(String(g), M + nameW + holeW * h + holeW / 2, y + 23); g9 += g; p9 += ptsFor(g, pars[idx]); }
+        else { var gd2 = g - pars[idx]; x.fillStyle = gd2 < 0 ? "#15803d" : gd2 === 0 ? "#1c2420" : gd2 === 1 ? "#b45309" : "#b91c1c"; x.fillText(String(g), M + nameW + holeW * h + holeW / 2, y + 23); x.fillStyle = "#1c2420"; g9 += g; p9 += ptsFor(g, pars[idx]); }
       }
       x.font = "800 18px -apple-system, Arial, sans-serif";
       x.fillText(String(g9), M + nameW + holeW * 9 + totW / 2, y + 23);
