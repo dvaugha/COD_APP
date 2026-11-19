@@ -709,7 +709,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.2";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.2.1";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1745,14 +1745,30 @@ function sheetHTML(r){
   var st = standings(r);
   var html = gridHTML(r, allPlayers(r), false);
   html += '<table class="stand" style="margin-top:10px;"><tr><th>Player</th><th style="text-align:right;">Gross</th><th style="text-align:right;">Points</th><th style="text-align:right;">vs Rating</th><th style="text-align:right;">Place</th></tr>';
-  st.forEach(function(x){
+  function sRow(x, place){
     var vs = x.vs == null ? '<span style="color:#77837a;">no rating</span>'
       : '<span class="' + (x.vs >= 0 ? "pos" : "neg") + '">' + (x.vs >= 0 ? "+" : "−") + fmt(Math.abs(x.vs)) + "</span>";
-    var pc = x.place != null && x.place <= 3 ? ' class="p' + x.place + '"' : "";
-    html += "<tr" + pc + "><td><b>" + esc(x.name) + "</b>" + (x.guest ? ' <span style="color:#b45309;font-size:12px;font-weight:800;">GUEST</span>' : "")
+    var pc = place != null && place <= 3 ? ' class="p' + place + '"' : "";
+    return "<tr" + pc + "><td><b>" + esc(x.name) + "</b>" + (x.guest ? ' <span style="color:#b45309;font-size:12px;font-weight:800;">GUEST</span>' : "")
       + (x.np ? ' <span style="color:#9a3412;font-size:12px;font-weight:800;">' + x.np + " NP</span>" : "")
-      + "</td><td class='r'>" + x.gross + "</td><td class='r'>" + x.points + "</td><td class='r'>" + vs + "</td><td class='r'><span class='place'>" + placeLabel(x) + "</span></td></tr>";
-  });
+      + "</td><td class='r'>" + x.gross + "</td><td class='r'>" + x.points + "</td><td class='r'>" + vs + "</td><td class='r'><span class='place'>" + (place != null ? ord(place) : placeLabel(x)) + "</span></td></tr>";
+  }
+  var fmH = flightMap(r);
+  if (!fmH) st.forEach(function(x){ html += sRow(x, x.place); });
+  else {
+    ["A", "B"].forEach(function(f){
+      var rows = st.filter(function(x){ return x.place != null && fmH[x.name] === f; });
+      if (!rows.length) return;
+      html += '<tr><td colspan="5" style="background:#eef2ee; font-weight:800; color:#14532d; text-align:left;">FLIGHT ' + f + "</td></tr>";
+      var prev = null, pl2 = 0;
+      rows.forEach(function(x, i){ if (!prev || prev.vs !== x.vs) pl2 = i + 1; prev = x; html += sRow(x, pl2); });
+    });
+    var un = st.filter(function(x){ return x.place == null; });
+    if (un.length) {
+      html += '<tr><td colspan="5" style="background:#eef2ee; font-weight:800; color:#14532d; text-align:left;">ALSO PLAYED — NO FLIGHT</td></tr>';
+      un.forEach(function(x){ html += sRow(x, null); });
+    }
+  }
   html += "</table>";
   if (st.some(function(x){ return x.vs == null; })) html += '<p style="font-size:13px;color:#5b665e;margin-top:8px;">* Guests and first-timers have no rating to beat, so their place is by points. Places in the book game are by +/− vs rating; ties stand as ties.</p>';
   return html;
