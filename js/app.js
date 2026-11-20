@@ -287,6 +287,11 @@ const App = {
                 if (!tgt) return;
                 document.querySelectorAll('.g-view').forEach(e => e.classList.remove('active'));
                 tgt.classList.add('active');
+                // HOLE BANNERS (v285.15.1, Dan Nov 20, 2026): the arrival and
+                // missed-hole banners belong to the dashboard only. Hide them on
+                // every other view so they can never sit stuck over setup/card/
+                // recap (Dan's screenshot: HOLE 1 banner over the setup screen).
+                if (id !== 'v-dash') { try { this.hideHoleBanners(); } catch (e) {} }
                 if (id === 'v-setup') { this.checkCourseOptions(); }
                 if (id === 'v-dash') { this.uDash(); this.updateJunkUI(); }
                 if (id === 'v-card') this.uCard();
@@ -779,6 +784,9 @@ const App = {
                 // score is entered on that hole (mod/setPar hide it), so the hole
                 // being scored is unmistakable at the moment of entry.
                 if (!this.d || this.d.roundEnded) return;
+                // v285.15.1: dashboard-only — never raise it over another view.
+                const dashEl = document.getElementById('v-dash');
+                if (!dashEl || !dashEl.classList.contains('active')) return;
                 let b = document.getElementById('hole-arrival-banner');
                 if (!b) {
                     b = document.createElement('div');
@@ -789,6 +797,17 @@ const App = {
                 b.textContent = 'HOLE ' + this.d.h + ' — ENTER SCORES';
                 b.style.display = 'block';
             },
+            hideHoleBanners: function () {
+                // v285.15.1: hide both hole banners (arrival + missed-hole) and
+                // cancel the missed-hole auto-hide timer. Called on any nav away
+                // from the dashboard and by the banner gates in showArrivalBanner
+                // and syncHoleBanners.
+                const haB = document.getElementById('hole-arrival-banner');
+                if (haB) haB.style.display = 'none';
+                const mhB = document.getElementById('missed-hole-banner');
+                if (mhB) mhB.style.display = 'none';
+                if (this._mhTmr) { clearTimeout(this._mhTmr); this._mhTmr = null; }
+            },
             syncHoleBanners: function () {
                 // v285.12: the hole banners are DERIVED from current state here, on
                 // every dashboard render (uDash calls this), because app.js's own
@@ -797,6 +816,10 @@ const App = {
                 // Nov 15). Deriving from state means no entry or navigation path —
                 // arrows, auto-advance, test fill, resume — can leave a banner stale.
                 if (!this.d || !this.d.ps || !this.d.ps.some(function (x) { return x; })) return;
+                // v285.15.1: dashboard-only — if the dashboard is not the active
+                // view, keep both banners hidden instead of deriving them.
+                const dashEl2 = document.getElementById('v-dash');
+                if (!dashEl2 || !dashEl2.classList.contains('active')) { this.hideHoleBanners(); return; }
                 const haB = document.getElementById('hole-arrival-banner');
                 const mhB = document.getElementById('missed-hole-banner');
                 if (this.d.roundEnded) {
