@@ -37,7 +37,19 @@ const CS_INDEX = {
     "tidewater": { n: "Tidewater", r: "SC" },
     "caledonia": { n: "Caledonia", r: "SC" },
     "trueblue": { n: "True Blue", r: "SC" },
-    "diamondback": { n: "Diamondback", r: "SC" }
+    "diamondback": { n: "Diamondback", r: "SC" },
+    "barefoot_fazio": { n: "Barefoot \u2014 Fazio", r: "SC" },
+    "barefoot_love": { n: "Barefoot \u2014 Love", r: "SC" },
+    "beachwood": { n: "Beachwood", r: "SC" },
+    "heritage": { n: "Heritage Club", r: "SC" },
+    "manowar": { n: "Man O' War", r: "SC" },
+    "pawleys": { n: "Pawleys Plantation", r: "SC" },
+    "pine_lakes": { n: "Pine Lakes", r: "SC" },
+    "surf": { n: "Surf Club", r: "SC" },
+    "tpcmyrtle": { n: "TPC Myrtle Beach", r: "SC" },
+    "tradition": { n: "Tradition Golf Club", r: "SC" },
+    "willbrook": { n: "Willbrook Plantation", r: "SC" },
+    "wizard": { n: "The Wizard", r: "SC" }
 };
 
 /**
