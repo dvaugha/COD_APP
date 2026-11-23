@@ -710,7 +710,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.5";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.6";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1337,6 +1337,30 @@ function readDone(which, ok){
     ? "✓ <b>" + label + " read.</b> Check every number against the card before you confirm — the card is the truth."
     : "The " + label.toLowerCase() + " read didn't come through — no harm done. Tap the scores in from the card.";
 }
+/* ---------- ROW ORDER (v3.6) — see assembler section 19 ---------- */
+function isPerm(a, n){
+  if (!Array.isArray(a) || a.length !== n) return false;
+  var seen = {};
+  for (var i = 0; i < n; i++){ var v = a[i]; if (typeof v !== "number" || v < 0 || v >= n || seen[v]) return false; seen[v] = true; }
+  return true;
+}
+function fixRowOrder(ct){
+  var co = ct.cardOrder, ro = ct.rowOrder;
+  if (!co || !ro || !ro[1]) return;
+  var n = ct.players.length;
+  if (!isPerm(co, n) || !isPerm(ro[1], n)) return;
+  var back = ro[1], rowsS = [], rowsN = [], k, h;
+  for (k = 0; k < n; k++){
+    var pl = ct.players[back[k]];
+    rowsS.push(pl.scores.slice(9, 18));
+    rowsN.push(pl.np.slice(9, 18));
+  }
+  for (k = 0; k < n; k++){
+    var dst = ct.players[co[k]];
+    for (h = 0; h < 9; h++){ dst.scores[9 + h] = rowsS[k][h]; dst.np[9 + h] = rowsN[k][h]; }
+  }
+  ct.rowOrder[1] = co.slice();
+}
 function maybeRead(which){
   if (!READ_ENDPOINT || !S.current) return;
   var ct = S.current.carts[curCart];
@@ -1354,6 +1378,12 @@ function maybeRead(which){
           if (v >= 1 && v <= 15) { pl.scores[which * 9 + hi] = v; pl.np[which * 9 + hi] = false; }
         });
       });
+      if (res.rowOrder) {
+        ct.rowOrder = ct.rowOrder || {};
+        ct.rowOrder[which] = res.rowOrder;
+        if (which === 0 && isPerm(res.rowOrder, ct.players.length)) ct.cardOrder = res.rowOrder.slice();
+        fixRowOrder(ct);
+      }
       save(); renderCart(); readDone(which, true);
     })
     .catch(function(){ readDone(which, false); /* read failed — the tap-in grid is the fallback, as designed */ });
