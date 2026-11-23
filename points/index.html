@@ -710,7 +710,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.4";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.5";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1294,14 +1294,14 @@ function handlePhoto(input, which){
   var url = URL.createObjectURL(f);
   var img = new Image();
   img.onload = function(){
-    var sc = Math.min(1, 1200 / img.width);
+    var sc = Math.min(1, 1600 / img.width);
     var cv = document.createElement("canvas");
     cv.width = Math.max(1, Math.round(img.width * sc));
     cv.height = Math.max(1, Math.round(img.height * sc));
     cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
     URL.revokeObjectURL(url);
     var ct = S.current.carts[curCart];
-    if (which === 0) ct.photoFront = cv.toDataURL("image/jpeg", 0.72); else ct.photoBack = cv.toDataURL("image/jpeg", 0.72);
+    if (which === 0) ct.photoFront = cv.toDataURL("image/jpeg", 0.82); else ct.photoBack = cv.toDataURL("image/jpeg", 0.82);
     ct.confirmed = false;
     save(); renderCart();
     maybeRead(which);
