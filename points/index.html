@@ -185,6 +185,7 @@
   <button class="btn btn-dark" onclick="updateBook()">🔄&nbsp; UPDATE THE BOOK<span class="small" id="syncStatus">Meet the shared book in the cloud — tap after applying a round</span></button>
   <button class="btn btn-dark" onclick="openBackup()">💾&nbsp; BACKUP / RESTORE<span class="small">Move the whole book as one packet — send it to Dan, or bring one back</span></button>
   <button class="btn btn-dark" onclick="openNames()">✏️&nbsp; EDIT NAMES<span class="small">Fix a name everywhere it appears, or take a player out of the book</span></button>
+  <button class="btn btn-dark" onclick="openPhones()">📱&nbsp; GROUP NUMBERS<span class="small">Mobile numbers for texting a finished round to the group — kept on this phone only, never in the book</span></button>
   <button class="btn btn-amber" id="undoBtn" style="display:none;" onclick="undoLast()">↩&nbsp; UNDO LAST ROUND'S RATINGS<span class="small">Puts the book back exactly as it was before that round</span></button>
   <div class="card">
     <h2>Round History</h2>
@@ -347,10 +348,35 @@
     <h2>Send it to the group</h2>
     <img class="cardphoto" id="sheetImg" style="display:none;" alt="Finished sheet image">
     <button class="btn btn-green" onclick="shareSheet()">🖼&nbsp; SAVE / SHARE THE SHEET IMAGE</button>
+    <button class="btn btn-dark" id="sheetTextBtn" onclick="openTextGroup()">📱&nbsp; TEXT THIS GROUP<span class="small">A text to the men who played this round, results typed in — attach the sheet image in Messages</span></button>
     <button class="btn btn-amber" id="sheetUndoBtn" style="display:none;" onclick="undoLast()">↩&nbsp; UNDO THIS ROUND'S RATINGS</button>
     <button class="btn" style="background:#b91c1c;color:#fff;" onclick="deleteRound()">🗑&nbsp; DELETE THIS ROUND<span class="small">Gone for good — if it was the last round applied, its ratings come out too</span></button>
   </div>
   <button class="btn btn-ghost" onclick="goHome()">← Home</button>
+</div>
+
+<!-- GROUP NUMBERS (v4.2) -->
+<div class="view" id="v-phones">
+  <div class="card">
+    <h2>Group Numbers</h2>
+    <p>Mobile numbers for the TEXT THIS GROUP button on a finished round's sheet. They live <b>only on this phone</b> — never in the book, never in the cloud copy, never in a packet. Type a number and tap Save on its row. Clear a number and save to take it off.</p>
+    <div id="phonesList"></div>
+    <label class="lbl" for="phoneGuestName">Someone not in the book (a guest)?</label>
+    <input type="text" id="phoneGuestName" placeholder="Name — exactly as it appears on a sheet">
+    <input type="tel" id="phoneGuestNum" placeholder="Mobile number">
+    <button class="btn btn-dark" onclick="addGuestPhone()">ADD THIS NUMBER</button>
+    <p class="cap" id="phonesMsg" style="font-weight:700;"></p>
+  </div>
+  <button class="btn btn-ghost" onclick="goHome()">← Home</button>
+</div>
+
+<!-- TEXT THIS GROUP — REVIEW (v4.2) -->
+<div class="view" id="v-textgroup">
+  <div class="card">
+    <h2>Text this group</h2>
+    <div id="tgBody"></div>
+  </div>
+  <button class="btn btn-ghost" onclick="show('v-sheet')">← Back to the sheet</button>
 </div>
 
 <!-- BACKUP / RESTORE -->
@@ -704,6 +730,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    number strip is gone. No junk buttons (sandy/greenie) — points
    only. Entry still flows through liveSet/kSet, so banners, voice,
    auto-advance and standings are unchanged.
+   v4.2 (Nov 24, 2026): TEXT THIS GROUP (Dan's idea; spec in the
+   Points notebook, Nov 24). The finished sheet can open a text to
+   the men who played that round, results typed in. Numbers live in
+   their own on-phone storage (pointscard.phones) — never in the
+   book, the cloud copy, or a packet — and a review screen names
+   who is in and who has no number before Messages opens.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -721,7 +753,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v4.1";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v4.2";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -957,6 +989,8 @@ function sweepRoundNames(r, old, nn){
 }
 function doRename(old, nn){
   S.players[nn] = S.players[old]; delete S.players[old];
+  var phx = loadPhones();
+  if (phx[old] !== undefined) { phx[nn] = phx[old]; delete phx[old]; savePhones(phx); }
   S.rounds.forEach(function(r){ sweepRoundNames(r, old, nn); });
   if (S.current) sweepRoundNames(S.current, old, nn);
   return true;
@@ -991,6 +1025,125 @@ function backupState(){
   if (c.current) strip(c.current);
   return c;
 }
+/* ---------- TEXT THIS GROUP (v4.2) ----------
+   Phone numbers for texting a finished round to the men who played
+   it. The numbers live in their own storage key, NEVER inside S —
+   so they cannot ride the cloud book, a backup packet, or a restore
+   onto another phone. The button opens Messages (an sms: link) with
+   the recipients and a results text filled in; iOS does not let a
+   web app attach the sheet image, so the picture goes in by hand. */
+var PHONES_LSKEY = "pointscard.phones";
+var OWNER_NAME = "Danny Vaughan (DV)";   // the phone owner's book name — the sender, never a recipient
+function loadPhones(){
+  if (!LS) return {};
+  try { var o = JSON.parse(LS.getItem(PHONES_LSKEY) || "null"); if (o && typeof o === "object" && !Array.isArray(o)) return o; } catch (e) {}
+  return {};
+}
+function savePhones(p){ if (!LS) return; try { LS.setItem(PHONES_LSKEY, JSON.stringify(p)); } catch (e) {} }
+function phoneDigits(raw){ return (raw == null ? "" : String(raw)).replace(/[^0-9]/g, ""); }
+function phoneNumber(raw){
+  var d = phoneDigits(raw);
+  if (d.length === 10) return "+1" + d;
+  if (d.length === 11 && d.charAt(0) === "1") return "+" + d;
+  if (d.length >= 7) return d;
+  return null;
+}
+var phonesShown = [];
+function openPhones(){ renderPhones(); show("v-phones"); }
+function phonesNames(){
+  var ph = loadPhones(), seen = {}, out = [];
+  Object.keys(S.players).sort().forEach(function(nm){ seen[nm] = 1; out.push(nm); });
+  Object.keys(ph).sort().forEach(function(nm){ if (!seen[nm]) out.push(nm); });
+  return out;
+}
+function renderPhones(){
+  var ph = loadPhones();
+  phonesShown = phonesNames();
+  var msg = document.getElementById("phonesMsg"); if (msg) msg.textContent = "";
+  document.getElementById("phonesList").innerHTML = phonesShown.length ? phonesShown.map(function(nm, i){
+    return '<div style="padding:8px 0;border-bottom:1px solid #e3e8e4;">' +
+      '<div><b>' + esc(nm) + '</b>' + (S.players[nm] ? "" : ' <span class="cap">not in the book</span>') + '</div>' +
+      '<div class="rowflex"><input type="tel" id="phoneInp' + i + '" value="' + esc(ph[nm] || "") + '" placeholder="Mobile number" style="flex:1;">' +
+      '<button class="chip" onclick="savePhoneIdx(' + i + ')">Save</button></div></div>';
+  }).join("") : '<p class="cap">No names yet.</p>';
+}
+function savePhoneIdx(i){
+  var nm = phonesShown[i]; if (!nm) return;
+  var inp = document.getElementById("phoneInp" + i); if (!inp) return;
+  var ph = loadPhones(), v = inp.value.trim();
+  if (v) ph[nm] = v; else delete ph[nm];
+  savePhones(ph);
+  document.getElementById("phonesMsg").textContent = v ? ("Saved — " + nm) : ("Cleared — " + nm);
+}
+function addGuestPhone(){
+  var nmEl = document.getElementById("phoneGuestName"), numEl = document.getElementById("phoneGuestNum");
+  var msg = document.getElementById("phonesMsg");
+  var nm = nmEl.value.trim().replace(/\s+/g, " "), num = numEl.value.trim();
+  if (!nm || !num) { msg.textContent = "Type both the name and the number first."; return; }
+  if (!phoneNumber(num)) { msg.textContent = "That number does not look complete — check it and try again."; return; }
+  var ph = loadPhones(); ph[nm] = num; savePhones(ph);
+  nmEl.value = ""; numEl.value = "";
+  renderPhones();
+  document.getElementById("phonesMsg").textContent = "Saved — " + nm;
+}
+var tgPlan = null;
+function textGroupBody(r){
+  var lines = ["Points — " + r.courseName + " · " + prettyDate(r.date)];
+  var st = standings(r), fm = flightMap(r);
+  function line(x, n){
+    var s = n + ". " + x.name + " — " + x.points + " pts";
+    if (x.vs != null) s += " (" + (x.vs >= 0 ? "+" : "") + x.vs.toFixed(2) + ")";
+    else s += x.guest ? " (guest)" : " (new)";
+    return s;
+  }
+  if (fm) {
+    ["A", "B"].forEach(function(f){
+      var inF = st.filter(function(x){ return fm[x.name] === f; });
+      if (!inF.length) return;
+      lines.push("Flight " + f + ":");
+      inF.forEach(function(x, i){ lines.push(line(x, i + 1)); });
+    });
+    var noF = st.filter(function(x){ return !fm[x.name]; });
+    if (noF.length) { lines.push("Also played:"); noF.forEach(function(x, i){ lines.push(line(x, i + 1)); }); }
+  } else {
+    st.forEach(function(x, i){ lines.push(line(x, i + 1)); });
+  }
+  return lines.join("\n");
+}
+function textGroupPlan(r){
+  var ph = loadPhones(), included = [], missing = [], seen = {};
+  allPlayers(r).forEach(function(pl){
+    var nm = pl.name;
+    if (nm === OWNER_NAME || seen[nm]) return;
+    seen[nm] = 1;
+    var num = phoneNumber(ph[nm]);
+    if (num) included.push({ name: nm, number: num });
+    else missing.push(nm);
+  });
+  var body = textGroupBody(r);
+  var url = included.length ? "sms:" + included.map(function(x){ return x.number; }).join(",") + "&body=" + encodeURIComponent(body) : null;
+  return { included: included, missing: missing, body: body, url: url };
+}
+function openTextGroup(){
+  if (PRACTICE) { window.alert("You are in PRACTICE — texting is off here. Exit practice and open the real round's sheet."); return; }
+  var r = sheetRound; if (!r) return;
+  tgPlan = textGroupPlan(r);
+  if (!tgPlan.included.length) {
+    window.alert("No numbers yet — add the group's mobile numbers first, then tap TEXT THIS GROUP again.");
+    openPhones();
+    return;
+  }
+  var h = '<p><b>' + esc(r.courseName) + " — " + esc(prettyDate(r.date)) + '</b></p>';
+  h += '<p>Texting: <b>' + tgPlan.included.map(function(x){ return esc(x.name); }).join(", ") + '</b></p>';
+  if (tgPlan.missing.length) h += '<p style="color:#b45309;font-weight:700;">Not included (no number on file): ' + tgPlan.missing.map(esc).join(", ") + '</p>';
+  h += '<p class="cap">The message opens with the results typed in. The sheet picture cannot ride along by itself — attach it in Messages before you send.</p>';
+  h += '<pre style="white-space:pre-wrap;font:inherit;background:#f4f6f4;border:1px solid #e3e8e4;border-radius:10px;padding:10px;">' + esc(tgPlan.body) + '</pre>';
+  h += '<button class="btn btn-green" onclick="textGroupGo()">OPEN MESSAGES →</button>';
+  document.getElementById("tgBody").innerHTML = h;
+  show("v-textgroup");
+}
+function textGroupGo(){ if (tgPlan && tgPlan.url) window.location.href = tgPlan.url; }
+
 /* ---------- THE SHARED BOOK (v4.0) ----------
    One book lives in the cloud (the points-book worker). This phone and
    Rick's each hold a copy; UPDATE reconciles them. Rounds only ever get
@@ -2109,6 +2262,7 @@ function openSheetView(r){
   document.getElementById("sheetImg").style.display = "none";
   var ub = document.getElementById("sheetUndoBtn");
   ub.style.display = (r.applied && r.id === S.lastAppliedId && r.preBook) ? "block" : "none";
+  document.getElementById("sheetTextBtn").style.display = PRACTICE ? "none" : "block";
   show("v-sheet");
 }
 
