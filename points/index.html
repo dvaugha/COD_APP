@@ -710,7 +710,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.6";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v3.7";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -965,10 +965,18 @@ function removeName(nm){
 /* ---------- BACKUP / RESTORE ---------- */
 function openBackup(){
   if (PRACTICE) { window.alert("You're in PRACTICE — backup and restore are turned off here so a practice copy can never overwrite the real book. Exit practice first."); return; }
-  document.getElementById("backupOut").value = JSON.stringify(S);
+  document.getElementById("backupOut").value = JSON.stringify(backupState());
   document.getElementById("backupMsg").textContent = "";
   document.getElementById("restoreMsg").textContent = "";
   show("v-backup");
+}
+/* The backup packet carries the book, never the card photos (v3.7). */
+function backupState(){
+  var c = clone(S);
+  var strip = function(r){ if (r && r.carts) r.carts.forEach(function(ct){ ct.photoFront = null; ct.photoBack = null; }); };
+  (c.rounds || []).forEach(strip);
+  if (c.current) strip(c.current);
+  return c;
 }
 function shareBackup(){
   var pkt = document.getElementById("backupOut").value;
