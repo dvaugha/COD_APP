@@ -721,7 +721,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v4.0";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v4.1";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1388,6 +1388,9 @@ function startRound(){
   if (!setup.order.length) { msg.textContent = "Pop at least one player into a group."; return; }
   msg.textContent = "";
   var startRatings = {}, startAvg = {};
+  var shEl = document.getElementById("setStartHole");
+  var startHoleVal = shEl ? parseInt(shEl.value, 10) : (setup.startHole || 1);
+  if (startHoleVal !== 10) startHoleVal = 1;
   setup.order.forEach(function(nm){
     startRatings[nm] = (!setup.guest[nm] && S.players[nm]) ? clone(S.players[nm]) : null;
     startAvg[nm] = setupAvgOf(nm);
@@ -1405,7 +1408,7 @@ function startRound(){
   S.current = { id: "r" + Date.now(), date: document.getElementById("setDate").value || todayStr(),
     courseKey: ck, courseName: COURSES[ck].n,
     nines: [ { key: ns[0].key, name: ns[0].name, pars: ns[0].pars.slice() }, { key: ns[1].key, name: ns[1].name, pars: ns[1].pars.slice() } ],
-    carts: carts, liveCart: liveIdx, startRatings: startRatings, startAvg: startAvg, flights: !!setup.flights, startHole: setup.startHole || 1, keepers: keepers, applied: false, preBook: null, postBook: null };
+    carts: carts, liveCart: liveIdx, startRatings: startRatings, startAvg: startAvg, flights: !!setup.flights, startHole: startHoleVal, keepers: keepers, applied: false, preBook: null, postBook: null };
   save();
   openBoard();
 }
@@ -2549,6 +2552,8 @@ function startKeeper(){
   if (!kb.picked.length) { msg.textContent = "Pop at least one player into the group."; return; }
   if (K && !K.done && !window.confirm("A group is already being kept on this phone — replace it?")) return;
   msg.textContent = "";
+  var kbShEl = document.getElementById("kbStartHole");
+  if (kbShEl) kb.startHole = parseInt(kbShEl.value, 10) === 10 ? 10 : 1;
   K = { courseKey: ck, courseName: COURSES[ck].n, date: todayStr(),
     nines: [ { key: ns[0].key, name: ns[0].name, pars: ns[0].pars.slice() }, { key: ns[1].key, name: ns[1].name, pars: ns[1].pars.slice() } ],
     players: kb.picked.map(function(nm){
