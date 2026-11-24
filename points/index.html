@@ -182,6 +182,7 @@
   <button class="btn btn-green" id="newRoundBtn" onclick="startSetup()">➕&nbsp; NEW ROUND<span class="small">Pick the course, who's playing, and the groups</span></button>
   <button class="btn btn-amber" id="practiceBtn" onclick="enterPractice()">🧪&nbsp; PRACTICE — TRY THE APP<span class="small">A test copy of the book: run a whole round, learn every screen — nothing real is touched</span></button>
   <button class="btn btn-dark" onclick="openKeeper()">🎯&nbsp; KEEP A GROUP<span class="small">Score one group on this phone — no book here, just the group, checked against paper, with a merge code at the finish</span></button>
+  <button class="btn btn-dark" onclick="updateBook()">🔄&nbsp; UPDATE THE BOOK<span class="small" id="syncStatus">Meet the shared book in the cloud — tap after applying a round</span></button>
   <button class="btn btn-dark" onclick="openBackup()">💾&nbsp; BACKUP / RESTORE<span class="small">Move the whole book as one packet — send it to Dan, or bring one back</span></button>
   <button class="btn btn-dark" onclick="openNames()">✏️&nbsp; EDIT NAMES<span class="small">Fix a name everywhere it appears, or take a player out of the book</span></button>
   <button class="btn btn-amber" id="undoBtn" style="display:none;" onclick="undoLast()">↩&nbsp; UNDO LAST ROUND'S RATINGS<span class="small">Puts the book back exactly as it was before that round</span></button>
@@ -212,6 +213,11 @@
       <input type="checkbox" id="setFlights" style="width:24px; height:24px; margin-top:1px;" onchange="setupFlightsToggle(this.checked)">
       <span>FLIGHTS<span style="display:block; font-size:13px; font-weight:600; color:#5b665e;">Split the sheet's places into Flight A (top half by average) and Flight B. The groups ride exactly as set up — flights only change the places.</span></span>
     </label>
+    <label class="lbl" for="setStartHole">Starting hole</label>
+    <select id="setStartHole" onchange="setup.startHole = parseInt(this.value, 10)">
+      <option value="1">Hole 1</option>
+      <option value="10">Hole 10 — back nine first</option>
+    </select>
   </div>
   <div class="card">
     <h2>The groups come first</h2>
@@ -437,6 +443,11 @@
       </div>
     </div>
     <p class="cap" id="kbParInfo"></p>
+    <label class="lbl" for="kbStartHole">Starting hole</label>
+    <select id="kbStartHole" onchange="kb.startHole = parseInt(this.value, 10)">
+      <option value="1">Hole 1</option>
+      <option value="10">Hole 10 — back nine first</option>
+    </select>
   </div>
   <div class="card">
     <h2>Who's in my group?</h2>
@@ -710,7 +721,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v3.7";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v4.0";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -874,6 +885,8 @@ function renderHome(){
   } else { rb.style.display = "none"; nrb.style.display = "block"; }
   var ub = document.getElementById("undoBtn");
   ub.style.display = (S.lastAppliedId && findRound(S.lastAppliedId)) ? "block" : "none";
+  var sy = document.getElementById("syncStatus");
+  if (sy) sy.textContent = syncStatusText();
   var pb2 = document.getElementById("practiceBtn");
   if (pb2) pb2.style.display = PRACTICE ? "none" : "block";
   var hl = document.getElementById("historyList");
@@ -978,6 +991,172 @@ function backupState(){
   if (c.current) strip(c.current);
   return c;
 }
+/* ---------- THE SHARED BOOK (v4.0) ----------
+   One book lives in the cloud (the points-book worker). This phone and
+   Rick's each hold a copy; UPDATE reconciles them. Rounds only ever get
+   ADDED — scores are the truth and ratings are derived — a deletion of
+   the most recent applied round can follow, and anything the rules can't
+   settle stops and says so instead of overwriting. Photos never leave
+   the phone: the cloud copy is backupState(), the book only. */
+var BOOK_URL = "https://points-book.dvaughan46.workers.dev";
+var BOOK_KEY = "pb-4f8c-seagullible-book-2026";
+var SYNC_LSKEY = "pointscard.sync";
+var syncBusy = false;
+function syncState(){
+  try { var o = JSON.parse(LS.getItem(SYNC_LSKEY) || "null"); if (o && typeof o.baseRev === "number") return o; } catch (e) {}
+  return { baseRev: 0, baseIds: [], lastAt: 0 };
+}
+function saveSyncState(st){ try { LS.setItem(SYNC_LSKEY, JSON.stringify(st)); } catch (e) {} }
+function roundIds(book){ return (book.rounds || []).map(function(r){ return r.id; }); }
+function unsyncedCount(){
+  var base = {};
+  syncState().baseIds.forEach(function(id){ base[id] = 1; });
+  return S.rounds.filter(function(r){ return !base[r.id]; }).length;
+}
+function syncStatusText(){
+  if (PRACTICE) return "Practice book — updating is off here";
+  var st = syncState();
+  if (!st.baseRev) return "Tap to meet the shared book in the cloud";
+  var n = unsyncedCount();
+  if (n) return n + (n === 1 ? " round" : " rounds") + " on this phone not shared yet — tap to update";
+  return "Up to date with the shared book";
+}
+function stripRoundJSON(r){
+  var c = clone(r);
+  (c.carts || []).forEach(function(ct){ ct.photoFront = null; ct.photoBack = null; });
+  return JSON.stringify(c);
+}
+function playersEqual(a, b){
+  var ka = Object.keys(a || {}), kb = Object.keys(b || {});
+  if (ka.length !== kb.length) return false;
+  return ka.every(function(k){ var x = a[k], y = b[k]; return !!y && x.total === y.total && x.rounds === y.rounds; });
+}
+/* Decide how this phone's book and the cloud book reconcile. Pure — no
+   network, no globals — so the harness can drive it with synthetic books. */
+function planSync(local, cloud, baseIds){
+  if (!cloud) return { action: "push", added: [], mine: [], deleted: [], seed: true };
+  var cloudById = {}, localById = {};
+  (cloud.rounds || []).forEach(function(r){ cloudById[r.id] = r; });
+  (local.rounds || []).forEach(function(r){ localById[r.id] = r; });
+  var mine = (local.rounds || []).filter(function(r){ return !cloudById[r.id]; });
+  var deleted = (baseIds || []).filter(function(id){ return !!cloudById[id] && !localById[id]; });
+  var delSet = {};
+  deleted.forEach(function(id){ delSet[id] = 1; });
+  var added = (cloud.rounds || []).filter(function(r){ return !localById[r.id] && !delSet[r.id]; });
+  var clash = (local.rounds || []).some(function(r){ return !!cloudById[r.id] && stripRoundJSON(r) !== stripRoundJSON(cloudById[r.id]); });
+  if (clash) return { action: "conflict", why: "round" };
+  if (!mine.length && !added.length && !deleted.length) {
+    return playersEqual(local.players, cloud.players) ? { action: "adopt" } : { action: "conflict", why: "book" };
+  }
+  if (deleted.length && !(deleted.length === 1 && cloud.lastAppliedId === deleted[0])) {
+    return { action: "conflict", why: "delete" };
+  }
+  if (added.length && (mine.length || deleted.length)) return { action: "rebase", added: added, mine: mine, deleted: deleted };
+  if (added.length) return { action: "pull", added: added };
+  return { action: "push", mine: mine, deleted: deleted };
+}
+/* Apply one archived round onto a players map, restamping the round's
+   before/after snapshots — doApply's math, aimed at any book. */
+function applyToBook(players, r){
+  var out = clone(players);
+  r.startRatings = {};
+  allPlayers(r).forEach(function(pl){ if (!pl.guest && out[pl.name]) r.startRatings[pl.name] = clone(out[pl.name]); });
+  r.startAvg = {};
+  Object.keys(r.startRatings).forEach(function(n){ r.startAvg[n] = avgOf(r.startRatings[n]); });
+  r.preBook = clone(players);
+  standings(r).forEach(function(x){
+    if (x.guest || !x.complete) return;
+    var e = out[x.name];
+    out[x.name] = e ? updatedEntry(e, x.points) : { total: x.points, rounds: 1 };
+  });
+  r.postBook = clone(out);
+  return out;
+}
+function mergeBooks(local, cloud, plan){
+  var book = clone(cloud);                 // the cloud chain stands
+  (plan.deleted || []).forEach(function(id){
+    var gone = null;
+    book.rounds = book.rounds.filter(function(x){ if (x.id === id) { gone = x; return false; } return true; });
+    if (gone && gone.applied && gone.preBook) book.players = clone(gone.preBook);
+  });
+  var mine = (plan.mine || []).slice().sort(function(a, b){ return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
+  mine.forEach(function(r0){
+    var r = clone(r0);
+    if (r.applied) book.players = applyToBook(book.players, r);
+    book.rounds.push(r);
+  });
+  book.rounds.sort(function(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
+  book.lastAppliedId = null;   // chains moved — UNDO waits for a fresh apply
+  book.current = null;
+  return book;
+}
+function graftPhotos(incoming, local){
+  var byId = {};
+  (local.rounds || []).forEach(function(r){ byId[r.id] = r; });
+  (incoming.rounds || []).forEach(function(r){
+    var old = byId[r.id]; if (!old) return;
+    (r.carts || []).forEach(function(ct, i){
+      var oc = (old.carts || [])[i]; if (!oc) return;
+      if (!ct.photoFront && oc.photoFront) ct.photoFront = oc.photoFront;
+      if (!ct.photoBack && oc.photoBack) ct.photoBack = oc.photoBack;
+    });
+  });
+}
+function adoptBook(book){
+  var keepCurrent = S.current;
+  graftPhotos(book, S);
+  S = book; S.current = keepCurrent;
+  sortRounds(); save(); renderHome();
+}
+function bookFetch(path, payload){
+  return fetch(BOOK_URL + path, { method: "POST", headers: { "Content-Type": "application/json", "x-book-key": BOOK_KEY }, body: JSON.stringify(payload || {}) })
+    .then(function(r){ return r.json(); });
+}
+function updateBook(){
+  if (PRACTICE) { window.alert("You're in PRACTICE — updating is turned off here so the practice book can never touch the shared one."); return; }
+  if (syncBusy) return;
+  syncBusy = true;
+  var done = function(msg){
+    syncBusy = false;
+    var sy = document.getElementById("syncStatus");
+    if (sy) sy.textContent = syncStatusText();
+    if (msg) window.alert(msg);
+  };
+  bookFetch("/book/get").then(function(res){
+    if (!res || typeof res.rev !== "number") throw new Error("bad reply");
+    var st = syncState();
+    var cloud = res.book || null;
+    var local = backupState();
+    var plan = planSync(local, cloud, st.baseIds);
+    var names = function(list){ return (list || []).map(function(r){ return r.courseName; }).join(", "); };
+    if (plan.action === "adopt") {
+      saveSyncState({ baseRev: res.rev, baseIds: roundIds(cloud), lastAt: Date.now() });
+      done("You're up to date — this phone and the shared book match.");
+      return null;
+    }
+    if (plan.action === "conflict") {
+      done("This update needs a second pair of eyes — nothing was changed. Let Dan know and he'll sort it.");
+      return null;
+    }
+    if (plan.action === "pull") {
+      adoptBook(clone(cloud));
+      saveSyncState({ baseRev: res.rev, baseIds: roundIds(cloud), lastAt: Date.now() });
+      done("Updated — added " + names(plan.added) + " from the shared book. You're up to date.");
+      return null;
+    }
+    var outBook = plan.action === "push" ? local : mergeBooks(local, cloud, plan);
+    return bookFetch("/book/put", { baseRev: res.rev, book: outBook }).then(function(pr){
+      if (!pr || !pr.ok) { done("The shared book changed while you were updating — nothing was lost. Tap UPDATE again."); return; }
+      if (plan.action === "rebase") adoptBook(outBook);
+      saveSyncState({ baseRev: pr.rev, baseIds: roundIds(outBook), lastAt: Date.now() });
+      var msg = "Shared — the book is up to date.";
+      if (plan.seed) msg = "Your book is now the shared book — Rick's next UPDATE will match it.";
+      else if (plan.action === "rebase") msg = "Updated both ways: added " + names(plan.added) + ", and your round went in on top. The book is up to date.";
+      else if (plan.mine && plan.mine.length) msg = "Shared your " + names(plan.mine) + " — the book is up to date.";
+      done(msg);
+    });
+  }).catch(function(){ done("Couldn't reach the shared book — the book on this phone is fine. Try UPDATE again when you have signal."); });
+}
 function shareBackup(){
   var pkt = document.getElementById("backupOut").value;
   if (navigator.share) navigator.share({ title: "Points Card backup", text: pkt }).catch(function(){});
@@ -1036,9 +1215,10 @@ function courseOptionsHTML(){
   return html;
 }
 function startSetup(){
-  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0, sel: 1, groups: 2, avg: {}, flights: false, keeperOf: {} };
+  setup = { order: [], guest: {}, inbook: {}, cartOf: {}, liveCart: 0, sel: 1, groups: 2, avg: {}, flights: false, keeperOf: {}, startHole: 1 };
   document.getElementById("setDate").value = todayStr();
   document.getElementById("setFlights").checked = false;
+  document.getElementById("setStartHole").value = "1";
   var sel = document.getElementById("setCourse");
   sel.innerHTML = courseOptionsHTML();
   sel.value = "pearl";
@@ -1225,7 +1405,7 @@ function startRound(){
   S.current = { id: "r" + Date.now(), date: document.getElementById("setDate").value || todayStr(),
     courseKey: ck, courseName: COURSES[ck].n,
     nines: [ { key: ns[0].key, name: ns[0].name, pars: ns[0].pars.slice() }, { key: ns[1].key, name: ns[1].name, pars: ns[1].pars.slice() } ],
-    carts: carts, liveCart: liveIdx, startRatings: startRatings, startAvg: startAvg, flights: !!setup.flights, keepers: keepers, applied: false, preBook: null, postBook: null };
+    carts: carts, liveCart: liveIdx, startRatings: startRatings, startAvg: startAvg, flights: !!setup.flights, startHole: setup.startHole || 1, keepers: keepers, applied: false, preBook: null, postBook: null };
   save();
   openBoard();
 }
@@ -1410,9 +1590,22 @@ function confirmCart(){
    on the cart so leaving and coming back lands on the same hole. ---------- */
 var liveHole = 0;
 function holeEntered(pl, h){ return pl.scores[h] != null || pl.np[h]; }
+/* ---------- play order (v4.0) ----------
+   Everything that walks holes "in the order played" — first open hole,
+   the missed-hole scan, navigation, auto-advance, the turn box — goes
+   through this list: hole indexes 0-17 rotated so the starting hole
+   comes first. startHole is the hole NUMBER (1 or 10). */
+function playOrder(startIdx){
+  var o = [];
+  for (var i = 0; i < 18; i++) o.push((startIdx + i) % 18);
+  return o;
+}
+function startIdxOf(r){ return (r && r.startHole === 10) ? 9 : 0; }
+function kStartIdx(){ return (K && K.startHole === 10) ? 9 : 0; }
 function firstOpenHole(ct){
-  for (var h = 0; h < 18; h++) if (ct.players.some(function(pl){ return !holeEntered(pl, h); })) return h;
-  return 17;
+  var order = playOrder(S.current ? startIdxOf(S.current) : 0);
+  for (var i = 0; i < 18; i++) { var h = order[i]; if (ct.players.some(function(pl){ return !holeEntered(pl, h); })) return h; }
+  return order[17];
 }
 function openLive(i){
   if (!S.current) { goHome(); return; }
@@ -1429,31 +1622,34 @@ function renderLive(){
   document.getElementById("liveHoleLabel").parentNode.className = "livebanner" + (ct.players.every(function(pl){ return !holeEntered(pl, h); }) ? " fresh" : "");
   document.getElementById("liveGroupLabel").textContent = "Group " + (curCart + 1) + (curCart === r.liveCart ? " ⭐ — this phone's group" : "") + " — " + ct.players.map(function(pl){ return pl.name; }).join(", ");
   document.getElementById("liveParLabel").textContent = (h < 9 ? r.nines[0].name : r.nines[1].name) + " nine · Par " + pars[h] + " · hole " + (h + 1) + " of 18";
-  var boxes = "", mh, names;
-  for (mh = h - 1; mh >= 0; mh--) {
-    names = ct.players.filter(function(pl){ return !holeEntered(pl, mh); }).map(function(pl){ return pl.name; });
-    if (names.length) break;
+  var boxes = "", mh = -1, names = [];
+  var order = playOrder(startIdxOf(r)), pos = order.indexOf(h);
+  for (var oi = pos - 1; oi >= 0; oi--) {
+    var cand = order[oi];
+    var miss = ct.players.filter(function(pl){ return !holeEntered(pl, cand); }).map(function(pl){ return pl.name; });
+    if (miss.length) { mh = cand; names = miss; break; }
   }
   if (mh >= 0) boxes += '<div class="missbox">⚠ <b>Hole ' + (mh + 1) + ' still needs a score</b> — ' + names.map(esc).join(", ") + '.<button onclick="liveGo(' + mh + ')">GO TO HOLE ' + (mh + 1) + "</button></div>";
-  if (h === 9 && ct.players.every(function(pl){ for (var k = 0; k < 9; k++) if (!holeEntered(pl, k)) return false; return true; })) {
-    boxes += '<div class="turnbox"><b>At the turn — OUT:</b><br>' + ct.players.map(function(pl){
+  var firstNine = order.slice(0, 9);
+  if (h === order[9] && ct.players.every(function(pl){ return firstNine.every(function(k){ return holeEntered(pl, k); }); })) {
+    boxes += '<div class="turnbox"><b>At the turn — ' + (startIdxOf(r) === 9 ? "IN" : "OUT") + ':</b><br>' + ct.players.map(function(pl){
       var g = 0, p = 0;
-      for (var k = 0; k < 9; k++) if (!pl.np[k] && pl.scores[k] != null) { g += pl.scores[k]; p += ptsFor(pl.scores[k], pars[k]); }
+      firstNine.forEach(function(k){ if (!pl.np[k] && pl.scores[k] != null) { g += pl.scores[k]; p += ptsFor(pl.scores[k], pars[k]); } });
       return esc(pl.name) + " — gross " + g + " · " + p + " pts";
     }).join("<br>") + "</div>";
   }
   var done = ct.players.every(function(pl){ return pBlanks(pl) === 0; });
   if (done) boxes += '<div class="banner"><b>All 18 holes are in for this group.</b> Review the card on the grid, then confirm this group.</div>';
   if (ct.players.every(function(pl){ return holeEntered(pl, h); })) boxes = '<div class="donebanner">✓ HOLE ' + (h + 1) + ' COMPLETE</div>' + boxes;
-  else if (h > 0 && ct.players.every(function(pl){ return holeEntered(pl, h - 1); })) boxes = '<div class="donebanner">✓ HOLE ' + h + ' COMPLETE</div>' + boxes;
+  else if (pos > 0 && ct.players.every(function(pl){ return holeEntered(pl, order[pos - 1]); })) boxes = '<div class="donebanner">✓ HOLE ' + (order[pos - 1] + 1) + ' COMPLETE</div>' + boxes;
   document.getElementById("liveBoxes").innerHTML = boxes;
   var _ls = document.getElementById("liveStand");
   if (_ls) { _ls.style.display = ""; _ls.innerHTML = liveStandHTML(ct.players, pars, r.startAvg); }
   document.getElementById("liveRows").innerHTML = ct.players.map(function(pl, pi){
     return stepRowHTML(pl, pi, pars, h, "live", liveVsText(pl, pars), "");
   }).join("");
-  document.getElementById("livePrevBtn").disabled = (h === 0);
-  document.getElementById("liveNextBtn").disabled = (h === 17);
+  document.getElementById("livePrevBtn").disabled = (pos === 0);
+  document.getElementById("liveNextBtn").disabled = (pos === 17);
   document.getElementById("liveReviewBtn").innerHTML = done
     ? "✓ REVIEW &amp; CONFIRM THIS GROUP<span class=\"small\">The whole card on the grid — confirm it and this group is in</span>"
     : "REVIEW THE CARD<span class=\"small\">The whole card on the grid — fix any cell, then confirm</span>";
@@ -1464,14 +1660,15 @@ function liveGo(h){
   S.current.carts[curCart].liveHole = h;
   save(); renderLive();
 }
-function liveNav(d){ var h = liveHole + d; if (h < 0 || h > 17) return; liveGo(h); }
+function liveNav(d){ var order = playOrder(S.current ? startIdxOf(S.current) : 0); var pos = order.indexOf(liveHole) + d; if (pos < 0 || pos > 17) return; liveGo(order[pos]); }
 function liveSet(pi, v){
   var ct = S.current.carts[curCart], pl = ct.players[pi];
   pl.scores[liveHole] = v; pl.np[liveHole] = false;
   ct.confirmed = false; ct.liveUsed = true;
   if (ct.players.every(function(p){ return holeEntered(p, liveHole); })) {
     speak("Hole " + (liveHole + 1) + " complete");
-    if (liveHole < 17) { liveHole++; ct.liveHole = liveHole; }
+    var o2 = playOrder(startIdxOf(S.current)), p2 = o2.indexOf(liveHole);
+    if (p2 < 17) { liveHole = o2[p2 + 1]; ct.liveHole = liveHole; }
   }
   save(); renderLive();
 }
@@ -1488,9 +1685,9 @@ function liveClear(pi){
 function liveFill5(){
   if (!PRACTICE || !S.current) return;
   var r = S.current, ct = r.carts[curCart], pars = roundPars(r);
-  var start = liveHole, end = Math.min(start + 4, 17);
+  var order = playOrder(startIdxOf(r)), pos = order.indexOf(liveHole), lastPos = Math.min(pos + 4, 17);
   ct.players.forEach(function(pl){
-    for (var h = start; h <= end; h++) {
+    for (var oi = pos; oi <= lastPos; oi++) { var h = order[oi];
       if (pl.scores[h] != null || pl.np[h]) continue;
       var x = Math.random(), d = x < 0.12 ? -1 : (x < 0.50 ? 0 : (x < 0.82 ? 1 : 2));
       var v = pars[h] + d;
@@ -1499,7 +1696,7 @@ function liveFill5(){
     }
   });
   ct.confirmed = false; ct.liveUsed = true;
-  liveHole = Math.min(end + 1, 17); ct.liveHole = liveHole;
+  liveHole = order[Math.min(lastPos + 1, 17)]; ct.liveHole = liveHole;
   save(); renderLive();
 }
 
@@ -2160,7 +2357,7 @@ function handleScanned(kind, text){
 function buildSetupPacket(r, ci){
   var ct = r.carts[ci];
   var lines = ["PS1",
-    "Course: " + r.courseName + " (" + r.courseKey + ") - Nines: " + r.nines[0].key + "/" + r.nines[1].key + " - " + prettyDate(r.date),
+    "Course: " + r.courseName + " (" + r.courseKey + ") - Nines: " + r.nines[0].key + "/" + r.nines[1].key + " - " + prettyDate(r.date) + (r.startHole === 10 ? " - Start: 10" : ""),
     "Group: " + (ci + 1)];
   ct.players.forEach(function(pl){
     var start = r.startRatings[pl.name];
@@ -2181,6 +2378,7 @@ function parseSetupPacket(text){
   var courseKey = cm[1].toLowerCase();
   if (!COURSES[courseKey]) return { ok: false, err: "This phone doesn't know that course yet (" + courseKey + ")." };
   var nm = lines[1].match(/Nines:\s*([a-z0-9_]+)\s*\/\s*([a-z0-9_]+)/i);
+  var sm = (lines[1] || "").match(/Start:\s*(1|10)\b/i);
   var players = [];
   for (var li = 2; li < lines.length; li++) {
     if (/^Group:/i.test(lines[li])) continue;
@@ -2194,7 +2392,7 @@ function parseSetupPacket(text){
   }
   if (!players.length) return { ok: false, err: "No players in this setup code." };
   if (players.length > 6) return { ok: false, err: "This setup code has " + players.length + " players — a group holds at most 6." };
-  return { ok: true, courseKey: courseKey, nines: nm ? [nm[1].toLowerCase(), nm[2].toLowerCase()] : null, players: players };
+  return { ok: true, courseKey: courseKey, nines: nm ? [nm[1].toLowerCase(), nm[2].toLowerCase()] : null, startHole: sm ? parseInt(sm[1], 10) : 1, players: players };
 }
 function showSetupCode(ci){
   var r = S.current; if (!r) return;
@@ -2258,7 +2456,7 @@ function keeperFromSetup(pk){
   K = { courseKey: pk.courseKey, courseName: COURSES[pk.courseKey].n, date: todayStr(),
     nines: [ { key: pick[0].key, name: pick[0].name, pars: pick[0].pars.slice() }, { key: pick[1].key, name: pick[1].name, pars: pick[1].pars.slice() } ],
     players: pk.players.map(function(p){ return { name: p.name, guest: p.guest, isNew: p.isNew, avg: p.avg, scores: nulls18(), np: falses18() }; }),
-    hole: 0, verified: false, done: false, spoken: -1 };
+    hole: (pk.startHole === 10 ? 9 : 0), startHole: pk.startHole || 1, verified: false, done: false, spoken: -1 };
   pk.players.forEach(function(p){ avgRemember(p.name, p.avg); });
   kSave();
   openKLive();
@@ -2266,11 +2464,12 @@ function keeperFromSetup(pk){
 
 /* ---------- keeper: build my group ---------- */
 function openKBuild(){
-  kb = { picked: [], guest: {}, isNew: {}, avg: {} };
+  kb = { picked: [], guest: {}, isNew: {}, avg: {}, startHole: 1 };
   var sel = document.getElementById("kbCourse");
   sel.innerHTML = courseOptionsHTML();
   sel.value = "pearl";
   document.getElementById("kbAddName").value = "";
+  var ksh = document.getElementById("kbStartHole"); if (ksh) ksh.value = "1";
   document.getElementById("kbMsg").textContent = "";
   kbuildCourseChanged();
   renderKBuild();
@@ -2357,7 +2556,7 @@ function startKeeper(){
       if (!kb.guest[nm] && !kb.isNew[nm] && kb.avg[nm] !== "" && kb.avg[nm] != null) { var v = parseFloat(kb.avg[nm]); if (!isNaN(v)) avg = v; }
       return { name: nm, guest: !!kb.guest[nm], isNew: !!kb.isNew[nm], avg: avg, scores: nulls18(), np: falses18() };
     }),
-    hole: 0, verified: false, done: false, spoken: -1 };
+    hole: (kb.startHole === 10 ? 9 : 0), startHole: kb.startHole || 1, verified: false, done: false, spoken: -1 };
   K.players.forEach(function(p){ avgRemember(p.name, p.avg); });
   kSave();
   openKLive();
@@ -2379,12 +2578,13 @@ function kStandings(){
 function openKLive(){
   if (!K) { show("v-keeper"); return; }
   if (K.done) { openKFinish(); return; }
-  kHole = (typeof K.hole === "number") ? K.hole : 0;
+  kHole = (typeof K.hole === "number") ? K.hole : kStartIdx();
   renderKLive();
   show("v-klive");
 }
 function renderKLive(){
   var pars = kPars(), h = kHole;
+  var order = playOrder(kStartIdx()), pos = order.indexOf(h);
   var banner = document.getElementById("kBanner");
   var untouched = K.players.every(function(pl){ return !holeEntered(pl, h); });
   banner.className = "livebanner" + (untouched ? " fresh" : "");
@@ -2393,17 +2593,20 @@ function renderKLive(){
   var boxes = "", mh, names;
   var curDone = K.players.every(function(pl){ return holeEntered(pl, h); });
   if (curDone) boxes += '<div class="donebanner">✓ HOLE ' + (h + 1) + ' COMPLETE</div>';
-  else if (h > 0 && K.players.every(function(pl){ return holeEntered(pl, h - 1); }))
-    boxes += '<div class="donebanner">✓ HOLE ' + h + ' COMPLETE</div>';
-  for (mh = h - 1; mh >= 0; mh--) {
-    names = K.players.filter(function(pl){ return !holeEntered(pl, mh); }).map(function(pl){ return pl.name; });
-    if (names.length) break;
+  else if (pos > 0 && K.players.every(function(pl){ return holeEntered(pl, order[pos - 1]); }))
+    boxes += '<div class="donebanner">✓ HOLE ' + (order[pos - 1] + 1) + ' COMPLETE</div>';
+  mh = -1; names = [];
+  for (var oi = pos - 1; oi >= 0; oi--) {
+    var cand = order[oi];
+    var miss = K.players.filter(function(pl){ return !holeEntered(pl, cand); }).map(function(pl){ return pl.name; });
+    if (miss.length) { mh = cand; names = miss; break; }
   }
   if (mh >= 0) boxes += '<div class="missbox">⚠ <b>Hole ' + (mh + 1) + ' still needs a score</b> — ' + names.map(esc).join(", ") + '.<button onclick="kGo(' + mh + ')">GO TO HOLE ' + (mh + 1) + "</button></div>";
-  if (h === 9 && K.players.every(function(pl){ for (var k = 0; k < 9; k++) if (!holeEntered(pl, k)) return false; return true; })) {
-    boxes += '<div class="turnbox"><b>At the turn — OUT:</b><br>' + K.players.map(function(pl){
+  var firstNine = order.slice(0, 9);
+  if (h === order[9] && K.players.every(function(pl){ return firstNine.every(function(k){ return holeEntered(pl, k); }); })) {
+    boxes += '<div class="turnbox"><b>At the turn — ' + (kStartIdx() === 9 ? "IN" : "OUT") + ':</b><br>' + K.players.map(function(pl){
       var g = 0, p = 0;
-      for (var k = 0; k < 9; k++) if (!pl.np[k] && pl.scores[k] != null) { g += pl.scores[k]; p += ptsFor(pl.scores[k], pars[k]); }
+      firstNine.forEach(function(k){ if (!pl.np[k] && pl.scores[k] != null) { g += pl.scores[k]; p += ptsFor(pl.scores[k], pars[k]); } });
       return esc(pl.name) + " — gross " + g + " · " + p + " pts";
     }).join("<br>") + "</div>";
   }
@@ -2418,18 +2621,19 @@ function renderKLive(){
     var npb = '<button class="npbtn' + (pl.np[h] ? " on" : "") + '" onclick="kNP(' + pi + ')">' + (pl.np[h] ? "NP — tap to undo" : "Hole not played (NP)") + "</button>";
     return stepRowHTML(pl, pi, pars, h, "k", "", npb);
   }).join("");
-  document.getElementById("kPrevBtn").disabled = (h === 0);
-  document.getElementById("kNextBtn").disabled = (h === 17);
+  document.getElementById("kPrevBtn").disabled = (pos === 0);
+  document.getElementById("kNextBtn").disabled = (pos === 17);
   document.getElementById("kFillBtn").style.display = PRACTICE ? "" : "none";
 }
 function kGo(h){ kHole = h; K.hole = h; kSave(); renderKLive(); }
-function kNav(d){ var h = kHole + d; if (h < 0 || h > 17) return; kGo(h); }
+function kNav(d){ var order = playOrder(kStartIdx()); var pos = order.indexOf(kHole) + d; if (pos < 0 || pos > 17) return; kGo(order[pos]); }
 function kSet(pi, v){
   var pl = K.players[pi];
   pl.scores[kHole] = v; pl.np[kHole] = false;
   if (K.players.every(function(p){ return holeEntered(p, kHole); })) {
     if (K.spoken !== kHole) { K.spoken = kHole; speak("Hole " + (kHole + 1) + " complete"); }
-    if (kHole < 17) { kHole++; K.hole = kHole; }
+    var o2 = playOrder(kStartIdx()), p2 = o2.indexOf(kHole);
+    if (p2 < 17) { kHole = o2[p2 + 1]; K.hole = kHole; }
   }
   kSave(); renderKLive();
 }
@@ -2474,9 +2678,9 @@ function kStep(pi, d){
 function kNP(pi){ var pl = K.players[pi]; if (pl.np[kHole]) { pl.np[kHole] = false; } else { pl.np[kHole] = true; pl.scores[kHole] = null; } kSave(); renderKLive(); }
 function kFill5(){
   if (!PRACTICE || !K) return;
-  var pars = kPars(), start = kHole, end = Math.min(start + 4, 17);
+  var pars = kPars(), order = playOrder(kStartIdx()), pos = order.indexOf(kHole), lastPos = Math.min(pos + 4, 17);
   K.players.forEach(function(pl){
-    for (var h = start; h <= end; h++) {
+    for (var oi = pos; oi <= lastPos; oi++) { var h = order[oi];
       if (pl.scores[h] != null || pl.np[h]) continue;
       var x = Math.random(), d = x < 0.12 ? -1 : (x < 0.50 ? 0 : (x < 0.82 ? 1 : 2));
       var v = pars[h] + d;
@@ -2484,7 +2688,7 @@ function kFill5(){
       pl.scores[h] = v;
     }
   });
-  kHole = Math.min(end + 1, 17); K.hole = kHole;
+  kHole = order[Math.min(lastPos + 1, 17)]; K.hole = kHole;
   kSave(); renderKLive();
 }
 
