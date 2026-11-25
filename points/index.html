@@ -740,6 +740,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    GROUP text — each line now carries the GROSS, then the points
    (+/- vs the average carried in), then the average before ->
    after the round, mirroring the sheet's Finals table.
+   v4.4 (Nov 24, 2026): Dan's phone test showed Messages keeping
+   only the FIRST recipient from the plain sms: link — the group
+   link now uses iOS's multi-recipient form,
+   sms:/open?addresses=n1,n2&body=...
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -757,7 +761,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v4.3";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v4.4";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1136,7 +1140,7 @@ function textGroupPlan(r){
     else missing.push(nm);
   });
   var body = textGroupBody(r);
-  var url = included.length ? "sms:" + included.map(function(x){ return x.number; }).join(",") + "&body=" + encodeURIComponent(body) : null;
+  var url = included.length ? "sms:/open?addresses=" + included.map(function(x){ return x.number; }).join(",") + "&body=" + encodeURIComponent(body) : null;
   return { included: included, missing: missing, body: body, url: url };
 }
 function openTextGroup(){
