@@ -736,6 +736,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    their own on-phone storage (pointscard.phones) — never in the
    book, the cloud copy, or a packet — and a review screen names
    who is in and who has no number before Messages opens.
+   v4.3 (Nov 24, 2026): Dan's field note on the first TEXT THIS
+   GROUP text — each line now carries the GROSS, then the points
+   (+/- vs the average carried in), then the average before ->
+   after the round, mirroring the sheet's Finals table.
    ============================================================ */
 var READ_ENDPOINT = "https://points-reader.dvaughan46.workers.dev/";
 
@@ -753,7 +757,7 @@ var SEED = [
 var SEED_NOTE = "Seeded from Rick's book — verified Nov 14, 2026";
 var LSKEY = "pointscard.v1";
 var LSPKEY = "pointscard.practice";   // v2.0: the practice sandbox lives under its own key
-var APP_VERSION = "v4.2";             // shown bold in the header banner and in the footer — bump this one line per release
+var APP_VERSION = "v4.3";             // shown bold in the header banner and in the footer — bump this one line per release
 var PRACTICE = false;                  // v2.0: true only while the practice copy is loaded
 var realS = null;                      // v2.0: the real book, held aside during practice
 var LS = (typeof localStorage !== "undefined") ? localStorage : null;
@@ -1089,24 +1093,35 @@ function addGuestPhone(){
 var tgPlan = null;
 function textGroupBody(r){
   var lines = ["Points — " + r.courseName + " · " + prettyDate(r.date)];
-  var st = standings(r), fm = flightMap(r);
-  function line(x, n){
-    var s = n + ". " + x.name + " — " + x.points + " pts";
-    if (x.vs != null) s += " (" + (x.vs >= 0 ? "+" : "") + x.vs.toFixed(2) + ")";
-    else s += x.guest ? " (guest)" : " (new)";
+  var rows = finalsRows(r), fm = flightMap(r);
+  function afterOf(fr){
+    if (fr.after != null) return fr.after;
+    var x = fr.x;
+    if (!x.complete || x.guest) return null;
+    var st = r.startRatings[x.name];
+    return st ? (st.total + x.points) / (st.rounds + 1) : x.points;
+  }
+  function line(fr, n){
+    var x = fr.x, after = afterOf(fr);
+    var s = n + ". " + x.name + " — " + x.gross + " gross · " + x.points + " pts";
+    if (x.vs != null) s += " (" + signed(x.vs) + ")";
+    if (x.guest) s += " (guest)";
+    else if (!x.complete) s += (fr.before != null ? " · avg " + fmt(fr.before) + " (didn't finish)" : " (didn't finish)");
+    else if (fr.before != null && after != null) s += " · avg " + fmt(fr.before) + " → " + fmt(after);
+    else if (after != null) s += " · avg new · " + fmt(after);
     return s;
   }
   if (fm) {
     ["A", "B"].forEach(function(f){
-      var inF = st.filter(function(x){ return fm[x.name] === f; });
+      var inF = rows.filter(function(fr){ return fm[fr.x.name] === f; });
       if (!inF.length) return;
       lines.push("Flight " + f + ":");
-      inF.forEach(function(x, i){ lines.push(line(x, i + 1)); });
+      inF.forEach(function(fr, i){ lines.push(line(fr, i + 1)); });
     });
-    var noF = st.filter(function(x){ return !fm[x.name]; });
-    if (noF.length) { lines.push("Also played:"); noF.forEach(function(x, i){ lines.push(line(x, i + 1)); }); }
+    var noF = rows.filter(function(fr){ return !fm[fr.x.name]; });
+    if (noF.length) { lines.push("Also played:"); noF.forEach(function(fr, i){ lines.push(line(fr, i + 1)); }); }
   } else {
-    st.forEach(function(x, i){ lines.push(line(x, i + 1)); });
+    rows.forEach(function(fr, i){ lines.push(line(fr, i + 1)); });
   }
   return lines.join("\n");
 }
