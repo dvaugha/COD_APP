@@ -12,6 +12,9 @@ const CS_INDEX = {
     "sc": { n: "Shallow Creek", r: "FL" },
     "so": { n: "Southern Oaks", r: "FL" },
     "wl": { n: "Woodlands", r: "FL" },
+    "glenview": { n: "Glenview Champions", r: "FL" },
+    "mallory": { n: "Mallory Hill", r: "FL" },
+    "orangeblossom": { n: "Orange Blossom Hills", r: "FL" },
     
     // NORTH CAROLINA (NC)
     "byrd": { n: "Byrd (Sea Trail)", r: "NC" },
